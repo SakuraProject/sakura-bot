@@ -5,6 +5,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-bot = commands.Bot(commands_prefix='gm!')
+bot = commands.Bot(command_prefix='gm!')
 
 bot.run(token=os.environ["TOKEN"])
