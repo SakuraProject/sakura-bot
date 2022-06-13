@@ -8,4 +8,4 @@ load_dotenv()
 intent=discord.Intents.all()
 bot = commands.Bot(command_prefix='gm!',intents=intent)
 
-bot.run(token=os.environ["TOKEN"])
+bot.run(os.environ["TOKEN"])
