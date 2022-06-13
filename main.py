@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 
 
 load_dotenv()
-
-bot = commands.Bot(command_prefix='gm!')
+intent=discord.Intents.all()
+bot = commands.Bot(command_prefix='gm!',intents=intent)
 
 bot.run(token=os.environ["TOKEN"])
