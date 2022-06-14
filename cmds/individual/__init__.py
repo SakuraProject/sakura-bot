@@ -6,7 +6,7 @@ async def setup(bot):
   for name in os.listdir("cmds/individual"):
     if not name.startswith("."):
       try:
-        bot.load_extension(name.replace(".py",""))
+        await bot.load_extension(name.replace(".py",""))
       except Exception as e:
         print("[Log][err]" + str(e))
       else:
