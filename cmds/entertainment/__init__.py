@@ -3,7 +3,7 @@ import traceback
 
 
 async def setup(bot):
-  for name in os.listdir("cmds/entertainment"):
+  for name in listdir("cmds/entertainment"):
     if not name.startswith("."):
       try:
         await bot.load_extension(name.replace(".py",""))
