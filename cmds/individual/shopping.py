@@ -11,7 +11,7 @@ class shopping(commands.Cog):
         self.bot, self.before = bot, ""
 
     @commands.group(
-        aliases=["買い物",""]
+        aliases=["買い物"]
     )
     async def shopping(self, ctx: commands.Context):
         if not ctx.invoked_subcommand:
