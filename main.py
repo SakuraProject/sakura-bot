@@ -8,4 +8,9 @@ load_dotenv()
 intent=discord.Intents.all()
 bot = commands.Bot(command_prefix='gm!',intents=intent)
 
+
+@bot.listen()
+async def on_ready():
+  print("[Log]Hello " + bot.user.name)
+
 bot.run(os.environ["TOKEN"])
