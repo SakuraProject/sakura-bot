@@ -15,7 +15,7 @@ async def on_ready():
   for name in os.listdir("cmds"):
     if not name.startswith("."):
       try:
-        bot.load_extension(name.replace(".py",""))
+        await bot.load_extension(name.replace(".py",""))
       except Exception as e:
         print("[Log][err]" + str(e))
       else:
