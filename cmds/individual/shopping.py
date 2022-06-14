@@ -36,7 +36,7 @@ class shopping(commands.Cog):
                     else:
                         dcr = dcr + v["itemname"] + "(現在在庫不足[要求:"+ v["lotof"] + "、在庫:" + row["lotof"] + ")→0円\n"
                 dcr = dcr + "計" + str(price) + "円"
-                ebd = discord.Embed(title="カート",description=dcr)
+                ebd = discord.Embed(title="カート",description=dcr,color=self.bot.Color)
                 await ctx.send(embeds=[ebd])
     @shopping.command()
     async def search(self,ctx,word):
@@ -129,7 +129,7 @@ class shopping(commands.Cog):
                 await ctx.reply("まだ注文はありません")
             else:
                 gi = loads(rpt)
-                eb = discord.Embed(title="注文一覧")
+                eb = discord.Embed(title="注文一覧",color=self.bot.Color)
                 for t in gi:
                     eb.add_field(name=t["v"]["itemname"],value="個数:"+t["v"]["lotof"]+"\n決済金額:"+t["v"]["prices"]+"配送先住所:"+t["v"]["postal"]+"\n"+t["v"]["name"]+"\n電話番号："+t["v"]["tel"]+"\n購入者の連絡先\n"+t["name"]+"\n"+t["tel"])
                 await ctx.author.send(embeds=[eb])
@@ -167,7 +167,7 @@ class shopping(commands.Cog):
             for cat in catarr:
                 ctls = ctls + "No." + str(i) + cat["name"] + "\n"
                 i = i + 1
-            evd = discord.Embed(title="カテゴリ一覧",description=ctls)
+            evd = discord.Embed(title="カテゴリ一覧",description=ctls,color=self.bot.Color)
             await ctx.send(embeds=[evd])
             cno = int((await self.input(ctx,"カテゴリを選んでカテゴリーナンバーを数値で送信してください")).content)
             req["category"] = catarr[cno-1]
@@ -191,7 +191,7 @@ class shopping(commands.Cog):
             for cat in gj:
                 ctls = ctls + "No." + str(i) + cat["v"]["itemname"] + "\n"
                 i = i + 1
-            evd = discord.Embed(title="出品一覧",description=ctls)
+            evd = discord.Embed(title="出品一覧",description=ctls,color=self.bot.Color)
             await ctx.send(embeds=[evd])
             cno = int((await self.input(ctx,"編集する商品を選んで商品ナンバーを数値で送信してください")).content)
             req["i"] = gj[cno-1]["v"]["itemid"]
@@ -225,7 +225,7 @@ class shopping(commands.Cog):
             for cat in catarr:
                 ctls = ctls + "No." + str(i) + cat["name"] + "\n"
                 i = i + 1
-            evd = discord.Embed(title="カテゴリ一覧",description=ctls)
+            evd = discord.Embed(title="カテゴリ一覧",description=ctls,color=self.bot.Color)
             await ctx.send(embeds=[evd])
             cno = int((await self.input(ctx,"カテゴリを選んでカテゴリーナンバーを数値で送信してください")).content)
             req["category"] = catarr[cno-1]
@@ -347,7 +347,7 @@ class SearchList(discord.ui.Select):
     async def callback(self, interaction: discord.Interaction):
         for item in self.its:
             if item["itemname"] == self.values[0]:
-                ebd = discord.Embed(title=item["itemname"],description=item["vl"])
+                ebd = discord.Embed(title=item["itemname"],description=item["vl"],color=self.bot.Color)
                 img = "https://ystore.jp/itemimg/"+loads(item["image"])[0]
                 ebd.set_image(url=img)
                 ebd.add_field(name="価格",value=item["price"])
@@ -379,7 +379,7 @@ class ImgList(discord.ui.Select):
         super().__init__(placeholder='', min_values=1, max_values=1, options=options)
 
     async def callback(self, interaction: discord.Interaction):
-        ebd = discord.Embed(title=self.it["itemname"],description=self.it["vl"])
+        ebd = discord.Embed(title=self.it["itemname"],description=self.it["vl"],color=self.bot.Color)
         inb = int(self.values[0].replace("枚目の画像を表示",""))
         img = "https://ystore.jp/itemimg/"+self.its[inb]
         ebd.set_image(url=img)
