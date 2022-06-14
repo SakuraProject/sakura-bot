@@ -3,6 +3,7 @@ from discord.ext import commands
 import urllib
 import discord
 import asyncio
+import os
 from ujson import loads,dumps
 secretkey=os.environ["YMARTKEY"]
 class shopping(commands.Cog):
