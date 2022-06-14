@@ -22,6 +22,7 @@ async def on_ready():
       else:
         print("[Log][load]" + name)
   bot.session = ClientSession(loop=bot.loop, json_serialize=dumps)
+  bot.Color = 0xffbdde
   print("[Log]Complete Booting,Thank you for using " + bot.user.name)
 
 bot.run(os.environ["TOKEN"])
