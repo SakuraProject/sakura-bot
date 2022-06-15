@@ -18,19 +18,17 @@ class globalchat(commands.Cog):
             await ctx.reply("使用方法が違います。")
     @globalchat.command()
     async def create(self, ctx, name="main"):
-        csql = "INSERT INTO `globalchat` (`chid`, `gcname`) VALUES ('"+str(ctx.channel.id)+"', '"+name+"');"
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
-                await cur.execute(csql)
+                await cur.execute("INSERT INTO `globalchat` (`chid`, `gcname`) VALUES (%s, %s);",(str(ctx.channel.id),name))
                 await conn.commit()
                 await ctx.reply("グローバルチャットに接続しました")
 
     @globalchat.command()
     async def remove(self, ctx, name="main"):
-        csql = "delete from globalchat where chid='"+str(ctx.channel.id)+"' and gcname='"+name+"'"
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
-                await cur.execute(csql)
+                await cur.execute("delete from globalchat where chid=%s and gcname=%s",(str(ctx.channel.id),name))
                 await conn.commit()
                 await ctx.reply("グローバルチャットから切断しました")
 
@@ -60,16 +58,17 @@ class globalchat(commands.Cog):
                     if vie == None:
                         vie = discord.ui.View
                     vie.add_item(c)
+                alm = discord.AllowedMentions.none()
                 if vie != None:
                     if flfl==None:
-                        await webhook.send(content=message.content.replace('@here','[here]').replace('@everyone','[everyone]'),username=message.author.name+'#'+message.author.discriminator,avatar_url=message.author.avatar,embeds=embeds,view=vie)
+                        await webhook.send(content=message.content.replace('@here','[here]').replace('@everyone','[everyone]'),username=message.author.name+'#'+message.author.discriminator,avatar_url=message.author.avatar,embeds=embeds,view=vie,allowed_mentions=alm)
                     else:
-                        await webhook.send(content=message.content.replace('@here','[here]').replace('@everyone','[everyone]'),username=message.author.name+'#'+message.author.discriminator,avatar_url=message.author.avatar,files=flfl,embeds=embeds,view=vie)
+                        await webhook.send(content=message.content.replace('@here','[here]').replace('@everyone','[everyone]'),username=message.author.name+'#'+message.author.discriminator,avatar_url=message.author.avatar,files=flfl,embeds=embeds,view=vie,allowed_mentions=alm)
                 else:
                     if flfl==None:
-                        await webhook.send(content=message.content.replace('@here','[here]').replace('@everyone','[everyone]'),username=message.author.name+'#'+message.author.discriminator,avatar_url=message.author.avatar,embeds=embeds)
+                        await webhook.send(content=message.content.replace('@here','[here]').replace('@everyone','[everyone]'),username=message.author.name+'#'+message.author.discriminator,avatar_url=message.author.avatar,embeds=embeds,allowed_mentions=alm)
                     else:
-                        await webhook.send(content=message.content.replace('@here','[here]').replace('@everyone','[everyone]'),username=message.author.name+'#'+message.author.discriminator,avatar_url=message.author.avatar,files=flfl,embeds=embeds)
+                        await webhook.send(content=message.content.replace('@here','[here]').replace('@everyone','[everyone]'),username=message.author.name+'#'+message.author.discriminator,avatar_url=message.author.avatar,files=flfl,embeds=embeds,allowed_mentions=alm)
 
 
     @commands.Cog.listener()
