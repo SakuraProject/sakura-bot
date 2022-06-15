@@ -37,7 +37,7 @@ class globalchat(commands.Cog):
     async def gcsend(self, id, message):
         channel = self.bot.get_channel(int(id))
         if channel != None:
-            webhook=await getwebhook(channel)
+            webhook=await self.getwebhook(channel)
             if channel.guild.id!=message.guild.id and message.author.discriminator!='0000':
                 flfl=None
                 for atc in message.attachments:
@@ -81,7 +81,7 @@ class globalchat(commands.Cog):
                     await cur.execute(chs)
                     res1 = await cur.fetchall()
                     for cr in res1:
-                        asyncio.ensure_future(gcsend(cr[0],message))
+                        asyncio.ensure_future(self.gcsend(cr[0],message))
     async def getwebhook(channel):
         webhooks=await channel.webhooks()
         webhook=discord.utils.get(webhooks,name='sakuraglobal')
