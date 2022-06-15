@@ -82,7 +82,7 @@ class globalchat(commands.Cog):
                     res1 = await cur.fetchall()
                     for cr in res1:
                         asyncio.ensure_future(self.gcsend(cr[0],message))
-    async def getwebhook(channel):
+    async def getwebhook(self, channel):
         webhooks=await channel.webhooks()
         webhook=discord.utils.get(webhooks,name='sakuraglobal')
         if webhook==None:
