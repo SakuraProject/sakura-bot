@@ -66,7 +66,7 @@ class globalchat(commands.Cog):
                     await webhook.send(content=message.content.replace('@here','[here]').replace('@everyone','[everyone]'),username=message.author.name+'#'+message.author.discriminator,avatar_url=message.author.avatar,files=flfl,embeds=embeds,view=vie)
 
     @commands.Cog.listener()
-    async def on_message():
+    async def on_message(self,message):
         gns = "select gcname from globalchat where chid='" + str(message.channel.id) + "'"
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
