@@ -60,10 +60,17 @@ class globalchat(commands.Cog):
                     if vie == None:
                         vie = discord.ui.View
                     vie.add_item(c)
-                if flfl==None:
-                    await webhook.send(content=message.content.replace('@here','[here]').replace('@everyone','[everyone]'),username=message.author.name+'#'+message.author.discriminator,avatar_url=message.author.avatar,embeds=embeds,view=vie)
+                if vie != None:
+                    if flfl==None:
+                        await webhook.send(content=message.content.replace('@here','[here]').replace('@everyone','[everyone]'),username=message.author.name+'#'+message.author.discriminator,avatar_url=message.author.avatar,embeds=embeds,view=vie)
+                    else:
+                        await webhook.send(content=message.content.replace('@here','[here]').replace('@everyone','[everyone]'),username=message.author.name+'#'+message.author.discriminator,avatar_url=message.author.avatar,files=flfl,embeds=embeds,view=vie)
                 else:
-                    await webhook.send(content=message.content.replace('@here','[here]').replace('@everyone','[everyone]'),username=message.author.name+'#'+message.author.discriminator,avatar_url=message.author.avatar,files=flfl,embeds=embeds,view=vie)
+                    if flfl==None:
+                        await webhook.send(content=message.content.replace('@here','[here]').replace('@everyone','[everyone]'),username=message.author.name+'#'+message.author.discriminator,avatar_url=message.author.avatar,embeds=embeds)
+                    else:
+                        await webhook.send(content=message.content.replace('@here','[here]').replace('@everyone','[everyone]'),username=message.author.name+'#'+message.author.discriminator,avatar_url=message.author.avatar,files=flfl,embeds=embeds)
+
 
     @commands.Cog.listener()
     async def on_message(self,message):
