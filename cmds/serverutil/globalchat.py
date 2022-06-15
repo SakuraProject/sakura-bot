@@ -17,7 +17,7 @@ class globalchat(commands.Cog):
         if not ctx.invoked_subcommand:
             await ctx.reply("使用方法が違います。")
     @globalchat.command()
-    async def create(self, name="main"):
+    async def create(self, ctx, name="main"):
         csql = "INSERT INTO `globalchat` (`chid`, `gcname`) VALUES ('"+str(ctx.channel.id)+"', '"+name+"');"
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
@@ -26,7 +26,7 @@ class globalchat(commands.Cog):
                 await ctx.reply("グローバルチャットに接続しました")
 
     @globalchat.command()
-    async def remove(self, name="main"):
+    async def remove(self, ctx, name="main"):
         csql = "delete from globalchat where chid='"+str(ctx.channel.id)+"' and gcname='"+name+"'"
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
@@ -70,7 +70,7 @@ class globalchat(commands.Cog):
         gns = "select gcname from globalchat where chid='" + str(message.channel.id) + "'"
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
-                await cur.execute(ctsql)
+                await cur.execute(gns)
                 res = await cur.fetchall()
                 await conn.commit()
                 if len(res) == 0:
@@ -78,7 +78,10 @@ class globalchat(commands.Cog):
                 for row in res:
                     gcname = row[0]
                     chs = "select chid from globalchat where gcname='" + str(gcname) + "'"
-                    asyncio.ensure_future(gcsend(chs,message))
+                    await cur.execute(chs)
+                    res1 = await cur.fetchall()
+                    for cr in res1:
+                        asyncio.ensure_future(gcsend(cr[0],message))
     async def getwebhook(channel):
         webhooks=await channel.webhooks()
         webhook=discord.utils.get(webhooks,name='sakuraglobal')
