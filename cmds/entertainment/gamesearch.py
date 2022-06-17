@@ -1,4 +1,4 @@
-# Free RT - gamesearch
+# Gombot - gamesearch
 
 import discord
 from discord.ext import commands

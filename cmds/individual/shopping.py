@@ -5,17 +5,19 @@ import discord
 import asyncio
 import os
 from ujson import loads,dumps
+
 secretkey=os.environ["YMARTKEY"]
+
+
 class shopping(commands.Cog):
     def __init__(self, bot):
         self.bot, self.before = bot, ""
 
-    @commands.group(
-        aliases=["買い物"]
-    )
+    @commands.group(aliases=["買い物"])
     async def shopping(self, ctx: commands.Context):
         if not ctx.invoked_subcommand:
             await ctx.reply("使用方法が違います。")
+
     @shopping.command()
     async def cart(self,ctx):
         async with self.bot.session.get("https://ystore.jp/api/cart.php?secret="+urllib.parse.quote_plus(secretkey, encoding='utf-8')+"&disid="+str(ctx.author.id)+"&distag="+urllib.parse.quote_plus(ctx.author.name+'#'+ctx.author.discriminator)) as resp:
@@ -38,6 +40,7 @@ class shopping(commands.Cog):
                 dcr = dcr + "計" + str(price) + "円"
                 ebd = discord.Embed(title="カート",description=dcr,color=self.bot.Color)
                 await ctx.send(embeds=[ebd])
+
     @shopping.command()
     async def search(self,ctx,word):
         async with self.bot.session.get("https://ystore.jp/api/search.php?q="+urllib.parse.quote_plus(word, encoding='utf-8')) as resp:
@@ -49,6 +52,7 @@ class shopping(commands.Cog):
                 vie = discord.ui.View()
                 vie.add_item(SearchList(gj))
                 await ctx.send("見たい商品を選択してください",view=vie)
+
     @shopping.command()
     async def address(self,ctx):
         def check(m):
@@ -118,11 +122,10 @@ class shopping(commands.Cog):
                             return message
                         elif message1.content == "修正":
                             break
+
     @shopping.command()
+    @commands.dm_only()
     async def ticket(self,ctx):
-        if ctx.guild!=None:
-            await ctx.send("このコマンドはDM専用です")
-            return
         async with self.bot.session.get("https://ystore.jp/api/cart.php?secret="+urllib.parse.quote_plus(secretkey, encoding='utf-8')+"&disid="+str(ctx.author.id)+"&distag="+urllib.parse.quote_plus(ctx.author.name+'#'+ctx.author.discriminator)) as resp:
             rpt = await resp.text()
             if rpt=="[]":
@@ -249,7 +252,7 @@ class shopping(commands.Cog):
         try:
             message = await client.wait_for('message', timeout= 60.0, check= check)
         except asyncio.TimeoutError:
-            await ctx.channel.send('タイムアウトしました.  再度操作をやり直してね')
+            await ctx.send('タイムアウトしました.  再度操作をやり直してね')
             return
         else:
             req["ginko"]=message.content
@@ -257,7 +260,7 @@ class shopping(commands.Cog):
         try:
             message = await client.wait_for('message', timeout= 120.0, check= check)
         except asyncio.TimeoutError:
-            await ctx.channel.send('タイムアウトしました.  再度操作をやり直してね')
+            await ctx.send('タイムアウトしました.  再度操作をやり直してね')
             return
         else:
             req["siten"]=message.content
@@ -265,7 +268,7 @@ class shopping(commands.Cog):
         try:
             message = await client.wait_for('message', timeout= 180.0, check= check)
         except asyncio.TimeoutError:
-            await ctx.channel.send('タイムアウトしました.  再度操作をやり直してね')
+            await ctx.send('タイムアウトしました.  再度操作をやり直してね')
             return
         else:
             req["code"]=message.content
@@ -273,7 +276,7 @@ class shopping(commands.Cog):
         try:
             message = await client.wait_for('message', timeout= 90.0, check= check)
         except asyncio.TimeoutError:
-            await ctx.channel.send('タイムアウトしました.  再度操作をやり直してね')
+            await ctx.send('タイムアウトしました.  再度操作をやり直してね')
             return
         else:
             req["name"]=message.content
@@ -293,17 +296,17 @@ class shopping(commands.Cog):
         await ctx.send("DMを確認してください")
         await ctx.author.send("クレジットカード番号を入力してください")
         try:
-            message = await client.wait_for('message', timeout= 60.0, check= check)
+            message = await client.wait_for('message', timeout=60.0, check=check)
         except asyncio.TimeoutError:
-            await ctx.channel.send('タイムアウトしました.  再度操作をやり直してね')
+            await ctx.send('タイムアウトしました.  再度操作をやり直してね')
             return
         else:
             cnum=message.content.replace(" ","").replace("-","")
         await ctx.author.send("カードの有効期限を入力してください(例:yyyy/mm")
         try:
-            message = await client.wait_for('message', timeout= 60.0, check= check)
+            message = await client.wait_for('message', timeout=60.0, check=check)
         except asyncio.TimeoutError:
-            await ctx.channel.send('タイムアウトしました.  再度操作をやり直してね')
+            await ctx.send('タイムアウトしました.  再度操作をやり直してね')
             return
         else:
             spl=message.content.split("/")
@@ -311,17 +314,17 @@ class shopping(commands.Cog):
             mon=spl[1]
         await ctx.author.send("cvc(セキュリティコード)を入力してください")
         try:
-            message = await client.wait_for('message', timeout= 60.0, check= check)
+            message = await client.wait_for('message', timeout=60.0, check=check)
         except asyncio.TimeoutError:
-            await ctx.channel.send('タイムアウトしました.  再度操作をやり直してね')
+            await ctx.send('タイムアウトしました.  再度操作をやり直してね')
             return
         else:
-            cvc=message.content
+            cvc = message.content
         async with self.bot.session.get("http://ystore.jp/api/getpayd.php?secret="+urllib.parse.quote_plus(secretkey, encoding='utf-8')+"&disid="+str(ctx.author.id)+"&distag="+urllib.parse.quote_plus(ctx.author.name+'#'+ctx.author.discriminator)) as resp:
             rpt = await resp.text()
         stripe.api_key = os.environ["STRIPEKEY"]
         try:
-            pm=stripe.PaymentMethod.create(type="card",card={"number": cnum,"exp_month": int(mon),"exp_year": int(year),"cvc": cvc,})
+            pm = stripe.PaymentMethod.create(type="card", card={"number": cnum, "exp_month": int(mon), "exp_year": int(year), "cvc": cvc})
             payment_intent = stripe.PaymentIntent.create(
                 amount=rpt,# 支払金額
                 currency='jpy',# 利用通貨
@@ -335,10 +338,11 @@ class shopping(commands.Cog):
         except Exception as e:
             await ctx.author.send("このカードは使用出来ませんでした")
 
+
 class SearchList(discord.ui.Select):
-    def __init__(self,args):
-        self.its=args
-        options=[]
+    def __init__(self, args):
+        self.its = args
+        options = []
         for item in args:
             options.append(discord.SelectOption(label=item["itemname"], description=''))
     
@@ -347,35 +351,37 @@ class SearchList(discord.ui.Select):
     async def callback(self, interaction: discord.Interaction):
         for item in self.its:
             if item["itemname"] == self.values[0]:
-                ebd = discord.Embed(title=item["itemname"],description=item["vl"],color=self.bot.Color)
-                img = "https://ystore.jp/itemimg/"+loads(item["image"])[0]
+                ebd = discord.Embed(title=item["itemname"], description=item["vl"], color=self.bot.Color)
+                img = "https://ystore.jp/itemimg/" + loads(item["image"])[0]
                 ebd.set_image(url=img)
-                ebd.add_field(name="価格",value=item["price"])
+                ebd.add_field(name="価格", value=item["price"])
                 vie = discord.ui.View()
                 vie.add_item(ImgList(item,loads(item["image"])))
                 vie.add_item(CartButton(item))
-                await interaction.response.edit_message(embeds=[ebd],view=vie)
+                await interaction.response.edit_message(embeds=[ebd], view=vie)
+
 
 class CatList(discord.ui.Select):
-    def __init__(self,req,args):
-        self.req=req
-        options=[]
+    def __init__(self, req, args):
+        self.req = req
+        options = []
         for item in args:
             options.append(discord.SelectOption(label=item["name"], description=''))
         super().__init__(placeholder='', min_values=1, max_values=1, options=options)
 
     async def callback(self, interaction: discord.Interaction):
         req["category"] = self.values[0]
-        
+
+
 class ImgList(discord.ui.Select):
-    def __init__(self,ite,args):
-        self.its=args
-        self.it=ite
-        options=[]
-        i=1
+    def __init__(self, ite, args):
+        self.its = args
+        self.it = ite
+        options = []
+        i = 1
         for item in args:
             options.append(discord.SelectOption(label=str(i)+"枚目の画像を表示", description=''))
-            i = i + 1
+            i += 1
         super().__init__(placeholder='', min_values=1, max_values=1, options=options)
 
     async def callback(self, interaction: discord.Interaction):
@@ -387,25 +393,29 @@ class ImgList(discord.ui.Select):
         vie = discord.ui.View()
         vie.add_item(ImgList(self.it,self.its))
         vie.add_item(CartButton(self.it))
-        await interaction.response.edit_message(embed=ebd,view=vie)
+        await interaction.response.edit_message(embed=ebd, view=vie)
+
+
 class CartButton(discord.ui.Button):
-    def __init__(self,it):
+    def __init__(self, it):
         self.it = it
-        super().__init__(label="カートに追加",style=discord.ButtonStyle.red)
+        super().__init__(label="カートに追加", style=discord.ButtonStyle.red)
 
     async def callback(self, interaction: discord.Interaction):
         def check(m):
             return m.author == interaction.user and m.channel == interaction.channel
         await interaction.response.send_message("いくつ追加しますか。数字で入力してください")
         try:
-            message = await client.wait_for('message', timeout= 60.0, check= check)
+            message = await client.wait_for('message', timeout=60.0, check=check)
         except asyncio.TimeoutError:
-            await interaction.channel.send('タイムアウトしました.  再度操作をやり直してね')
+            await interaction.response.send_message('タイムアウトしました.  再度操作をやり直してね')
             return
         else:
             async with client.session.get("https://ystore.jp/api/addcart.php?secret="+urllib.parse.quote_plus(secretkey, encoding='utf-8')+"&disid="+str(interaction.user.id)+"&distag="+urllib.parse.quote_plus(interaction.user.name+'#'+interaction.user.discriminator)+"&lof="+message.content+"&i="+self.it["itemid"]) as resp:
                 rpt = await resp.text()
-                await interaction.channel.send(rpt)
+                await interaction.response.send_message(rpt)
+
+
 async def setup(bot):
     global client
     client = bot
