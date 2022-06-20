@@ -43,10 +43,7 @@ class schedule(commands.Cog):
     )
     async def schedule(self, ctx: commands.Context): 
         if not ctx.invoked_subcommand: 
-            await ctx.reply(
-                {"ja": "使用方法が違います。",
-                 "en": "It is wrong way to use this command."}
-            )
+            await ctx.reply("使用方法が違います。")
 
     @schedule.command(
         "set", aliases=["s", "設定"],
