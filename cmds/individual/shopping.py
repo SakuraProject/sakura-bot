@@ -351,7 +351,7 @@ class SearchList(discord.ui.Select):
     async def callback(self, interaction: discord.Interaction):
         for item in self.its:
             if item["itemname"] == self.values[0]:
-                ebd = discord.Embed(title=item["itemname"], description=item["vl"], color=self.bot.Color)
+                ebd = discord.Embed(title=item["itemname"], description=item["vl"], color=client.Color)
                 img = "https://ystore.jp/itemimg/" + loads(item["image"])[0]
                 ebd.set_image(url=img)
                 ebd.add_field(name="価格", value=item["price"])
@@ -385,7 +385,7 @@ class ImgList(discord.ui.Select):
         super().__init__(placeholder='', min_values=1, max_values=1, options=options)
 
     async def callback(self, interaction: discord.Interaction):
-        ebd = discord.Embed(title=self.it["itemname"],description=self.it["vl"],color=self.bot.Color)
+        ebd = discord.Embed(title=self.it["itemname"],description=self.it["vl"],color=client.Color)
         inb = int(self.values[0].replace("枚目の画像を表示",""))
         img = "https://ystore.jp/itemimg/"+self.its[inb]
         ebd.set_image(url=img)
