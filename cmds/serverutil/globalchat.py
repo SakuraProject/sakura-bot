@@ -52,6 +52,8 @@ class globalchat(commands.Cog):
                     reb = discord.Embed(description=ref.clean_content,title="返信先")
                     if embeds == None:
                         embeds = list()
+                    else:
+                        embeds = message.embeds.copy()
                     embeds.append(reb)
                 vie = None
                 for c in message.components:
