@@ -68,7 +68,7 @@ class bump(commands.Cog):
                         if onoff == "on":
                             channel = self.bot.get_channel(row[0])
                             rol = channel.guild.get_role(int(res1[0][3]))
-                            ebd = discord.Embed(title=typ + "通知",color=self.bot.Color,description=dics[typ])
+                            ebd = discord.Embed(title=typ + "通知",color=self.bot.Color,description=self.dics[typ])
                             if rol:
                                 await channel.send(content=rol.mention,embeds=[ebd])
                             else:
