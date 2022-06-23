@@ -64,7 +64,7 @@ class bump(commands.Cog):
                         onoff = "on"
                     else:
                         onoff = res1[0][2]
-                    if int(row[1])<=nti:
+                    if float(row[1])<=nti:
                         if onoff == "on":
                             channel = self.bot.get_channel(row[0])
                             rol = channel.guild.get_role(int(res1[0][3]))
