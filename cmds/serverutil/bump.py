@@ -23,22 +23,82 @@ class bump(commands.Cog):
                 if message.embeds[0].description.find("サーバーの表示順位をアップしました!") != -1:
                     nof = time() + 5400
                     await self.save(message,"toss",nof)
+                    async with self.bot.pool.acquire() as conn:
+                        async with conn.cursor() as cur:
+                            await cur.execute("SELECT * FROM `bumpset` where `gid`=%s and `type`=%s",(str(message.guild.id),"toss"))
+                            res1 = await cur.fetchall()
+                            if len(res1) == 0:
+                                await cur.execute("INSERT INTO `bumpset` (`gid`, `type`, `onoff`) VALUES (%s,%s,%s);",(str(message.guild.id),"toss","on"))
+                                onoff = "on"
+                            else:
+                                onoff = res1[0][2]
+                            if onoff == "on":
+                                ebd = discord.Embed(color=self.bot.Color,description="tossを確認しました。次回は<t:" + str(int(nof)) + ":R>です。時間になったら通知します")
+                                await message.channel.send(embeds=[ebd])
         if message.author.id == 302050872383242240:
             if message.embeds[0].description.find("表示順をアップしたよ")!= -1 or message.embeds[0].description.find("Bump done")!=-1:
                 nof = time() + 7200
                 await self.save(message,"bump",nof)
+                async with self.bot.pool.acquire() as conn:
+                    async with conn.cursor() as cur:
+                        await cur.execute("SELECT * FROM `bumpset` where `gid`=%s and `type`=%s",(str(message.guild.id),"bump"))
+                        res1 = await cur.fetchall()
+                        if len(res1) == 0:
+                            await cur.execute("INSERT INTO `bumpset` (`gid`, `type`, `onoff`) VALUES (%s,%s,%s);",(str(message.guild.id),"bump","on"))
+                            onoff = "on"
+                        else:
+                            onoff = res1[0][2]
+                        if onoff == "on":
+                            ebd = discord.Embed(color=self.bot.Color,description="bumpを確認しました。次回は<t:" + str(int(nof)) + ":R>です。時間になったら通知します")
+                            await message.channel.send(embeds=[ebd])
         if message.author.id == 761562078095867916:
             if "をアップしたよ" in message.embeds[0].fields[0].name:
                 nof = time() + 3600
                 await self.save(message,"up",nof)
+                async with self.bot.pool.acquire() as conn:
+                    async with conn.cursor() as cur:
+                        await cur.execute("SELECT * FROM `bumpset` where `gid`=%s and `type`=%s",(str(message.guild.id),"up"))
+                        res1 = await cur.fetchall()
+                        if len(res1) == 0:
+                            await cur.execute("INSERT INTO `bumpset` (`gid`, `type`, `onoff`) VALUES (%s,%s,%s);",(str(message.guild.id),"up","on"))
+                            onoff = "on"
+                        else:
+                            onoff = res1[0][2]
+                        if onoff == "on":
+                            ebd = discord.Embed(color=self.bot.Color,description="upを確認しました。次回は<t:" + str(int(nof)) + ":R>です。時間になったら通知します")
+                            await message.channel.send(embeds=[ebd])
         if message.author.id == 716496407212589087:
             if message.content.find("Raised!")!= -1:
                 nof = time() + 14106
                 await self.save(message,"raise",nof)
+                async with self.bot.pool.acquire() as conn:
+                    async with conn.cursor() as cur:
+                        await cur.execute("SELECT * FROM `bumpset` where `gid`=%s and `type`=%s",(str(message.guild.id),"raise"))
+                        res1 = await cur.fetchall()
+                        if len(res1) == 0:
+                            await cur.execute("INSERT INTO `bumpset` (`gid`, `type`, `onoff`) VALUES (%s,%s,%s);",(str(message.guild.id),"raise","on"))
+                            onoff = "on"
+                        else:
+                            onoff = res1[0][2]
+                        if onoff == "on":
+                            ebd = discord.Embed(color=self.bot.Color,description="rt!raiseを確認しました。次回は<t:" + str(int(nof)) + ":R>です。時間になったら通知します")
+                            await message.channel.send(embeds=[ebd])
         if message.author.id == 961521106227974174:
             if message.content.find("Raised!")!= -1:
                 nof = time() + 14106
                 await self.save(message,"frrtraise",nof)
+                async with self.bot.pool.acquire() as conn:
+                    async with conn.cursor() as cur:
+                        await cur.execute("SELECT * FROM `bumpset` where `gid`=%s and `type`=%s",(str(message.guild.id),"frrtraise"))
+                        res1 = await cur.fetchall()
+                        if len(res1) == 0:
+                            await cur.execute("INSERT INTO `bumpset` (`gid`, `type`, `onoff`) VALUES (%s,%s,%s);",(str(message.guild.id),"frrtraise","on"))
+                            onoff = "on"
+                        else:
+                            onoff = res1[0][2]
+                        if onoff == "on":
+                            ebd = discord.Embed(color=self.bot.Color,description="fr!raiseを確認しました。次回は<t:" + str(int(nof)) + ":R>です。時間になったら通知します")
+                            await message.channel.send(embeds=[ebd])
 
     dics = dict()
     dics["toss"] = "tossの時間だよg.tossをして表示順位を上げましょう"
