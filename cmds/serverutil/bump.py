@@ -25,7 +25,7 @@ class bump(commands.Cog):
                     await self.save(message,"toss",nof)
                     async with self.bot.pool.acquire() as conn:
                         async with conn.cursor() as cur:
-                            await cur.execute("SELECT * FROM `bumpset` where `gid`=%s and `type`=%s",(str(message.guild.id),"toss"))
+                            await cur.execute("SELECT * FROM `bumpset` where `gid`=%s and `type`=%s",(message.guild.id,"toss"))
                             res1 = await cur.fetchall()
                             if len(res1) == 0:
                                 await cur.execute("INSERT INTO `bumpset` (`gid`, `type`, `onoff`) VALUES (%s,%s,%s);",(message.guild.id,"toss","on"))
@@ -152,13 +152,13 @@ class bump(commands.Cog):
             roleid = role.id
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
-                await cur.execute("SELECT * FROM `bumpset` where `type`=%s and `gid` = %s",("frrtraise",str(ctx.guild.id)))
+                await cur.execute("SELECT * FROM `bumpset` where `type`=%s and `gid` = %s",("frrtraise",ctx.guild.id))
                 res = await cur.fetchall()
                 await conn.commit()
                 if len(res) == 0:
-                    await cur.execute("INSERT INTO `bumpset` (`gid`, `type`, `onoff`, `role`) VALUES (%s,%s,%s);",(str(ctx.guild.id),"frrtraise",onoff.replace("true","on"),str(roleid)))
+                    await cur.execute("INSERT INTO `bumpset` (`gid`, `type`, `onoff`, `role`) VALUES (%s,%s,%s);",(ctx.guild.id,"frrtraise",onoff.replace("true","on"),roleid))
                 else:
-                    await cur.execute("UPDATE `bumpset` SET `gid` = %s,`type` = %s,`onoff` = %s,`role` = %s where `gid` = %s and `type` = %s;",(str(ctx.guild.id),"frrtraise",onoff.replace("true","on"),str(roleid),str(ctx.guild.id),"frrtraise"))
+                    await cur.execute("UPDATE `bumpset` SET `gid` = %s,`type` = %s,`onoff` = %s,`role` = %s where `gid` = %s and `type` = %s;",(ctx.guild.id,"frrtraise",onoff.replace("true","on"),roleid,ctx.guild.id,"frrtraise"))
                 await ctx.reply("設定しました")
 
     @commands.command()
@@ -170,13 +170,13 @@ class bump(commands.Cog):
             roleid = role.id
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
-                await cur.execute("SELECT * FROM `bumpset` where `type`=%s and `gid` = %s",("raise",str(ctx.guild.id)))
+                await cur.execute("SELECT * FROM `bumpset` where `type`=%s and `gid` = %s",("raise",ctx.guild.id))
                 res = await cur.fetchall()
                 await conn.commit()
                 if len(res) == 0:
-                    await cur.execute("INSERT INTO `bumpset` (`gid`, `type`, `onoff`, `role`) VALUES (%s,%s,%s);",(str(ctx.guild.id),"raise",onoff.replace("true","on"),str(roleid)))
+                    await cur.execute("INSERT INTO `bumpset` (`gid`, `type`, `onoff`, `role`) VALUES (%s,%s,%s);",(ctx.guild.id,"raise",onoff.replace("true","on"),roleid))
                 else:
-                    await cur.execute("UPDATE `bumpset` SET `gid` = %s,`type` = %s,`onoff` = %s,`role` = %s where `gid` = %s and `type` = %s;",(str(ctx.guild.id),"raise",onoff.replace("true","on"),str(roleid),str(ctx.guild.id),"raise"))
+                    await cur.execute("UPDATE `bumpset` SET `gid` = %s,`type` = %s,`onoff` = %s,`role` = %s where `gid` = %s and `type` = %s;",(ctx.guild.id,"raise",onoff.replace("true","on"),roleid,ctx.guild.id,"raise"))
                 await ctx.reply("設定しました")
 
     @commands.command()
@@ -188,13 +188,13 @@ class bump(commands.Cog):
             roleid = role.id
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
-                await cur.execute("SELECT * FROM `bumpset` where `type`=%s and `gid` = %s",("bump",str(ctx.guild.id)))
+                await cur.execute("SELECT * FROM `bumpset` where `type`=%s and `gid` = %s",("bump",ctx.guild.id))
                 res = await cur.fetchall()
                 await conn.commit()
                 if len(res) == 0:
-                    await cur.execute("INSERT INTO `bumpset` (`gid`, `type`, `onoff`, `role`) VALUES (%s,%s,%s);",(str(ctx.guild.id),"bump",onoff.replace("true","on"),str(roleid)))
+                    await cur.execute("INSERT INTO `bumpset` (`gid`, `type`, `onoff`, `role`) VALUES (%s,%s,%s);",(ctx.guild.id,"bump",onoff.replace("true","on"),roleid))
                 else:
-                    await cur.execute("UPDATE `bumpset` SET `gid` = %s,`type` = %s,`onoff` = %s,`role` = %s where `gid` = %s and `type` = %s;",(str(ctx.guild.id),"bump",onoff.replace("true","on"),str(roleid),str(ctx.guild.id),"bump"))
+                    await cur.execute("UPDATE `bumpset` SET `gid` = %s,`type` = %s,`onoff` = %s,`role` = %s where `gid` = %s and `type` = %s;",(ctx.guild.id,"bump",onoff.replace("true","on"),roleid,ctx.guild.id,"bump"))
                 await ctx.reply("設定しました")
 
     @commands.command()
@@ -206,13 +206,13 @@ class bump(commands.Cog):
             roleid = role.id
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
-                await cur.execute("SELECT * FROM `bumpset` where `type`=%s and `gid` = %s",("toss",str(ctx.guild.id)))
+                await cur.execute("SELECT * FROM `bumpset` where `type`=%s and `gid` = %s",("toss",ctx.guild.id))
                 res = await cur.fetchall()
                 await conn.commit()
                 if len(res) == 0:
-                    await cur.execute("INSERT INTO `bumpset` (`gid`, `type`, `onoff`, `role`) VALUES (%s,%s,%s);",(str(ctx.guild.id),"toss",onoff.replace("true","on"),str(roleid)))
+                    await cur.execute("INSERT INTO `bumpset` (`gid`, `type`, `onoff`, `role`) VALUES (%s,%s,%s);",(ctx.guild.id,"toss",onoff.replace("true","on"),roleid))
                 else:
-                    await cur.execute("UPDATE `bumpset` SET `gid` = %s,`type` = %s,`onoff` = %s,`role` = %s where `gid` = %s and `type` = %s;",(str(ctx.guild.id),"toss",onoff.replace("true","on"),str(roleid),str(ctx.guild.id),"toss"))
+                    await cur.execute("UPDATE `bumpset` SET `gid` = %s,`type` = %s,`onoff` = %s,`role` = %s where `gid` = %s and `type` = %s;",(ctx.guild.id,"toss",onoff.replace("true","on"),roleid,ctx.guild.id,"toss"))
                 await ctx.reply("設定しました")
 
     @commands.command()
@@ -224,13 +224,13 @@ class bump(commands.Cog):
             roleid = role.id
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
-                await cur.execute("SELECT * FROM `bumpset` where `type`=%s and `gid` = %s",("up",str(ctx.guild.id)))
+                await cur.execute("SELECT * FROM `bumpset` where `type`=%s and `gid` = %s",("up",ctx.guild.id))
                 res = await cur.fetchall()
                 await conn.commit()
                 if len(res) == 0:
-                    await cur.execute("INSERT INTO `bumpset` (`gid`, `type`, `onoff`, `role`) VALUES (%s,%s,%s);",(str(ctx.guild.id),"up",onoff.replace("true","on"),str(roleid)))
+                    await cur.execute("INSERT INTO `bumpset` (`gid`, `type`, `onoff`, `role`) VALUES (%s,%s,%s);",(ctx.guild.id,"up",onoff.replace("true","on"),roleid))
                 else:
-                    await cur.execute("UPDATE `bumpset` SET `gid` = %s,`type` = %s,`onoff` = %s,`role` = %s where `gid` = %s and `type` = %s;",(str(ctx.guild.id),"up",onoff.replace("true","on"),str(roleid),str(ctx.guild.id),"up"))
+                    await cur.execute("UPDATE `bumpset` SET `gid` = %s,`type` = %s,`onoff` = %s,`role` = %s where `gid` = %s and `type` = %s;",(ctx.guild.id,"up",onoff.replace("true","on"),roleid,ctx.guild.id,"up"))
                 await ctx.reply("設定しました")
 async def setup(bot):
     await bot.add_cog(bump(bot))
