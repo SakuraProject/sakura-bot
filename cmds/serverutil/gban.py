@@ -25,12 +25,12 @@ class gban(commands.Cog):
     async def onoff(self, ctx, onoff):
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
-                await cur.execute("SELECT * FROM `gbanset` where `gid` = %s",(str(ctx.guild.id),))
+                await cur.execute("SELECT * FROM `gbanset` where `gid` = %s",(ctx.guild.id,))
                 res = await cur.fetchall()
                 if len(res) == 0:
-                    await cur.execute("INSERT INTO `gbanset` (`gid`, `onoff`) VALUES (%s,%s);",(str(ctx.guild.id),onoff.replace("true","on")))
+                    await cur.execute("INSERT INTO `gbanset` (`gid`, `onoff`) VALUES (%s,%s);",(ctx.guild.id,onoff.replace("true","on")))
                 else:
-                    await cur.execute("UPDATE `gbanset` SET `gid` = %s,`onoff` = %s,`role` = %s where `gid` = %s;",(str(ctx.guild.id),onoff.replace("true","on"),str(roleid),str(ctx.guild.id)))
+                    await cur.execute("UPDATE `gbanset` SET `gid` = %s,`onoff` = %s,`role` = %s where `gid` = %s;",(ctx.guild.id,onoff.replace("true","on"),roleid,ctx.guild.id))
                 await ctx.reply("設定しました")
 
     @gban.command()
@@ -38,7 +38,7 @@ class gban(commands.Cog):
     async def add(self, ctx, user_id: int, *, reason):
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
-                await cur.execute("SELECT * FROM `gban` where `userid` = %s",(str(user_id),))
+                await cur.execute("SELECT * FROM `gban` where `userid` = %s",(user_id,))
                 res = await cur.fetchall()
                 if len(res) != 0:
                     await ctx.send("そのユーザーはすでに登録されています")
@@ -54,14 +54,14 @@ class gban(commands.Cog):
                         return
                 evif = dumps(evi)
                 for g in self.bot.guilds:
-                    await cur.execute("SELECT * FROM `gbanset` where `gid` = %s",(str(g.id),))
+                    await cur.execute("SELECT * FROM `gbanset` where `gid` = %s",(g.id,))
                     res = await cur.fetchall()
                     if len(res) != 0:
                         if res[1] == "off":
                             continue
                     await g.ban(await self.bot.fetch_user(user_id),reason="sakura gbanのため")
                     await asyncio.sleep(1)
-                await cur.execute("INSERT INTO `gban` (`userid`,`reason`,`evidence`) VALUES (%s,%s,%s);",(str(user_id),reason,evif))
+                await cur.execute("INSERT INTO `gban` (`userid`,`reason`,`evidence`) VALUES (%s,%s,%s);",(user_id,reason,evif))
                 await ctx.send("完了しました")
 
     @gban.command()
