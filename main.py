@@ -16,6 +16,7 @@ async def on_ready():
   print("[Log]Hello " + bot.user.name)
   bot.session = ClientSession(loop=bot.loop, json_serialize=dumps)
   bot.Color = 0xffbdde
+  await bot.load_extension("data.owners")
   await bot.load_extension("jishaku")
   print("[Log]Connecting MySQL")
   bot.pool = await aiomysql.create_pool(host=os.environ["MYSQLHOST"], port=int(os.environ["MYSQLPORT"]),user=os.environ["MYSQLUSER"], password=os.environ["MYSQLPASS"],db=os.environ["MYSQLDB"], loop=bot.loop,autocommit=True)
