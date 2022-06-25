@@ -57,7 +57,7 @@ class gban(commands.Cog):
                     await cur.execute("SELECT * FROM `gbanset` where `gid` = %s",(g.id,))
                     res = await cur.fetchall()
                     if len(res) != 0:
-                        if res[1] == "off":
+                        if res[0][1] == "off":
                             continue
                     await g.ban(await self.bot.fetch_user(user_id),reason="sakura gbanのため")
                     await asyncio.sleep(1)
@@ -95,7 +95,7 @@ class gban(commands.Cog):
                 await cur.execute("SELECT * FROM `gbanset` where `gid` = %s",(str(member.guild.id),))
                 res = await cur.fetchall()
                 if len(res) != 0:
-                    if res[1] == "off":
+                    if res[0][1] == "off":
                         return
                 await cur.execute("SELECT * FROM `gban` where `userid` = %s",(str(member.id),))
                 res = await cur.fetchall()
