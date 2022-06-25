@@ -29,7 +29,7 @@ class gban(commands.Cog):
                 res = await cur.fetchall()
                 await conn.commit()
                 if len(res) == 0:
-                    await cur.execute("INSERT INTO `gbsnset` (`gid`, `onoff`) VALUES (%s,%s);",(str(ctx.guild.id),onoff.replace("true","on")))
+                    await cur.execute("INSERT INTO `gbanset` (`gid`, `onoff`) VALUES (%s,%s);",(str(ctx.guild.id),onoff.replace("true","on")))
                 else:
                     await cur.execute("UPDATE `gbanset` SET `gid` = %s,`onoff` = %s,`role` = %s where `gid` = %s;",(str(ctx.guild.id),onoff.replace("true","on"),str(roleid),str(ctx.guild.id)))
                 await ctx.reply("設定しました")
