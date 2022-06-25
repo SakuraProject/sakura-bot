@@ -22,14 +22,14 @@ class gban(commands.Cog):
 
     @gban.command()
     @commands.has_permissions(administrator=True)
-    async def onoff(self, ctx):
+    async def onoff(self, ctx, onoff):
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
                 await cur.execute("SELECT * FROM `gbanset` where `gid` = %s",(str(ctx.guild.id),))
                 res = await cur.fetchall()
                 await conn.commit()
                 if len(res) == 0:
-                    await cur.execute("INSERT INTO `gbsnset` (`gid`, `onoff`, `role`) VALUES (%s,,%s);",(str(ctx.guild.id),onoff.replace("true","on")))
+                    await cur.execute("INSERT INTO `gbsnset` (`gid`, `onoff`) VALUES (%s,,%s);",(str(ctx.guild.id),onoff.replace("true","on")))
                 else:
                     await cur.execute("UPDATE `gbanset` SET `gid` = %s,`onoff` = %s,`role` = %s where `gid` = %s;",(str(ctx.guild.id),onoff.replace("true","on"),str(roleid),str(ctx.guild.id)))
                 await ctx.reply("設定しました")
