@@ -52,6 +52,8 @@ class bump(commands.Cog):
                             ebd = discord.Embed(color=self.bot.Color,description="bumpを確認しました。次回は<t:" + str(int(nof)) + ":R>です。時間になったら通知します")
                             await message.channel.send(embeds=[ebd])
         if message.author.id == 761562078095867916:
+            await asyncio.sleep(5)
+            message = await message.channel.fetch_message(message.id)
             if "をアップしたよ" in message.embeds[0].fields[0].name:
                 nof = time() + 3600
                 await self.save(message,"up",nof)
