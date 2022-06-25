@@ -27,7 +27,6 @@ class gban(commands.Cog):
             async with conn.cursor() as cur:
                 await cur.execute("SELECT * FROM `gbanset` where `gid` = %s",(str(ctx.guild.id),))
                 res = await cur.fetchall()
-                await conn.commit()
                 if len(res) == 0:
                     await cur.execute("INSERT INTO `gbanset` (`gid`, `onoff`) VALUES (%s,%s);",(str(ctx.guild.id),onoff.replace("true","on")))
                 else:
@@ -41,7 +40,6 @@ class gban(commands.Cog):
             async with conn.cursor() as cur:
                 await cur.execute("SELECT * FROM `gban` where `userid` = %s",(str(user_id),))
                 res = await cur.fetchall()
-                await conn.commit()
                 if len(res) != 0:
                     await ctx.send("そのユーザーはすでに登録されています")
                     return
@@ -58,7 +56,6 @@ class gban(commands.Cog):
                 for g in self.bot.guilds:
                     await cur.execute("SELECT * FROM `gbanset` where `gid` = %s",(str(g.id),))
                     res = await cur.fetchall()
-                    await conn.commit()
                     if len(res) != 0:
                         if res[1] == "off":
                             continue
@@ -73,7 +70,6 @@ class gban(commands.Cog):
             async with conn.cursor() as cur:
                 await cur.execute("SELECT * FROM `gban`")
                 res = await cur.fetchall()
-                await conn.commit()
                 if len(res) == 0:
                     await ctx.send("gbanされた人はまだいません")
                 else:
@@ -98,13 +94,11 @@ class gban(commands.Cog):
             async with conn.cursor() as cur:
                 await cur.execute("SELECT * FROM `gbanset` where `gid` = %s",(str(member.guild.id),))
                 res = await cur.fetchall()
-                await conn.commit()
                 if len(res) != 0:
                     if res[1] == "off":
                         return
                 await cur.execute("SELECT * FROM `gban` where `userid` = %s",(str(member.id),))
                 res = await cur.fetchall()
-                await conn.commit()
                 if len(res) != 0:
                     await member.ban(reason="Sakura gbanのため")
 
