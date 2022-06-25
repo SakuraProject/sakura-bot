@@ -10,7 +10,7 @@ class bump(commands.Cog):
         self.notifi.start()
     async def cog_load(self):
         ctsql = "CREATE TABLE if not exists `bump` ( `chid` BIGINT NOT NULL,`noftime` VARCHAR(100) NOT NULL,  `type` VARCHAR(45) NOT NULL,`gid` BIGINT NOT NULL) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin;"
-        ctsql1 = "CREATE TABLE if not exists `bumpset` ( `gid` BIGINT NOT NULL, `type` VARCHAR(100) NOT NULL, `onoff` VARCHAR(45) NOT NULL DEFAULT 'on', `role` BIGINT NOT NULL DEFAULT '0') ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin;"
+        ctsql1 = "CREATE TABLE if not exists `bumpset` ( `gid` BIGINT NOT NULL, `type` VARCHAR(100) NOT NULL, `onoff` VARCHAR(45) NOT NULL DEFAULT 'on', `role` BIGINT NOT NULL DEFAULT 0) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin;"
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
                 await cur.execute(ctsql)
@@ -28,7 +28,7 @@ class bump(commands.Cog):
                             await cur.execute("SELECT * FROM `bumpset` where `gid`=%s and `type`=%s",(str(message.guild.id),"toss"))
                             res1 = await cur.fetchall()
                             if len(res1) == 0:
-                                await cur.execute("INSERT INTO `bumpset` (`gid`, `type`, `onoff`) VALUES (%s,%s,%s);",(str(message.guild.id),"toss","on"))
+                                await cur.execute("INSERT INTO `bumpset` (`gid`, `type`, `onoff`) VALUES (%s,%s,%s);",(message.guild.id,"toss","on"))
                                 onoff = "on"
                             else:
                                 onoff = res1[0][2]
@@ -41,10 +41,10 @@ class bump(commands.Cog):
                 await self.save(message,"bump",nof)
                 async with self.bot.pool.acquire() as conn:
                     async with conn.cursor() as cur:
-                        await cur.execute("SELECT * FROM `bumpset` where `gid`=%s and `type`=%s",(str(message.guild.id),"bump"))
+                        await cur.execute("SELECT * FROM `bumpset` where `gid`=%s and `type`=%s",(message.guild.id,"bump"))
                         res1 = await cur.fetchall()
                         if len(res1) == 0:
-                            await cur.execute("INSERT INTO `bumpset` (`gid`, `type`, `onoff`) VALUES (%s,%s,%s);",(str(message.guild.id),"bump","on"))
+                            await cur.execute("INSERT INTO `bumpset` (`gid`, `type`, `onoff`) VALUES (%s,%s,%s);",(message.guild.id,"bump","on"))
                             onoff = "on"
                         else:
                             onoff = res1[0][2]
@@ -59,10 +59,10 @@ class bump(commands.Cog):
                 await self.save(message,"up",nof)
                 async with self.bot.pool.acquire() as conn:
                     async with conn.cursor() as cur:
-                        await cur.execute("SELECT * FROM `bumpset` where `gid`=%s and `type`=%s",(str(message.guild.id),"up"))
+                        await cur.execute("SELECT * FROM `bumpset` where `gid`=%s and `type`=%s",(message.guild.id,"up"))
                         res1 = await cur.fetchall()
                         if len(res1) == 0:
-                            await cur.execute("INSERT INTO `bumpset` (`gid`, `type`, `onoff`) VALUES (%s,%s,%s);",(str(message.guild.id),"up","on"))
+                            await cur.execute("INSERT INTO `bumpset` (`gid`, `type`, `onoff`) VALUES (%s,%s,%s);",(message.guild.id,"up","on"))
                             onoff = "on"
                         else:
                             onoff = res1[0][2]
@@ -75,10 +75,10 @@ class bump(commands.Cog):
                 await self.save(message,"raise",nof)
                 async with self.bot.pool.acquire() as conn:
                     async with conn.cursor() as cur:
-                        await cur.execute("SELECT * FROM `bumpset` where `gid`=%s and `type`=%s",(str(message.guild.id),"raise"))
+                        await cur.execute("SELECT * FROM `bumpset` where `gid`=%s and `type`=%s",(message.guild.id,"raise"))
                         res1 = await cur.fetchall()
                         if len(res1) == 0:
-                            await cur.execute("INSERT INTO `bumpset` (`gid`, `type`, `onoff`) VALUES (%s,%s,%s);",(str(message.guild.id),"raise","on"))
+                            await cur.execute("INSERT INTO `bumpset` (`gid`, `type`, `onoff`) VALUES (%s,%s,%s);",(message.guild.id,"raise","on"))
                             onoff = "on"
                         else:
                             onoff = res1[0][2]
@@ -91,10 +91,10 @@ class bump(commands.Cog):
                 await self.save(message,"frrtraise",nof)
                 async with self.bot.pool.acquire() as conn:
                     async with conn.cursor() as cur:
-                        await cur.execute("SELECT * FROM `bumpset` where `gid`=%s and `type`=%s",(str(message.guild.id),"frrtraise"))
+                        await cur.execute("SELECT * FROM `bumpset` where `gid`=%s and `type`=%s",(message.guild.id,"frrtraise"))
                         res1 = await cur.fetchall()
                         if len(res1) == 0:
-                            await cur.execute("INSERT INTO `bumpset` (`gid`, `type`, `onoff`) VALUES (%s,%s,%s);",(str(message.guild.id),"frrtraise","on"))
+                            await cur.execute("INSERT INTO `bumpset` (`gid`, `type`, `onoff`) VALUES (%s,%s,%s);",(message.guild.id,"frrtraise","on"))
                             onoff = "on"
                         else:
                             onoff = res1[0][2]
@@ -122,7 +122,7 @@ class bump(commands.Cog):
                     await cur.execute("SELECT * FROM `bumpset` where `gid`=%s and `type`=%s",(row[3],typ))
                     res1 = await cur.fetchall()
                     if len(res1) == 0:
-                        await cur.execute("INSERT INTO `bumpset` (`gid`, `type`, `onoff`) VALUES (%s,%s,%s);",(str(row[3]),typ,"on"))
+                        await cur.execute("INSERT INTO `bumpset` (`gid`, `type`, `onoff`) VALUES (%s,%s,%s);",(row[3],typ,"on"))
                         onoff = "on"
                     else:
                         onoff = res1[0][2]
@@ -140,7 +140,7 @@ class bump(commands.Cog):
     async def save(self, message, type, nof):
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
-                await cur.execute("INSERT INTO `bump` (`chid`, `noftime`, `type`, `gid`) VALUES (%s, %s, %s, %s);",(str(message.channel.id),str(nof),type,str(message.guild.id)))
+                await cur.execute("INSERT INTO `bump` (`chid`, `noftime`, `type`, `gid`) VALUES (%s, %s, %s, %s);",(message.channel.id,str(nof),type,message.guild.id))
                 await conn.commit()
 
     @commands.command()
