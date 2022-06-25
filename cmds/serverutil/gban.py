@@ -96,13 +96,13 @@ class gban(commands.Cog):
     async def on_member_join(self, member: discord.Member):
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
-                await cur.execute("SELECT * FROM `gbanset` where `gid` = %s",(str(member.id),))
+                await cur.execute("SELECT * FROM `gbanset` where `gid` = %s",(str(member.guild.id),))
                 res = await cur.fetchall()
                 await conn.commit()
                 if len(res) != 0:
                     if res[1] == "off":
                         return
-                await cur.execute("SELECT * FROM `gban` where `userid` = %s",(str(user_id),))
+                await cur.execute("SELECT * FROM `gban` where `userid` = %s",(str(member.id),))
                 res = await cur.fetchall()
                 await conn.commit()
                 if len(res) != 0:
@@ -138,14 +138,14 @@ class NextButton(discord.ui.View):
         self.page = 0
 
     @discord.ui.button(label="<")
-    async def left(self, interaction: discord.Interaction):
+    async def left(self, bt,interaction: discord.Interaction):
         if self.page != 0:
             self.page = self.page -1
             await interaction.response.edit_message(embeds=[self.it[self.page]],view=self)
         else:
             return await interaction.response.send_message("このページが最初です", ephemeral=True)
     @discord.ui.button(label=">")
-    async def right(self, interaction: discord.Interaction):
+    async def right(self, bt,interaction: discord.Interaction):
         if self.page != len(self.it) - 1:
             self.page = self.page + 1
             await interaction.response.edit_message(embeds=[self.it[self.page]],view=self)
