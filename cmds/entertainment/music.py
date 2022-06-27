@@ -322,7 +322,10 @@ class music(commands.Cog):
         if voice.is_playing():
             voice.stop()
             await ctx.send('キューを削除し一時停止しました')
-            self.queues[ctx.guild.id]=list()
+            for qp in self.queues[ctx.guild.id]:
+                qp.close()
+            self.queues[ctx.guild.id] = list()
+            self.lopq = list()
 
     @commands.command()
     async def resume(self,ctx):
@@ -360,7 +363,11 @@ class music(commands.Cog):
         voice = get(self.bot.voice_clients, guild=ctx.guild)
         await voice.disconnect()
         self.queues[ctx.guild.id]=list()
-
+        for qp in self.queues[ctx.guild.id]:
+            qp.close()
+        self.queues[ctx.guild.id] = list()
+        self.lopq = list()
+        await ctx.send('キューを削除し切断しました')
     @commands.command()
     async def nowplaying(self,ctx):
         ebd = discord.Embed(title="Now",color=self.bot.Color)
