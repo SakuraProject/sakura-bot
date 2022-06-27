@@ -140,7 +140,7 @@ class music(commands.Cog):
         else:
             voice = await channel.connect()
         def nextqueue(er):
-            asyncio.run_coroutine_threadsafe(asyncnextqueue(FFMPEG_OPTIONS,voice,ctx,nextqueue),loop)
+            asyncio.run_coroutine_threadsafe(self.asyncnextqueue(FFMPEG_OPTIONS,voice,ctx,nextqueue),loop)
         try:
             str(self.lop[ctx.guild.id])
         except KeyError:
@@ -254,7 +254,7 @@ class music(commands.Cog):
         else:
             voice = await channel.connect()
         def nextqueue(er):
-             asyncio.run_coroutine_threadsafe(asyncnextqueue(FFMPEG_OPTIONS,voice,ctx,nextqueue),loop)
+             asyncio.run_coroutine_threadsafe(self.asyncnextqueue(FFMPEG_OPTIONS,voice,ctx,nextqueue),loop)
         try:
             str(self.lop[ctx.guild.id])
         except KeyError:
