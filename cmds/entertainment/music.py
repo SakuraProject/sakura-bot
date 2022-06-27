@@ -307,7 +307,7 @@ class music(commands.Cog):
             for qp in self.queues[ctx.guild.id]:
                 qp.close()
             self.queues[ctx.guild.id] = list()
-            self.lopq = list()
+            self.lopq[ctx.guild.id] = list()
 
     @commands.command()
     async def resume(self,ctx):
@@ -348,7 +348,7 @@ class music(commands.Cog):
         for qp in self.queues[ctx.guild.id]:
             qp.close()
         self.queues[ctx.guild.id] = list()
-        self.lopq = list()
+        self.lopq[ctx.guild.id] = list()
         await ctx.send('キューを削除し切断しました')
     @commands.command()
     async def nowplaying(self,ctx):
