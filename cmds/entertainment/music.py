@@ -89,6 +89,7 @@ class Queue():
         #ニコニコ用
         if self.video != None:
             self.video.close()
+            
 
 class music(commands.Cog):
     def __init__(self, bot):
