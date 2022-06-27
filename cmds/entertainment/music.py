@@ -38,18 +38,21 @@ def restore(sid):
 class Queue():
     def __init__(self,url):
         self.url = url
+        self.video = None
     async def setdata(self):
         YDL_OPTIONS = {'format': 'bestaudio', 'noplaylist': 'True',"ignoreerrors": True,"cookiefile": "data/youtube.com_cookies.txt"}
         FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
         try:
             if "nicovideo.jp" in self.url or "nico.ms" in self.url:
+                if self.video != None:
+                    self.video.close()
                 video = niconico.video.get_video(self.url)
                 video.connect()
                 self.source = video.download_link
                 self.title = video.video.title
                 self.duration = video.video.duration
                 self.sid = "nico:" + video.video.id
-                video.close()
+                self.video = video
             elif "soundcloud" in self.url:
                 if "goo.gl" in self.url:
                     self.url = requests.get(self.url).url
@@ -82,7 +85,10 @@ class Queue():
         except Exception as e:
             print(str(e))
             print("Music Load Error")
-
+    def close(self):
+        #ニコニコ用
+        if self.video != None:
+            self.video.close()
 
 class music(commands.Cog):
     def __init__(self, bot):
@@ -136,6 +142,7 @@ class music(commands.Cog):
             if 0<len(self.queues[ctx.guild.id]):
                 if not voice.is_playing():
                     try:
+                        self.queues[ctx.guild.id][0].close()
                         self.queues[ctx.guild.id].pop(0)
                         qp = self.queues[ctx.guild.id][0]
                         asyncio.run_coroutine_threadsafe(qp.setdata(),loop)
@@ -247,6 +254,7 @@ class music(commands.Cog):
             if 0<len(self.queues[ctx.guild.id]):
                 if not voice.is_playing():
                     try:
+                        self.queues[ctx.guild.id][0].close()
                         self.queues[ctx.guild.id].pop(0)
                         qp = self.queues[ctx.guild.id][0]
                         asyncio.run_coroutine_threadsafe(qp.setdata(),loop)
