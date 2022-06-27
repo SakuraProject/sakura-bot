@@ -302,7 +302,7 @@ class music(commands.Cog):
     @commands.command()
     async def pause(self,ctx):
         voice = get(self.bot.voice_clients, guild=ctx.guild)
-        self.stop = time() - self.start
+        self.stopt = time() - self.start
         if voice.is_playing():
             voice.pause()
             await ctx.send('一時停止しました')
@@ -319,7 +319,7 @@ class music(commands.Cog):
     @commands.command()
     async def resume(self,ctx):
         voice = get(self.bot.voice_clients, guild=ctx.guild)
-        self.start = time() - self.stop
+        self.start = time() - self.stopt
         if not voice.is_playing():
             voice.resume()
             await ctx.send('再開しました')
