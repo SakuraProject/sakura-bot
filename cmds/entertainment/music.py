@@ -140,28 +140,7 @@ class music(commands.Cog):
         else:
             voice = await channel.connect()
         def nextqueue(er):
-            if 0<len(self.queues[ctx.guild.id]):
-                if not voice.is_playing():
-                    try:
-                        self.queues[ctx.guild.id][0].close()
-                        self.queues[ctx.guild.id].pop(0)
-                        qp = self.queues[ctx.guild.id][0]
-                        asyncio.run_coroutine_threadsafe(qp.setdata(),loop)
-                        self.start = time()
-                        voice.play(FFmpegPCMAudio(qp.source, **FFMPEG_OPTIONS),after=nextqueue)
-                        voice.is_playing()
-                        asyncio.run_coroutine_threadsafe(self.addc(qp),loop)
-                    except IndexError:
-                        if self.lop[ctx.guild.id]:
-                            self.queues[ctx.guild.id]=copy.copy(self.lopq[ctx.guild.id])
-                        else:
-                            return
-                        qp = self.queues[ctx.guild.id][0]
-                        asyncio.run_coroutine_threadsafe(qp.setdata(),loop)
-                        self.start = time()
-                        voice.play(FFmpegPCMAudio(qp.source, **FFMPEG_OPTIONS),after=nextqueue)
-                        voice.is_playing()
-                        asyncio.run_coroutine_threadsafe(self.addc(qp),loop)
+            asyncio.run_coroutine_threadsafe(asyncnextqueue(FFMPEG_OPTIONS,voice,ctx,nextqueue),loop)
         try:
             str(self.lop[ctx.guild.id])
         except KeyError:
@@ -239,6 +218,29 @@ class music(commands.Cog):
                 else:
                     ct = int(res[0][0]) + 1
                     await cur.execute("UPDATE `musicranking` SET `count` = %s,`vid` = %s where `vid` = %s;",(ct,qp.sid,qp.sid))
+    async def asyncnextqueue(FFMPEG_OPTIONS,voice,ctx,nextqueue):
+        if 0<len(self.queues[ctx.guild.id]):
+            if not voice.is_playing():
+                try:
+                    self.queues[ctx.guild.id][0].close()
+                    self.queues[ctx.guild.id].pop(0)
+                    qp = self.queues[ctx.guild.id][0]
+                    await qp.setdata()
+                    self.start = time()
+                    voice.play(FFmpegPCMAudio(qp.source, **FFMPEG_OPTIONS),after=nextqueue)
+                    voice.is_playing()
+                    await self.addc(qp)
+                except IndexError:
+                    if self.lop[ctx.guild.id]:
+                        self.queues[ctx.guild.id]=copy.copy(self.lopq[ctx.guild.id])
+                    else:
+                        return
+                    qp = self.queues[ctx.guild.id][0]
+                    await qp.setdata()
+                    self.start = time()
+                    voice.play(FFmpegPCMAudio(qp.source, **FFMPEG_OPTIONS),after=nextqueue)
+                    voice.is_playing()
+                    await self.addc(qp)
 
     @commands.command()
     async def playlist(self,ctx,name):
@@ -252,28 +254,7 @@ class music(commands.Cog):
         else:
             voice = await channel.connect()
         def nextqueue(er):
-            if 0<len(self.queues[ctx.guild.id]):
-                if not voice.is_playing():
-                    try:
-                        self.queues[ctx.guild.id][0].close()
-                        self.queues[ctx.guild.id].pop(0)
-                        qp = self.queues[ctx.guild.id][0]
-                        asyncio.run_coroutine_threadsafe(qp.setdata(),loop)
-                        self.start = time()
-                        voice.play(FFmpegPCMAudio(qp.source, **FFMPEG_OPTIONS),after=nextqueue)
-                        voice.is_playing()
-                        asyncio.run_coroutine_threadsafe(self.addc(qp),loop)
-                    except IndexError:
-                        if self.lop[ctx.guild.id]:
-                            self.queues[ctx.guild.id]=copy.copy(self.lopq[ctx.guild.id])
-                        else:
-                            return
-                        qp = self.queues[ctx.guild.id][0]
-                        asyncio.run_coroutine_threadsafe(qp.setdata(),loop)
-                        self.start = time()
-                        voice.play(FFmpegPCMAudio(qp.source, **FFMPEG_OPTIONS),after=nextqueue)
-                        voice.is_playing()
-                        asyncio.run_coroutine_threadsafe(self.addc(qp),loop)
+             asyncio.run_coroutine_threadsafe(asyncnextqueue(FFMPEG_OPTIONS,voice,ctx,nextqueue),loop)
         try:
             str(self.lop[ctx.guild.id])
         except KeyError:
