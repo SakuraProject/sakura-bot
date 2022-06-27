@@ -328,7 +328,7 @@ class music(commands.Cog):
         list=""
         for que in self.queues[ctx.guild.id]:
             list = list + "[" + que.title + "](" + que.url + ")\n"
-        embed=discord.Embed(title="Queue",description=list)
+        embed=discord.Embed(title="Queue",description=list,color=self.bot.Color)
         await ctx.send(embeds=[embed])
 
     @commands.command()
@@ -344,7 +344,7 @@ class music(commands.Cog):
                     await que.setdata()
                     list = list + str(i) + "位 [" + que.title + "](" + que.url + ")\n"
                     i = i + 1
-                embed=discord.Embed(title="よく聞かれている曲",description=list)
+                embed=discord.Embed(title="よく聞かれている曲",description=list,color=self.bot.Color)
                 await ctx.send(embeds=[embed])
 
     @commands.command()
@@ -379,7 +379,7 @@ class music(commands.Cog):
                     await que.setdata()
                     list = list + "No." + str(i) + "[" + que.title + "](" + que.url + ")\n"
                     i = i + 1
-                embed=discord.Embed(title=name,description=list)
+                embed=discord.Embed(title=name,description=list,color=self.bot.Color)
                 await ctx.send(embeds=[embed])
                 try:
                     while True:
