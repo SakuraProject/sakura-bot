@@ -39,7 +39,7 @@ class Queue():
     def __init__(self,url):
         self.url = url
     async def setdata(self):
-        YDL_OPTIONS = {'format': 'bestaudio', 'noplaylist': 'True',"ignoreerrors": True}
+        YDL_OPTIONS = {'format': 'bestaudio', 'noplaylist': 'True',"ignoreerrors": True,"cookiefile": "data/youtube.com_cookies.txt"}
         FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
         try:
             if "nicovideo.jp" in self.url or "nico.ms" in self.url:
@@ -123,7 +123,7 @@ class music(commands.Cog):
             return
         await self.pl(ctx,url)
     async def pl(self,ctx,url):
-        YDL_OPTIONS = {'format': 'bestaudio',"ignoreerrors": True}
+        YDL_OPTIONS = {'format': 'bestaudio',"ignoreerrors": True,"cookiefile": "data/youtube.com_cookies.txt"}
         FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
         loop =asyncio.get_event_loop()
         channel = ctx.message.author.voice.channel
@@ -234,7 +234,7 @@ class music(commands.Cog):
 
     @commands.command()
     async def playlist(self,ctx,name):
-        YDL_OPTIONS = {'format': 'bestaudio',"ignoreerrors": True}
+        YDL_OPTIONS = {'format': 'bestaudio',"ignoreerrors": True,"cookiefile": "data/youtube.com_cookies.txt"}
         FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
         loop =asyncio.get_event_loop()
         channel = ctx.message.author.voice.channel
@@ -417,7 +417,7 @@ class music(commands.Cog):
                             break
 class SearchList(discord.ui.Select):
     def __init__(self, ctx, cog, query):
-        YDL_OPTIONS = {'format': 'bestaudio',"ignoreerrors": True}
+        YDL_OPTIONS = {'format': 'bestaudio',"ignoreerrors": True,"cookiefile": "data/youtube.com_cookies.txt"}
         FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
         with YoutubeDL(YDL_OPTIONS) as ydl:
             info = ydl.extract_info("ytsearch10:" + query, download=False)
