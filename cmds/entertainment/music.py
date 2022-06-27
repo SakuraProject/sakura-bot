@@ -218,7 +218,7 @@ class music(commands.Cog):
                 else:
                     ct = int(res[0][0]) + 1
                     await cur.execute("UPDATE `musicranking` SET `count` = %s,`vid` = %s where `vid` = %s;",(ct,qp.sid,qp.sid))
-    async def asyncnextqueue(FFMPEG_OPTIONS,voice,ctx,nextqueue):
+    async def asyncnextqueue(self,FFMPEG_OPTIONS,voice,ctx,nextqueue):
         if 0<len(self.queues[ctx.guild.id]):
             if not voice.is_playing():
                 try:
