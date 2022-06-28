@@ -299,6 +299,18 @@ class music(commands.Cog):
 
     @commands.command()
     async def stop(self,ctx):
+        """
+        NLang ja 音楽の停止
+        再生されている音楽を停止します。
+        **使いかた：**
+        EVAL self.bot.command_prefix+'stop'
+        ELang ja
+        NLang default stop the music
+        stop the music
+        **how to use：**
+        EVAL self.bot.command_prefix+'stop'
+        ELang default
+        """
         voice = get(self.bot.voice_clients, guild=ctx.guild)
 
         if voice.is_playing():
@@ -326,6 +338,18 @@ class music(commands.Cog):
 
     @commands.command()
     async def musicranking(self,ctx):
+        """
+        NLang ja よく聞かれている曲のランキング
+        よく聞かれている曲のランキングを表示します。
+        **使いかた：**
+        EVAL self.bot.command_prefix+'musicranking'
+        ELang ja
+        NLang default show the ranking of music
+        show the ranking of the number of plays
+        **how to use：**
+        EVAL self.bot.command_prefix+'musicranking'
+        ELang default
+        """
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
                 await cur.execute("SELECT * FROM `musicranking` ORDER BY `count` desc limit 10")
