@@ -154,7 +154,7 @@ class CmdList(discord.ui.Select):
             ebd = hl["ebd"]
             view = discord.ui.View()
             view.add_item(CatList(self.cog))
-            view.add_item(CmdList(cmd.get_commands(),self.cog))
+            view.add_item(CmdList(list(cmd.commands),self.cog))
             await interaction.response.edit_message(embeds=[ebd],view=view)
 async def setup(bot):
     await bot.add_cog(help(bot))
