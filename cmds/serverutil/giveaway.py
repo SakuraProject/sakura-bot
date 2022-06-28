@@ -117,7 +117,6 @@ class giveaway(commands.Cog):
     async def join(self,ctx,code):
         giveaway_questions = ['どのチャンネルで開催する?',]
         giveaway_answers = []
-        # Checking to be sure the author is the one who answered and in which channel
         def check(m):
             return m.author == ctx.author and m.channel == ctx.channel
 
@@ -132,8 +131,6 @@ class giveaway(commands.Cog):
                 return
             else:
                 giveaway_answers.append(message.content)
-                # Grabbing the channel id from the giveaway_questions list and formatting is properly
-                # Displays an exception message if the host fails to mention the channel correctly
         try:
             c_id = int(giveaway_answers[0][2:-1])
         except:
