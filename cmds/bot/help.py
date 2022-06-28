@@ -18,7 +18,7 @@ class help(commands.Cog):
         EVAL self.bot.command_prefix+'help コマンド名'
         ELang ja
         NLang default SHow Help
-        Is the command you are running no
+        Is the command you are running now
         **How to use：**
         EVAL self.bot.command_prefix+'help'
         EVAL self.bot.command_prefix+'help command name'
