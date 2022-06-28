@@ -134,7 +134,7 @@ class CmdList(discord.ui.Select):
             if cm.parent == None:
                 options.append(discord.SelectOption(label=self.cog.bot.command_prefix + cm.name, description='',value=cm.name))
             else:
-                options.append(discord.SelectOption(label=self.cog.bot.command_prefix + cm.parent.name + " " + cm.name, description='',value=cm.parent + " " + cm.name))
+                options.append(discord.SelectOption(label=self.cog.bot.command_prefix + cm.parent.qualified_name + " " + cm.name, description='',value=cm.parent + " " + cm.name))
         super().__init__(placeholder='', min_values=1, max_values=1, options=options)
 
     async def callback(self, interaction: discord.Interaction):
