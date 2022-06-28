@@ -6,7 +6,7 @@ class help(commands.Cog):
     def __init__(self, bot):
         self.bot, self.before = bot, ""
         self.helps = dict()
-    @commands.group(
+    @commands.command(
         aliases=["ヘルプ"]
     )
     async def help(self, ctx: commands.Context,cmd = None,subcmd = None):
@@ -142,12 +142,19 @@ class CmdList(discord.ui.Select):
         val = self.values[0]
         cmd = bot.get_command(val)
         if type(cmd).__name__ == "Command" or type(cmd).__name__ == "HybridCommand":
-            hl = await self.cog.hpl(val)
+            if cmd.parent != None:
+                spl = val.split(" ")
+                hl = await self.cog.hpl(spl[0],spl[1])
+            else:
+                hl = await self.cog.hpl(val)
             ebd = hl["ebd"]
             await interaction.response.edit_message(embeds=[ebd])
         else:
-            spl = val.split(" ")
-            hl = await self.cog.hpl(spl[0],spl[1])
+            if cmd.parent != None:
+                spl = val.split(" ")
+                hl = await self.cog.hpl(spl[0],spl[1])
+            else:
+                hl = await self.cog.hpl(val)
             ebd = hl["ebd"]
             view = discord.ui.View()
             view.add_item(CatList(self.cog))
