@@ -141,7 +141,7 @@ class CmdList(discord.ui.Select):
         bot = self.cog.bot
         val = self.values[0]
         cmd = bot.get_command(val)
-        if cmd.parent == None:
+        if type(cmd).__name__ == "Command" or type(cmd).__name__ == "HybridCommand":
             hl = await self.cog.hpl(val)
             ebd = hl["ebd"]
             await interaction.response.edit_message(embeds=[ebd])
