@@ -8,7 +8,7 @@ from ujson import dumps
 
 load_dotenv()
 intent=discord.Intents.all()
-bot = commands.Bot(command_prefix='sk!',intents=intent)
+bot = commands.Bot(command_prefix='sk!',intents=intent,help_command=None)
 
 
 @bot.listen()
