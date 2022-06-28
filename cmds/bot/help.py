@@ -10,7 +10,7 @@ class help(commands.Cog):
         aliases=["ヘルプ"]
     )
     async def help(self, ctx: commands.Context,cmd = None,subcmd = None):
-        hl = await self.hpl(str(cmd),str(subcmd))
+        hl = await self.hpl(cmd,subcmd)
         view = discord.ui.View()
         view.add_item(CatList(self))
         await ctx.send(embeds=[hl["ebd"]],view=view)
