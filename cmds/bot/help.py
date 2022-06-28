@@ -150,11 +150,7 @@ class CmdList(discord.ui.Select):
             ebd = hl["ebd"]
             await interaction.response.edit_message(embeds=[ebd])
         else:
-            if cmd.parent != None:
-                spl = val.split(" ")
-                hl = await self.cog.hpl(spl[0],spl[1])
-            else:
-                hl = await self.cog.hpl(val)
+            hl = await self.cog.hpl(val)
             ebd = hl["ebd"]
             view = discord.ui.View()
             view.add_item(CatList(self.cog))
