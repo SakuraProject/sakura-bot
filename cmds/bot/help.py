@@ -6,11 +6,11 @@ class help(commands.Cog):
     def __init__(self, bot):
         self.bot, self.before = bot, ""
         self.helps = dict()
-    @commands.group(
+    @commands.command(
         aliases=["ヘルプ"]
     )
     async def help(self, ctx: commands.Context,cmd = None,subcmd = None):
-        hl = await self.hpl(str(cmd),str(subcmd))
+        hl = await self.hpl(cmd,subcmd)
         view = discord.ui.View()
         view.add_item(CatList(self))
         await ctx.send(embeds=[hl["ebd"]],view=view)
@@ -134,24 +134,27 @@ class CmdList(discord.ui.Select):
             if cm.parent == None:
                 options.append(discord.SelectOption(label=self.cog.bot.command_prefix + cm.name, description='',value=cm.name))
             else:
-                options.append(discord.SelectOption(label=self.cog.bot.command_prefix + cm.parent + " " + cm.name, description='',value=cm.parent + " " + cm.name))
+                options.append(discord.SelectOption(label=self.cog.bot.command_prefix + cm.parent.qualified_name + " " + cm.name, description='',value=cm.parent.qualified_name + " " + cm.name))
         super().__init__(placeholder='', min_values=1, max_values=1, options=options)
 
     async def callback(self, interaction: discord.Interaction):
         bot = self.cog.bot
         val = self.values[0]
         cmd = bot.get_command(val)
-        if cmd.parent == None:
-            hl = await self.cog.hpl(val)
+        if type(cmd).__name__ == "Command" or type(cmd).__name__ == "HybridCommand":
+            if cmd.parent != None:
+                spl = val.split(" ")
+                hl = await self.cog.hpl(spl[0],spl[1])
+            else:
+                hl = await self.cog.hpl(val)
             ebd = hl["ebd"]
             await interaction.response.edit_message(embeds=[ebd])
         else:
-            spl = val.split(" ")
-            hl = await self.cog.hpl(spl[0],spl[1])
+            hl = await self.cog.hpl(val)
             ebd = hl["ebd"]
             view = discord.ui.View()
             view.add_item(CatList(self.cog))
-            view.add_item(CmdList(cmd.get_commands(),self.cog))
+            view.add_item(CmdList(list(cmd.commands),self.cog))
             await interaction.response.edit_message(embeds=[ebd],view=view)
 async def setup(bot):
     await bot.add_cog(help(bot))
