@@ -337,6 +337,7 @@ class music(commands.Cog):
                     await que.setdata()
                     list = list + str(i) + "位 [" + que.title + "](" + que.url + ")\n"
                     i = i + 1
+                    que.close()
                 embed=discord.Embed(title="よく聞かれている曲",description=list,color=self.bot.Color)
                 await ctx.send(embeds=[embed])
 
@@ -376,6 +377,7 @@ class music(commands.Cog):
                     await que.setdata()
                     list = list + "No." + str(i) + "[" + que.title + "](" + que.url + ")\n"
                     i = i + 1
+                    que.close()
                 embed=discord.Embed(title=name,description=list,color=self.bot.Color)
                 await ctx.send(embeds=[embed])
                 try:
