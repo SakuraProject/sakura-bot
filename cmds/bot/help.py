@@ -145,7 +145,7 @@ class CmdList(discord.ui.Select):
         if cmd.parent == None:
             hl = await self.cog.hpl(val)
             ebd = hl["ebd"]
-            interaction.response.edit_message(embeds=[ebd])
+            await interaction.response.edit_message(embeds=[ebd])
         else:
             spl = val.split(" ")
             hl = await self.cog.hpl(spl[0],spl[1])
@@ -153,6 +153,6 @@ class CmdList(discord.ui.Select):
             view = discord.ui.View()
             view.add_item(CatList(self.cog))
             view.add_item(CmdList(cmd.get_commands(),self.cog))
-            interaction.response.edit_message(embeds=[ebd],view=view)
+            await interaction.response.edit_message(embeds=[ebd],view=view)
 async def setup(bot):
     await bot.add_cog(help(bot))
