@@ -10,16 +10,17 @@ class help(commands.Cog):
         aliases=["ヘルプ"]
     )
     async def help(self, ctx: commands.Context,cmd = None,subcmd = None):
-        hl = await self.hpl(cmd,subcmd)
+        hl = await self.hpl(str(cmd),str(subcmd))
         view = discord.ui.View()
         view.add_item(CatList(self))
         await ctx.send(embeds=[hl["ebd"]],view=view)
     async def hpl(self,cmd = None,subcmd = None):
         l = "ja"
+        sed = "これはBotのヘルプです。下の選択メニューからカテゴリを選ぶことによりコマンドを選択できます。これを見てもよくわからない方はサポートサーバーまでお問い合わせください"
         if cmd != None:
             if subcmd == None:
                 comd = self.bot.get_command(cmd)
-                if type(comd).__name__ == "Group":
+                if type(comd).__name__ == "Group" or type(comd).__name__ == "HybridGroup":
                     comds = list(comd.commands)
                     sed = ""
                     for gcm in comds:
@@ -42,7 +43,7 @@ class help(commands.Cog):
                         sed = "このコマンドの詳細はサポートサーバーでお問い合わせください"
             else:
                 comd = self.bot.get_command(cmd + " " + subcmd)
-                if type(comd).__name__ == "Command":
+                if type(comd).__name__ == "Command" or type(comd).__name__ == "HybridCommand":
                     if comd.callback.__doc__ != None:
                         doc = await self.parsedoc(comd.callback.__doc__)
                         try:
@@ -51,8 +52,6 @@ class help(commands.Cog):
                             sed = doc["desc"]["default"]
                     else:
                         sed = "このコマンドの詳細はサポートサーバーでお問い合わせください"
-        else:
-            sed = "これはBotのヘルプです。下の選択メニューからカテゴリを選ぶことによりコマンドを選択できます。これを見てもよくわからない方はサポートサーバーまでお問い合わせください"
         ebd = discord.Embed(color=self.bot.Color,description=sed)
         redic = dict()
         redic["ebd"]=ebd
