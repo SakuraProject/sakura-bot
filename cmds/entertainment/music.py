@@ -128,7 +128,7 @@ class music(commands.Cog):
         **使いかた：**
         EVAL self.bot.command_prefix+'play urlか検索ワード'
         ELang ja
-        NLang It is the command to play a music
+        NLang default It is the command to play a music
         It is the command to play a music.you must juin the voice channel if you use
         **how to use：**
         EVAL self.bot.command_prefix+'play url or search query'
