@@ -22,7 +22,7 @@ class speedtest(commands.Cog):
         """
         msg = await ctx.send("計測中、しばらくお待ちください")
         stest = Speedtest()
-        stest.get_best_server()
+        await self.bot.loop.run_in_executor(None,stest.get_best_server)
         up = await self.bot.loop.run_in_executor(None, stest.upload)
         dl = await self.bot.loop.run_in_executor(None, stest.download)
         ebd = discord.Embed(title="speedtest",description="**ダウンロード**:\n" + str(dl/1024/1024) + "Mbps\n**アップロード**:\n" + str(up/1024/1024) + "Mbps")
