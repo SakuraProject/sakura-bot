@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-import speedtest
+from speedtest import Speedtest
 
 class speedtest(commands.Cog):
     def __init__(self, bot):
@@ -21,7 +21,7 @@ class speedtest(commands.Cog):
         ELang default
         """
         msg = await ctx.send("計測中、しばらくお待ちください")
-        stest = speedtest.Speedtest()
+        stest = Speedtest()
         stest.get_best_server()
         up = await _bot.loop.run_in_executor(None, stest.upload)
         dl = await _bot.loop.run_in_executor(None, stest.download)
