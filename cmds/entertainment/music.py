@@ -122,6 +122,18 @@ class music(commands.Cog):
              await ctx.send("ループを設定しました")
     @commands.command()
     async def play(self,ctx,url):
+        """
+        NLang ja 音楽を再生します
+        音楽を再生します。このコマンドを使用する際は先にボイスチャンネルに接続してください。
+        **使いかた：**
+        EVAL self.bot.command_prefix+'play urlか検索ワード'
+        ELang ja
+        NLang It is the command to play a music
+        It is the command to play a music.you must juin the voice channel if you use
+        **how to use：**
+        EVAL self.bot.command_prefix+'play url or search query'
+        ELang default
+        """
         pattern="https?://[\w/:%#\$&\?\(\)~\.=\+\-]+"
         if not re.match(pattern,url):
             view=discord.ui.View()
