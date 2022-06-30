@@ -180,7 +180,7 @@ class infomation(commands.Cog):
                 send=send+':o:絵文字の管理\n'
             else:
                 send=send+':x:絵文字の管理\n'
-            if user.guild_permissions.use_slash_commands:
+            if user.guild_permissions.use_application_commands:
                 send=send+':o:アプリケーションコマンドの使用\n'
             else:
                 send=send+':x:アプリケーションコマンドの使用\n'
