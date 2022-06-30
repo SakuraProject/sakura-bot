@@ -3,18 +3,18 @@ from discord.ext import commands
 class infomation(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.user_badge = {"UserFlags.verified_bot_developer","<:verified_bot_developer:991964080292233306>","UserFlags.early_supporter":"<:early_supporter:991963681502003230>","UserFlags.staff":"<:discord_staff:991963642729869372>","UserFlags.partner":"<:partnered_server_owner:991964149884137472>","UserFlags.hypesquad":"<:discord_HypeSquad_disc:991962182604566639>","UserFlags.bug_hunter":"<:bug_hunter:991963877770276944>","UserFlags.hypesquad_bravery":"<:discord_hypesquad_bravery_disc:991962211641741392>","UserFlags.hypesquad_brilliance":"<:discord_hypesquad_briliance_disc:991962274816331796>","UserFlags.hypesquad_balance":"<:discord_hypesquad_balance_disc:991962200879157288>"}
+        self.user_badge = {"UserFlags.verified_bot_developer":"<:verified_bot_developer:991964080292233306>","UserFlags.early_supporter":"<:early_supporter:991963681502003230>","UserFlags.staff":"<:discord_staff:991963642729869372>","UserFlags.partner":"<:partnered_server_owner:991964149884137472>","UserFlags.hypesquad":"<:discord_HypeSquad_disc:991962182604566639>","UserFlags.bug_hunter":"<:bug_hunter:991963877770276944>","UserFlags.hypesquad_bravery":"<:discord_hypesquad_bravery_disc:991962211641741392>","UserFlags.hypesquad_brilliance":"<:discord_hypesquad_briliance_disc:991962274816331796>","UserFlags.hypesquad_balance":"<:discord_hypesquad_balance_disc:991962200879157288>"}
         self.bt = "<:discord_Bot_disc:991962236706885734>"
         self.vbt = "<:verified_bot:991963186234413139> <:system:991963778226847814>"
     @commands.command(
-        aliases=["ui","ƒ†[ƒU[î•ñ"]
+        aliases=["ui","ãƒ¦ãƒ¼ã‚¶ãƒ¼æƒ…å ±"]
     )
     async def userinfo(self, ctx: commands.Context,user:discord.User =None):
         """
-        NLang ja ƒ†[ƒU[î•ñ‚ğ•\¦‚·‚éƒRƒ}ƒ“ƒh‚Å‚·
-        ƒ†[ƒU[î•ñ‚ğ•\¦‚·‚éƒRƒ}ƒ“ƒh‚Å‚·
-        **g‚¢‚©‚½F**
-        EVAL self.bot.command_prefix+'userinfo ƒ†[ƒU[id'
+        NLang ja ãƒ¦ãƒ¼ã‚¶ãƒ¼æƒ…å ±ã‚’è¡¨ç¤ºã™ã‚‹ã‚³ãƒãƒ³ãƒ‰ã§ã™
+        ãƒ¦ãƒ¼ã‚¶ãƒ¼æƒ…å ±ã‚’è¡¨ç¤ºã™ã‚‹ã‚³ãƒãƒ³ãƒ‰ã§ã™
+        **ä½¿ã„ã‹ãŸï¼š**
+        EVAL self.bot.command_prefix+'userinfo ãƒ¦ãƒ¼ã‚¶ãƒ¼id'
         EVAL self.bot.command_prefix+'userinfo'
         ELang ja
         NLang default Sorry, this command only supports Japanese.
@@ -33,16 +33,16 @@ class infomation(commands.Cog):
                 name = name + self.vbt
             else:
                 name = name + self.bt
-        ebd = discord.Embed(title=user.name+'#'+user.discriminator+'‚Ìî•ñ',color=self.bot.Color)
+        ebd = discord.Embed(title=user.name+'#'+user.discriminator+'ã®æƒ…å ±',color=self.bot.Color)
         ebd.add_field(name="ID",value="```" + user.id + "```")
-        ebd.add_field(name="ƒAƒJƒEƒ“ƒgì¬“ú",value="<t:" + str(int(time.miktime(user.created_at.timetuple()))) + ":R>")
-        ebd.add_field(name="ƒAƒCƒRƒ“url",value=user.avatar.url)
+        ebd.add_field(name="ã‚¢ã‚«ã‚¦ãƒ³ãƒˆä½œæˆæ—¥",value="<t:" + str(int(time.miktime(user.created_at.timetuple()))) + ":R>")
+        ebd.add_field(name="ã‚¢ã‚¤ã‚³ãƒ³url",value=user.avatar.url)
         member = ctx.guild.get_user(user.id)
         if member != None:
             if meber.guild_avatar != None:
-                ebd.add_field(name="‚±‚ÌƒT[ƒo[‚Å‚ÌƒAƒCƒRƒ“url",value=member.guild_avatar.url)
-            ebd.add_field(name="•\¦–¼",value=user.member.display_name)
-            ebd.add_field(name="ƒT[ƒo[‚Ö‚ÌQ‰Á“ú",value="<t:" + str(int(time.mktime(user.member.joined_at.timetuple()))) + ":R>")
+                ebd.add_field(name="ã“ã®ã‚µãƒ¼ãƒãƒ¼ã§ã®ã‚¢ã‚¤ã‚³ãƒ³url",value=member.guild_avatar.url)
+            ebd.add_field(name="è¡¨ç¤ºå",value=user.member.display_name)
+            ebd.add_field(name="ã‚µãƒ¼ãƒãƒ¼ã¸ã®å‚åŠ æ—¥",value="<t:" + str(int(time.mktime(user.member.joined_at.timetuple()))) + ":R>")
         ebds.append(ebd)
         if member != None:
             user = member
@@ -50,163 +50,163 @@ class infomation(commands.Cog):
             for r in user.roles:
                 roles = roles + " " + r.mention
             if member.guild_permissions.administrator:
-                send=send+':o:ŠÇ—Ò\n'
+                send=send+':o:ç®¡ç†è€…\n'
             else:
-                send=send+':x:ŠÇ—Ò\n'
+                send=send+':x:ç®¡ç†è€…\n'
             if user.guild_permissions.ban_members:
-                send=send+':o:ƒ†[ƒU[‚ğban\n'
+                send=send+':o:ãƒ¦ãƒ¼ã‚¶ãƒ¼ã‚’ban\n'
             else:
-                send=send+':x:ƒ†[ƒU[‚ğban\n'
+                send=send+':x:ãƒ¦ãƒ¼ã‚¶ãƒ¼ã‚’ban\n'
             if user.guild_permissions.kick_members:
-                send=send+':o:ƒ†[ƒU[‚ğkick\n'
+                send=send+':o:ãƒ¦ãƒ¼ã‚¶ãƒ¼ã‚’kick\n'
             else:
-                send=send+':x:ƒ†[ƒU[‚ğkick\n'
+                send=send+':x:ãƒ¦ãƒ¼ã‚¶ãƒ¼ã‚’kick\n'
             if user.guild_permissions.manage_channels:
-                send=send+':o:ƒ`ƒƒƒ“ƒlƒ‹‚ÌŠÇ—\n'
+                send=send+':o:ãƒãƒ£ãƒ³ãƒãƒ«ã®ç®¡ç†\n'
             else:
-                send=send+':x:ƒ`ƒƒƒ“ƒlƒ‹‚ÌŠÇ—\n'
+                send=send+':x:ãƒãƒ£ãƒ³ãƒãƒ«ã®ç®¡ç†\n'
             if user.guild_permissions.create_instant_invite:
-                send=send+':o:µ‘ÒƒŠƒ“ƒN‚ğì¬\n'
+                send=send+':o:æ‹›å¾…ãƒªãƒ³ã‚¯ã‚’ä½œæˆ\n'
             else:
-                send=send+':x:µ‘ÒƒŠƒ“ƒN‚ğì¬\n'
+                send=send+':x:æ‹›å¾…ãƒªãƒ³ã‚¯ã‚’ä½œæˆ\n'
             if user.guild_permissions.manage_guild:
-                send=send+':o:ƒT[ƒo[‚ÌŠÇ—\n'
+                send=send+':o:ã‚µãƒ¼ãƒãƒ¼ã®ç®¡ç†\n'
             else:
-                send=send+':x:ƒT[ƒo[‚ÌŠÇ—\n'
+                send=send+':x:ã‚µãƒ¼ãƒãƒ¼ã®ç®¡ç†\n'
             if user.guild_permissions.view_audit_log:
-                send=send+':o:ŠÄ¸ƒƒO‚Ì•\¦\n'
+                send=send+':o:ç›£æŸ»ãƒ­ã‚°ã®è¡¨ç¤º\n'
             else:
-                send=send+':x:ŠÄ¸ƒƒO‚Ì•\¦\n'
+                send=send+':x:ç›£æŸ»ãƒ­ã‚°ã®è¡¨ç¤º\n'
             if user.guild_permissions.add_reactions:
-                send=send+':o:ƒŠƒAƒNƒVƒ‡ƒ“‚Ì’Ç‰Á\n'
+                send=send+':o:ãƒªã‚¢ã‚¯ã‚·ãƒ§ãƒ³ã®è¿½åŠ \n'
             else:
-                send=send+':x:ƒŠƒAƒNƒVƒ‡ƒ“‚Ì’Ç‰Á\n'
+                send=send+':x:ãƒªã‚¢ã‚¯ã‚·ãƒ§ãƒ³ã®è¿½åŠ \n'
             if user.guild_permissions.priority_speaker:
-                send=send+':o:—DæƒXƒs[ƒJ[\n'
+                send=send+':o:å„ªå…ˆã‚¹ãƒ”ãƒ¼ã‚«ãƒ¼\n'
             else:
-                send=send+':x:—DæƒXƒs[ƒJ[\n'
+                send=send+':x:å„ªå…ˆã‚¹ãƒ”ãƒ¼ã‚«ãƒ¼\n'
             if user.guild_permissions.stream:
-                send=send+':o:”zM\n'
+                send=send+':o:é…ä¿¡\n'
             else:
-                send=send+':x:”zM\n'
+                send=send+':x:é…ä¿¡\n'
             if user.guild_permissions.view_channel:
-                send=send+':o:ƒ`ƒƒƒ“ƒlƒ‹‚ğŒ©‚é\n'
+                send=send+':o:ãƒãƒ£ãƒ³ãƒãƒ«ã‚’è¦‹ã‚‹\n'
             else:
-                send=send+':x:ƒ`ƒƒƒ“ƒlƒ‹‚ğŒ©‚é\n'
+                send=send+':x:ãƒãƒ£ãƒ³ãƒãƒ«ã‚’è¦‹ã‚‹\n'
             if user.guild_permissions.read_message_history:
-                send=send+':o:ƒƒbƒZ[ƒW—š—ğ‚ğ“Ç‚Ş\n'
+                send=send+':o:ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸å±¥æ­´ã‚’èª­ã‚€\n'
             else:
-                send=send+':x:ƒƒbƒZ[ƒW—š—ğ‚ğ“Ç‚Ş\n'
+                send=send+':x:ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸å±¥æ­´ã‚’èª­ã‚€\n'
             if user.guild_permissions.send_messages:
-                send=send+':o:ƒƒbƒZ[ƒW‚Ì‘—M\n'
+                send=send+':o:ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã®é€ä¿¡\n'
             else:
-                send=send+':x:ƒƒbƒZ[ƒW‚Ì‘—M\n'
+                send=send+':x:ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã®é€ä¿¡\n'
             if user.guild_permissions.send_tts_messages:
-                send=send+':o:ttsƒRƒ}ƒ“ƒh‚Ìg—p\n'
+                send=send+':o:ttsã‚³ãƒãƒ³ãƒ‰ã®ä½¿ç”¨\n'
             else:
-                send=send+':x:ttsƒRƒ}ƒ“ƒh‚Ìg—p\n'
+                send=send+':x:ttsã‚³ãƒãƒ³ãƒ‰ã®ä½¿ç”¨\n'
             if user.guild_permissions.manage_messages:
-                send=send+':o:ƒƒbƒZ[ƒW‚ÌŠÇ—\n'
+                send=send+':o:ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã®ç®¡ç†\n'
             else:
-                send=send+':x:ƒƒbƒZ[ƒW‚ÌŠÇ—\n'
+                send=send+':x:ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã®ç®¡ç†\n'
             if user.guild_permissions.embed_links:
-                send=send+':o:–„‚ß‚İƒŠƒ“ƒN‚ğg—p\n'
+                send=send+':o:åŸ‹ã‚è¾¼ã¿ãƒªãƒ³ã‚¯ã‚’ä½¿ç”¨\n'
             else:
-                send=send+':x:–„‚ß‚İƒŠƒ“ƒN‚ğg—p\n'
+                send=send+':x:åŸ‹ã‚è¾¼ã¿ãƒªãƒ³ã‚¯ã‚’ä½¿ç”¨\n'
             if user.guild_permissions.attach_files:
-                send=send+':o:ƒtƒ@ƒCƒ‹‚ğ‘—M\n'
+                send=send+':o:ãƒ•ã‚¡ã‚¤ãƒ«ã‚’é€ä¿¡\n'
             else:
-                send=send+':x:ƒtƒ@ƒCƒ‹‚ğ‘—M\n'
+                send=send+':x:ãƒ•ã‚¡ã‚¤ãƒ«ã‚’é€ä¿¡\n'
             if user.guild_permissions.mention_everyone:
-                send=send+':o:‘S‚Ä‚Ìƒ[ƒ‹‚Éƒƒ“ƒVƒ‡ƒ“\n'
+                send=send+':o:å…¨ã¦ã®ãƒ­ãƒ¼ãƒ«ã«ãƒ¡ãƒ³ã‚·ãƒ§ãƒ³\n'
             else:
-                send=send+':x:‘S‚Ä‚Ìƒ[ƒ‹‚Éƒƒ“ƒVƒ‡ƒ“\n'
+                send=send+':x:å…¨ã¦ã®ãƒ­ãƒ¼ãƒ«ã«ãƒ¡ãƒ³ã‚·ãƒ§ãƒ³\n'
             if user.guild_permissions.use_external_emojis:
-                send=send+':o:ŠO•”‚ÌŠG•¶š‚Ìg—p\n'
+                send=send+':o:å¤–éƒ¨ã®çµµæ–‡å­—ã®ä½¿ç”¨\n'
             else:
-                send=send+':x:ŠO•”‚ÌŠG•¶š‚Ìg—p\n'
+                send=send+':x:å¤–éƒ¨ã®çµµæ–‡å­—ã®ä½¿ç”¨\n'
             if user.guild_permissions.use_external_stickers:
-                send=send+':o:ŠO•”‚ÌƒXƒ^ƒ“ƒv‚Ìg—p\n'
+                send=send+':o:å¤–éƒ¨ã®ã‚¹ã‚¿ãƒ³ãƒ—ã®ä½¿ç”¨\n'
             else:
-                send=send+':x:ŠO•”‚ÌƒXƒ^ƒ“ƒv‚Ìg—p\n'
+                send=send+':x:å¤–éƒ¨ã®ã‚¹ã‚¿ãƒ³ãƒ—ã®ä½¿ç”¨\n'
             if user.guild_permissions.view_guild_insights:
-                send=send+':o:ƒT[ƒo[ƒCƒ“ƒTƒCƒg‚Ì•\¦\n'
+                send=send+':o:ã‚µãƒ¼ãƒãƒ¼ã‚¤ãƒ³ã‚µã‚¤ãƒˆã®è¡¨ç¤º\n'
             else:
-                send=send+':x:ƒT[ƒo[ƒCƒ“ƒTƒCƒg‚Ì•\¦\n'
+                send=send+':x:ã‚µãƒ¼ãƒãƒ¼ã‚¤ãƒ³ã‚µã‚¤ãƒˆã®è¡¨ç¤º\n'
             if user.guild_permissions.connect:
-                send=send+':o:ƒ{ƒCƒXƒ`ƒƒƒ“ƒlƒ‹‚ÉÚ‘±\n'
+                send=send+':o:ãƒœã‚¤ã‚¹ãƒãƒ£ãƒ³ãƒãƒ«ã«æ¥ç¶š\n'
             else:
-                send=send+':x:ƒ{ƒCƒXƒ`ƒƒƒ“ƒlƒ‹‚ÉÚ‘±\n'
+                send=send+':x:ãƒœã‚¤ã‚¹ãƒãƒ£ãƒ³ãƒãƒ«ã«æ¥ç¶š\n'
             if user.guild_permissions.speak:
-                send=send+':o:ƒ{ƒCƒXƒ`ƒƒƒ“ƒlƒ‹‚Å”­Œ¾\n'
+                send=send+':o:ãƒœã‚¤ã‚¹ãƒãƒ£ãƒ³ãƒãƒ«ã§ç™ºè¨€\n'
             else:
-                send=send+':x:ƒ{ƒCƒXƒ`ƒƒƒ“ƒlƒ‹‚Å”­Œ¾\n'
+                send=send+':x:ãƒœã‚¤ã‚¹ãƒãƒ£ãƒ³ãƒãƒ«ã§ç™ºè¨€\n'
             if user.guild_permissions.mute_members:
-                send=send+':o:ƒƒ“ƒo[‚ğƒ~ƒ…[ƒg\n'
+                send=send+':o:ãƒ¡ãƒ³ãƒãƒ¼ã‚’ãƒŸãƒ¥ãƒ¼ãƒˆ\n'
             else:
-                send=send+':x:ƒƒ“ƒo[‚ğƒ~ƒ…[ƒg\n'
+                send=send+':x:ãƒ¡ãƒ³ãƒãƒ¼ã‚’ãƒŸãƒ¥ãƒ¼ãƒˆ\n'
             if user.guild_permissions.deafen_members:
-                send=send+':o:ƒƒ“ƒo[‚ÌƒXƒs[ƒJ[‚ğƒ~ƒ…[ƒg\n'
+                send=send+':o:ãƒ¡ãƒ³ãƒãƒ¼ã®ã‚¹ãƒ”ãƒ¼ã‚«ãƒ¼ã‚’ãƒŸãƒ¥ãƒ¼ãƒˆ\n'
             else:
-                send=send+':x:ƒƒ“ƒo[‚ÌƒXƒs[ƒJ[‚ğƒ~ƒ…[ƒg\n'
+                send=send+':x:ãƒ¡ãƒ³ãƒãƒ¼ã®ã‚¹ãƒ”ãƒ¼ã‚«ãƒ¼ã‚’ãƒŸãƒ¥ãƒ¼ãƒˆ\n'
             if user.guild_permissions.move_members:
-                send=send+':o:ƒƒ“ƒo[‚ÌˆÚ“®\n'
+                send=send+':o:ãƒ¡ãƒ³ãƒãƒ¼ã®ç§»å‹•\n'
             else:
-                send=send+':x:ƒƒ“ƒo[‚ÌˆÚ“®\n'
+                send=send+':x:ãƒ¡ãƒ³ãƒãƒ¼ã®ç§»å‹•\n'
             if user.guild_permissions.use_voice_activation:
-                send=send+':o:‰¹ºŒŸo‚Ìg—p\n'
+                send=send+':o:éŸ³å£°æ¤œå‡ºã®ä½¿ç”¨\n'
             else:
-                send=send+':x:‰¹ºŒŸo‚Ìg—p\n'
+                send=send+':x:éŸ³å£°æ¤œå‡ºã®ä½¿ç”¨\n'
             if user.guild_permissions.change_nickname:
-                send=send+':o:ƒjƒbƒNƒl[ƒ€‚Ì•ÏX\n'
+                send=send+':o:ãƒ‹ãƒƒã‚¯ãƒãƒ¼ãƒ ã®å¤‰æ›´\n'
             else:
-                send=send+':x:ƒjƒbƒNƒl[ƒ€‚Ì•ÏX\n'
+                send=send+':x:ãƒ‹ãƒƒã‚¯ãƒãƒ¼ãƒ ã®å¤‰æ›´\n'
             if user.guild_permissions.manage_nicknames:
-                send=send+':o:ƒjƒbƒNƒl[ƒ€‚ÌŠÇ—\n'
+                send=send+':o:ãƒ‹ãƒƒã‚¯ãƒãƒ¼ãƒ ã®ç®¡ç†\n'
             else:
-                send=send+':x:ƒjƒbƒNƒl[ƒ€‚ÌŠÇ—\n'
+                send=send+':x:ãƒ‹ãƒƒã‚¯ãƒãƒ¼ãƒ ã®ç®¡ç†\n'
             if user.guild_permissions.manage_permissions:
-                send=send+':o:ƒ[ƒ‹‚ÌŠÇ—\n'
+                send=send+':o:ãƒ­ãƒ¼ãƒ«ã®ç®¡ç†\n'
             else:
-                send=send+':x:ƒ[ƒ‹‚ÌŠÇ—\n'
+                send=send+':x:ãƒ­ãƒ¼ãƒ«ã®ç®¡ç†\n'
             if user.guild_permissions.manage_webhooks:
-                send=send+':o:ƒEƒFƒuƒtƒbƒN‚ÌŠÇ—\n'
+                send=send+':o:ã‚¦ã‚§ãƒ–ãƒ•ãƒƒã‚¯ã®ç®¡ç†\n'
             else:
-                send=send+':x:ƒEƒFƒuƒtƒbƒN‚ÌŠÇ—\n'
+                send=send+':x:ã‚¦ã‚§ãƒ–ãƒ•ãƒƒã‚¯ã®ç®¡ç†\n'
             if user.guild_permissions.manage_emojis_and_stickers:
-                send=send+':o:ŠG•¶š‚ÌŠÇ—\n'
+                send=send+':o:çµµæ–‡å­—ã®ç®¡ç†\n'
             else:
-                send=send+':x:ŠG•¶š‚ÌŠÇ—\n'
+                send=send+':x:çµµæ–‡å­—ã®ç®¡ç†\n'
             if user.guild_permissions.use_slash_commands:
-                send=send+':o:ƒAƒvƒŠƒP[ƒVƒ‡ƒ“ƒRƒ}ƒ“ƒh‚Ìg—p\n'
+                send=send+':o:ã‚¢ãƒ—ãƒªã‚±ãƒ¼ã‚·ãƒ§ãƒ³ã‚³ãƒãƒ³ãƒ‰ã®ä½¿ç”¨\n'
             else:
-                send=send+':x:ƒAƒvƒŠƒP[ƒVƒ‡ƒ“ƒRƒ}ƒ“ƒh‚Ìg—p\n'
+                send=send+':x:ã‚¢ãƒ—ãƒªã‚±ãƒ¼ã‚·ãƒ§ãƒ³ã‚³ãƒãƒ³ãƒ‰ã®ä½¿ç”¨\n'
             if user.guild_permissions.request_to_speak:
-                send=send+':o:ƒXƒs[ƒJ[Q‰Á‚ğƒŠƒNƒGƒXƒg\n'
+                send=send+':o:ã‚¹ãƒ”ãƒ¼ã‚«ãƒ¼å‚åŠ ã‚’ãƒªã‚¯ã‚¨ã‚¹ãƒˆ\n'
             else:
-                send=send+':x:ƒXƒs[ƒJ[Q‰Á‚ğƒŠƒNƒGƒXƒg\n'
+                send=send+':x:ã‚¹ãƒ”ãƒ¼ã‚«ãƒ¼å‚åŠ ã‚’ãƒªã‚¯ã‚¨ã‚¹ãƒˆ\n'
             if user.guild_permissions.manage_events:
-                send=send+':o:ƒCƒxƒ“ƒg‚ÌŠÇ—\n'
+                send=send+':o:ã‚¤ãƒ™ãƒ³ãƒˆã®ç®¡ç†\n'
             else:
-                send=send+':x:ƒCƒxƒ“ƒg‚ÌŠÇ—\n'
+                send=send+':x:ã‚¤ãƒ™ãƒ³ãƒˆã®ç®¡ç†\n'
             if user.guild_permissions.manage_threads:
-                send=send+':o:ƒXƒŒƒbƒh‚ÌŠÇ—\n'
+                send=send+':o:ã‚¹ãƒ¬ãƒƒãƒ‰ã®ç®¡ç†\n'
             else:
-                send=send+':x:ƒXƒŒƒbƒh‚ÌŠÇ—\n'
+                send=send+':x:ã‚¹ãƒ¬ãƒƒãƒ‰ã®ç®¡ç†\n'
             if user.guild_permissions.create_public_threads:
-                send=send+':o:ŒöŠJƒXƒŒƒbƒh‚Ìì¬\n'
+                send=send+':o:å…¬é–‹ã‚¹ãƒ¬ãƒƒãƒ‰ã®ä½œæˆ\n'
             else:
-                send=send+':x:ŒöŠJƒXƒŒƒbƒh‚Ìì¬\n'
+                send=send+':x:å…¬é–‹ã‚¹ãƒ¬ãƒƒãƒ‰ã®ä½œæˆ\n'
             if user.guild_permissions.create_private_threads:
-                send=send+':o:”ñŒöŠJƒXƒŒƒbƒh‚Ìì¬\n'
+                send=send+':o:éå…¬é–‹ã‚¹ãƒ¬ãƒƒãƒ‰ã®ä½œæˆ\n'
             else:
-                send=send+':x:”ñŒöŠJƒXƒŒƒbƒh‚Ìì¬\n'
+                send=send+':x:éå…¬é–‹ã‚¹ãƒ¬ãƒƒãƒ‰ã®ä½œæˆ\n'
             if user.guild_permissions.send_messages_in_threads:
-                send=send+':o:ƒXƒŒƒbƒh‚ÅƒƒbƒZ[ƒW‚ğ‘—M\n'
+                send=send+':o:ã‚¹ãƒ¬ãƒƒãƒ‰ã§ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã‚’é€ä¿¡\n'
             else:
-                send=send+':x:ƒXƒŒƒbƒh‚ÅƒƒbƒZ[ƒW‚ğ‘—M\n'
-            perms = discord.Embed(title=user.name+'#'+user.discriminator+'‚ÌŒ ŒÀ',description=send,color=self.bot.Color)
-            rls = discord.Embed(title=user.name+'#'+user.discriminator+'‚Ìƒ[ƒ‹',description=roles,color=self.bot.Color)
+                send=send+':x:ã‚¹ãƒ¬ãƒƒãƒ‰ã§ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã‚’é€ä¿¡\n'
+            perms = discord.Embed(title=user.name+'#'+user.discriminator+'ã®æ¨©é™',description=send,color=self.bot.Color)
+            rls = discord.Embed(title=user.name+'#'+user.discriminator+'ã®ãƒ­ãƒ¼ãƒ«',description=roles,color=self.bot.Color)
             ebds.append(rls)
             ebds.append(perms)
         alm = discord.AllowedMentions.none()
