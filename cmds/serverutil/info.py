@@ -56,159 +56,159 @@ class infomation(commands.Cog):
             for r in user.roles:
                 roles = roles + " " + r.mention
             if member.guild_permissions.administrator:
-                send=send+':o:管理者\n'
+                send=send+':white_check_mark:管理者\n'
             else:
                 send=send+':x:管理者\n'
             if user.guild_permissions.ban_members:
-                send=send+':o:ユーザーをban\n'
+                send=send+':white_check_mark:ユーザーをban\n'
             else:
                 send=send+':x:ユーザーをban\n'
             if user.guild_permissions.kick_members:
-                send=send+':o:ユーザーをkick\n'
+                send=send+':white_check_mark:ユーザーをkick\n'
             else:
                 send=send+':x:ユーザーをkick\n'
             if user.guild_permissions.manage_channels:
-                send=send+':o:チャンネルの管理\n'
+                send=send+':white_check_mark:チャンネルの管理\n'
             else:
                 send=send+':x:チャンネルの管理\n'
             if user.guild_permissions.create_instant_invite:
-                send=send+':o:招待リンクを作成\n'
+                send=send+':white_check_mark:招待リンクを作成\n'
             else:
                 send=send+':x:招待リンクを作成\n'
             if user.guild_permissions.manage_guild:
-                send=send+':o:サーバーの管理\n'
+                send=send+':white_check_mark:サーバーの管理\n'
             else:
                 send=send+':x:サーバーの管理\n'
             if user.guild_permissions.view_audit_log:
-                send=send+':o:監査ログの表示\n'
+                send=send+':white_check_mark:監査ログの表示\n'
             else:
                 send=send+':x:監査ログの表示\n'
             if user.guild_permissions.add_reactions:
-                send=send+':o:リアクションの追加\n'
+                send=send+':white_check_mark:リアクションの追加\n'
             else:
                 send=send+':x:リアクションの追加\n'
             if user.guild_permissions.priority_speaker:
-                send=send+':o:優先スピーカー\n'
+                send=send+':white_check_mark:優先スピーカー\n'
             else:
                 send=send+':x:優先スピーカー\n'
             if user.guild_permissions.stream:
-                send=send+':o:配信\n'
+                send=send+':white_check_mark:配信\n'
             else:
                 send=send+':x:配信\n'
             if user.guild_permissions.view_channel:
-                send=send+':o:チャンネルを見る\n'
+                send=send+':white_check_mark:チャンネルを見る\n'
             else:
                 send=send+':x:チャンネルを見る\n'
             if user.guild_permissions.read_message_history:
-                send=send+':o:メッセージ履歴を読む\n'
+                send=send+':white_check_mark:メッセージ履歴を読む\n'
             else:
                 send=send+':x:メッセージ履歴を読む\n'
             if user.guild_permissions.send_messages:
-                send=send+':o:メッセージの送信\n'
+                send=send+':white_check_mark:メッセージの送信\n'
             else:
                 send=send+':x:メッセージの送信\n'
             if user.guild_permissions.send_tts_messages:
-                send=send+':o:ttsコマンドの使用\n'
+                send=send+':white_check_mark:ttsコマンドの使用\n'
             else:
                 send=send+':x:ttsコマンドの使用\n'
             if user.guild_permissions.manage_messages:
-                send=send+':o:メッセージの管理\n'
+                send=send+':white_check_mark:メッセージの管理\n'
             else:
                 send=send+':x:メッセージの管理\n'
             if user.guild_permissions.embed_links:
-                send=send+':o:埋め込みリンクを使用\n'
+                send=send+':white_check_mark:埋め込みリンクを使用\n'
             else:
                 send=send+':x:埋め込みリンクを使用\n'
             if user.guild_permissions.attach_files:
-                send=send+':o:ファイルを送信\n'
+                send=send+':white_check_mark:ファイルを送信\n'
             else:
                 send=send+':x:ファイルを送信\n'
             if user.guild_permissions.mention_everyone:
-                send=send+':o:全てのロールにメンション\n'
+                send=send+':white_check_mark:全てのロールにメンション\n'
             else:
                 send=send+':x:全てのロールにメンション\n'
             if user.guild_permissions.use_external_emojis:
-                send=send+':o:外部の絵文字の使用\n'
+                send=send+':white_check_mark:外部の絵文字の使用\n'
             else:
                 send=send+':x:外部の絵文字の使用\n'
             if user.guild_permissions.use_external_stickers:
-                send=send+':o:外部のスタンプの使用\n'
+                send=send+':white_check_mark:外部のスタンプの使用\n'
             else:
                 send=send+':x:外部のスタンプの使用\n'
             if user.guild_permissions.view_guild_insights:
-                send=send+':o:サーバーインサイトの表示\n'
+                send=send+':white_check_mark:サーバーインサイトの表示\n'
             else:
                 send=send+':x:サーバーインサイトの表示\n'
             if user.guild_permissions.connect:
-                send=send+':o:ボイスチャンネルに接続\n'
+                send=send+':white_check_mark:ボイスチャンネルに接続\n'
             else:
                 send=send+':x:ボイスチャンネルに接続\n'
             if user.guild_permissions.speak:
-                send=send+':o:ボイスチャンネルで発言\n'
+                send=send+':white_check_mark:ボイスチャンネルで発言\n'
             else:
                 send=send+':x:ボイスチャンネルで発言\n'
             if user.guild_permissions.mute_members:
-                send=send+':o:メンバーをミュート\n'
+                send=send+':white_check_mark:メンバーをミュート\n'
             else:
                 send=send+':x:メンバーをミュート\n'
             if user.guild_permissions.deafen_members:
-                send=send+':o:メンバーのスピーカーをミュート\n'
+                send=send+':white_check_mark:メンバーのスピーカーをミュート\n'
             else:
                 send=send+':x:メンバーのスピーカーをミュート\n'
             if user.guild_permissions.move_members:
-                send=send+':o:メンバーの移動\n'
+                send=send+':white_check_mark:メンバーの移動\n'
             else:
                 send=send+':x:メンバーの移動\n'
             if user.guild_permissions.use_voice_activation:
-                send=send+':o:音声検出の使用\n'
+                send=send+':white_check_mark:音声検出の使用\n'
             else:
                 send=send+':x:音声検出の使用\n'
             if user.guild_permissions.change_nickname:
-                send=send+':o:ニックネームの変更\n'
+                send=send+':white_check_mark:ニックネームの変更\n'
             else:
                 send=send+':x:ニックネームの変更\n'
             if user.guild_permissions.manage_nicknames:
-                send=send+':o:ニックネームの管理\n'
+                send=send+':white_check_mark:ニックネームの管理\n'
             else:
                 send=send+':x:ニックネームの管理\n'
             if user.guild_permissions.manage_permissions:
-                send=send+':o:ロールの管理\n'
+                send=send+':white_check_mark:ロールの管理\n'
             else:
                 send=send+':x:ロールの管理\n'
             if user.guild_permissions.manage_webhooks:
-                send=send+':o:ウェブフックの管理\n'
+                send=send+':white_check_mark:ウェブフックの管理\n'
             else:
                 send=send+':x:ウェブフックの管理\n'
             if user.guild_permissions.manage_emojis_and_stickers:
-                send=send+':o:絵文字の管理\n'
+                send=send+':white_check_mark:絵文字の管理\n'
             else:
                 send=send+':x:絵文字の管理\n'
             if user.guild_permissions.use_application_commands:
-                send=send+':o:アプリケーションコマンドの使用\n'
+                send=send+':white_check_mark:アプリケーションコマンドの使用\n'
             else:
                 send=send+':x:アプリケーションコマンドの使用\n'
             if user.guild_permissions.request_to_speak:
-                send=send+':o:スピーカー参加をリクエスト\n'
+                send=send+':white_check_mark:スピーカー参加をリクエスト\n'
             else:
                 send=send+':x:スピーカー参加をリクエスト\n'
             if user.guild_permissions.manage_events:
-                send=send+':o:イベントの管理\n'
+                send=send+':white_check_mark:イベントの管理\n'
             else:
                 send=send+':x:イベントの管理\n'
             if user.guild_permissions.manage_threads:
-                send=send+':o:スレッドの管理\n'
+                send=send+':white_check_mark:スレッドの管理\n'
             else:
                 send=send+':x:スレッドの管理\n'
             if user.guild_permissions.create_public_threads:
-                send=send+':o:公開スレッドの作成\n'
+                send=send+':white_check_mark:公開スレッドの作成\n'
             else:
                 send=send+':x:公開スレッドの作成\n'
             if user.guild_permissions.create_private_threads:
-                send=send+':o:非公開スレッドの作成\n'
+                send=send+':white_check_mark:非公開スレッドの作成\n'
             else:
                 send=send+':x:非公開スレッドの作成\n'
             if user.guild_permissions.send_messages_in_threads:
-                send=send+':o:スレッドでメッセージを送信\n'
+                send=send+':white_check_mark:スレッドでメッセージを送信\n'
             else:
                 send=send+':x:スレッドでメッセージを送信\n'
             perms = discord.Embed(title=user.name+'#'+user.discriminator+'の権限',description=send,color=self.bot.Color)
