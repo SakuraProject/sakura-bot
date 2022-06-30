@@ -45,6 +45,7 @@ class infomation(commands.Cog):
                 ebd.add_field(name="このサーバーでのアイコンurl",value=member.guild_avatar.url)
             ebd.add_field(name="表示名",value=member.display_name)
             ebd.add_field(name="サーバーへの参加日",value="<t:" + str(int(time.mktime(member.joined_at.timetuple()))) + ":R>")
+        ebd.set_thumbnail(url=user.avatar.url)
         ebds.append(ebd)
         if member != None:
             send = ""
