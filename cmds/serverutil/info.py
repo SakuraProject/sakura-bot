@@ -1,6 +1,5 @@
 import discord
 from discord.ext import commands
-import time
 
 class infomation(commands.Cog):
     def __init__(self, bot):
@@ -39,14 +38,14 @@ class infomation(commands.Cog):
         if badge != "":
             ebd.add_field(name="バッジ",value=badge)
         ebd.add_field(name="ID",value="```" + str(user.id) + "```")
-        ebd.add_field(name="アカウント作成日",value="<t:" + str(int(time.mktime(user.created_at.timetuple()))) + ":R>")
+        ebd.add_field(name="アカウント作成日",value=discord.utils.format_dt(user.created_at))
         ebd.add_field(name="アイコンurl",value=user.avatar.url)
         member = ctx.guild.get_member(user.id)
         if member != None:
             if member.guild_avatar != None:
                 ebd.add_field(name="このサーバーでのアイコンurl",value=member.guild_avatar.url)
             ebd.add_field(name="表示名",value=member.display_name)
-            ebd.add_field(name="サーバーへの参加日",value="<t:" + str(int(time.mktime(member.joined_at.timetuple()))) + ":R>")
+            ebd.add_field(name="サーバーへの参加日",value=discord.utils.format_dt(user.joined_at))
         ebd.set_thumbnail(url=user.avatar.url)
         ebds.append(ebd)
         if member != None:
