@@ -39,7 +39,7 @@ class infomation(commands.Cog):
         ebd.add_field(name="ID",value="```" + str(user.id) + "```")
         ebd.add_field(name="アカウント作成日",value="<t:" + str(int(time.mktime(user.created_at.timetuple()))) + ":R>")
         ebd.add_field(name="アイコンurl",value=user.avatar.url)
-        member = ctx.guild.get_user(user.id)
+        member = ctx.guild.get_(user.id)
         if member != None:
             if meber.guild_avatar != None:
                 ebd.add_field(name="このサーバーでのアイコンurl",value=member.guild_avatar.url)
