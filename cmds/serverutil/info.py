@@ -47,6 +47,7 @@ class infomation(commands.Cog):
             ebd.add_field(name="サーバーへの参加日",value="<t:" + str(int(time.mktime(member.joined_at.timetuple()))) + ":R>")
         ebds.append(ebd)
         if member != None:
+            send = ""
             user = member
             roles = ""
             for r in user.roles:
