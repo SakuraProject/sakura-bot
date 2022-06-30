@@ -35,7 +35,7 @@ class infomation(commands.Cog):
                 name = name + self.vbt
             else:
                 name = name + self.bt
-        ebd = discord.Embed(title=user.name+'#'+user.discriminator+'の情報',color=self.bot.Color)
+        ebd = discord.Embed(title=name+'の情報',color=self.bot.Color)
         if badge != "":
             ebd.add_field(name="バッジ",value=badge)
         ebd.add_field(name="ID",value="```" + str(user.id) + "```")
