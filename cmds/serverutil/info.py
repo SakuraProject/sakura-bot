@@ -28,7 +28,7 @@ class infomation(commands.Cog):
             user = ctx.author
         badge = ""
         for flg in user.public_flags.all():
-             badge = self.user_badge.get(flg,"")
+             badge = badge +  self.user_badge.get(flg,"")
         name = user.name+'#'+user.discriminator
         if user.bot:
             if user.public_flags.verified_bot:
@@ -36,7 +36,8 @@ class infomation(commands.Cog):
             else:
                 name = name + self.bt
         ebd = discord.Embed(title=user.name+'#'+user.discriminator+'の情報',color=self.bot.Color)
-        ebd.add_field(name="バッジ",value=badge)
+        if badge != "":
+            ebd.add_field(name="バッジ",value=badge)
         ebd.add_field(name="ID",value="```" + str(user.id) + "```")
         ebd.add_field(name="アカウント作成日",value="<t:" + str(int(time.mktime(user.created_at.timetuple()))) + ":R>")
         ebd.add_field(name="アイコンurl",value=user.avatar.url)
