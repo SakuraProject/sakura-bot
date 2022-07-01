@@ -121,7 +121,7 @@ class music(commands.Cog):
              self.lopq[ctx.guild.id]=copy.copy(self.queues[ctx.guild.id])
              await ctx.send("ループを設定しました")
     @commands.command()
-    async def play(self,ctx,url):
+    async def play(self,ctx,*,url):
         """
         NLang ja 音楽を再生します
         音楽を再生します。このコマンドを使用する際は先にボイスチャンネルに接続してください。
@@ -255,7 +255,7 @@ class music(commands.Cog):
                     await self.addc(qp)
 
     @commands.command()
-    async def playlist(self,ctx,name):
+    async def playlist(self,ctx,*,name):
         YDL_OPTIONS = {'format': 'bestaudio',"ignoreerrors": True,"cookiefile": "data/youtube.com_cookies.txt"}
         FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
         loop =asyncio.get_event_loop()
