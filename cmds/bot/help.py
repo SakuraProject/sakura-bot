@@ -10,6 +10,20 @@ class help(commands.Cog):
         aliases=["ヘルプ"]
     )
     async def help(self, ctx: commands.Context,cmd = None,subcmd = None):
+        """
+        NLang ja ヘルプを表示します
+        あなたが今実行しているコマンドです。ヘルプを表示します
+        **使いかた：**
+        EVAL self.bot.command_prefix+'help'
+        EVAL self.bot.command_prefix+'help コマンド名'
+        ELang ja
+        NLang default SHow Help
+        Is the command you are running now
+        **How to use：**
+        EVAL self.bot.command_prefix+'help'
+        EVAL self.bot.command_prefix+'help command name'
+        ELang default
+        """
         hl = await self.hpl(cmd,subcmd)
         view = discord.ui.View()
         view.add_item(CatList(self))
