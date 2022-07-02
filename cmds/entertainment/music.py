@@ -279,7 +279,7 @@ class music(commands.Cog):
             async with conn.cursor() as cur:
                 await cur.execute("SELECT * FROM `musiclist` where `userid` = %s and `lname` = %s",(ctx.author.id,name))
                 res = await cur.fetchall()
-                for row in self.queues[ctx.guild.id]:
+                for row in :
                     qp = Queue(restore(row[1]))
                     await qp.setdata()
                     if self.lop[ctx.guild.id]:
