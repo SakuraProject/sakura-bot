@@ -59,8 +59,11 @@ class gban(commands.Cog):
                     if len(res) != 0:
                         if res[0][1] == "off":
                             continue
-                    await g.ban(await self.bot.fetch_user(user_id),reason="sakura gbanのため")
-                    await asyncio.sleep(1)
+                    try:
+                        await g.ban(await self.bot.fetch_user(user_id),reason="sakura gbanのため")
+                        await asyncio.sleep(1)
+                    except Exception as e:
+                        await ctx.send(str(e) + '\n' + str(g.id))
                 await cur.execute("INSERT INTO `gban` (`userid`,`reason`,`evidence`) VALUES (%s,%s,%s);",(user_id,reason,evif))
                 await ctx.send("完了しました")
 
