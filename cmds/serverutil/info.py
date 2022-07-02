@@ -27,7 +27,7 @@ class infomation(commands.Cog):
             user = ctx.author
         badge = ""
         for flg in user.public_flags.all():
-             badge = badge +  self.user_badge.get(flg,"")
+             badge = badge +  self.user_badge.get(str(flg),"")
         name = user.name+'#'+user.discriminator
         if user.bot:
             if user.public_flags.verified_bot:
