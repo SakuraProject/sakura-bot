@@ -138,7 +138,7 @@ class music(commands.Cog):
         EVAL self.bot.command_prefix+'play urlか検索ワード'
         ELang ja
         NLang default It is the command to play a music
-        It is the command to play a music.you must juin the voice channel if you use
+        It is the command to play a music.you must join the voice channel if you use
         **how to use：**
         EVAL self.bot.command_prefix+'play url or search query'
         ELang default
@@ -265,6 +265,18 @@ class music(commands.Cog):
 
     @commands.command()
     async def playlist(self,ctx,*,name):
+        """
+        NLang ja 音楽を再生します
+        プレイリストの音楽を再生します。このコマンドを使用する際は先にボイスチャンネルに接続してください。
+        **使いかた：**
+        EVAL self.bot.command_prefix+'playlist プレイリスト名'
+        ELang ja
+        NLang default It is the command to play a playlist music
+        It is the command to play a playlist music.you must join the voice channel if you use
+        **how to use：**
+        EVAL self.bot.command_prefix+'playlist playlist name'
+        ELang default
+        """
         YDL_OPTIONS = {'format': 'bestaudio',"ignoreerrors": True,"cookiefile": "data/youtube.com_cookies.txt"}
         FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
         loop =asyncio.get_event_loop()
