@@ -31,16 +31,18 @@ def fmt_time(time):
     if time== '--:--:--':
         return '--:--:--'
     else:
+        time = int(time)
         return str(time // 3600) + ":" + str((time - (time // 3600)) // 60) + ":" + str(time % 60)
 
 def restore(sid):
-    return sid.replace("sc:","https://soundcloud.com/").replace("yt:","https://youtube.com/watch?v=").replace("nico:","https://www.nicovideo.jp/watch/").replace("yf:","https://ysmfilm.net/view.php?id=")
+    return sid.replace("daily:","https://www.dailymotion.com/video/").replace("bili:","https://www.bilibili.com/video/").replace("sc:","https://soundcloud.com/").replace("yt:","https://youtube.com/watch?v=").replace("nico:","https://www.nicovideo.jp/watch/").replace("yf:","https://ysmfilm.net/view.php?id=")
 class Queue():
     def __init__(self,url):
         self.url = url
         self.video = None
     async def setdata(self):
         YDL_OPTIONS = {'format': 'bestaudio', 'noplaylist': 'True',"ignoreerrors": True,"cookiefile": "data/youtube.com_cookies.txt"}
+        BILIBILI_OPTIONS = {'noplaylist': 'True',"ignoreerrors": True,"cookiefile": "data/youtube.com_cookies.txt"}
         FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
         try:
             if "nicovideo.jp" in self.url or "nico.ms" in self.url:
@@ -82,6 +84,21 @@ class Queue():
                 self.title = info['title']
                 self.duration = info["duration"]
                 self.sid = "yt:" + info["id"]
+            elif "bilibili" in self.url:
+                with YoutubeDL(BILIBILI_OPTIONS) as ydl:
+                    info = ydl.extract_info(self.url, download=False)
+                self.source = info["formats"][0]['url']
+                self.title = info['title']
+                self.duration = info["duration"]
+                self.sid = "bili:" + info["webpage_url"].replace("https://www.bilibili.com/video/","")
+            elif "dailymotion" in self.url:
+                YDL_OPTIONS["format"] = "mp4"
+                with YoutubeDL(YDL_OPTIONS) as ydl:
+                    info = ydl.extract_info(self.url, download=False)
+                self.source = info['url']
+                self.title = info['title']
+                self.duration = info["duration"]
+                self.sid = "daily:" + info["id"]
         except Exception as e:
             print(str(e))
             print("Music Load Error")
@@ -129,7 +146,7 @@ class music(commands.Cog):
         EVAL self.bot.command_prefix+'play urlか検索ワード'
         ELang ja
         NLang default It is the command to play a music
-        It is the command to play a music.you must juin the voice channel if you use
+        It is the command to play a music.you must join the voice channel if you use
         **how to use：**
         EVAL self.bot.command_prefix+'play url or search query'
         ELang default
@@ -256,6 +273,18 @@ class music(commands.Cog):
 
     @commands.command()
     async def playlist(self,ctx,*,name):
+        """
+        NLang ja 音楽を再生します
+        プレイリストの音楽を再生します。このコマンドを使用する際は先にボイスチャンネルに接続してください。
+        **使いかた：**
+        EVAL self.bot.command_prefix+'playlist プレイリスト名'
+        ELang ja
+        NLang default It is the command to play a playlist music
+        It is the command to play a playlist music.you must join the voice channel if you use
+        **how to use：**
+        EVAL self.bot.command_prefix+'playlist playlist name'
+        ELang default
+        """
         YDL_OPTIONS = {'format': 'bestaudio',"ignoreerrors": True,"cookiefile": "data/youtube.com_cookies.txt"}
         FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
         loop =asyncio.get_event_loop()
