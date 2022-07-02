@@ -35,7 +35,7 @@ def fmt_time(time):
         return str(time // 3600) + ":" + str((time - (time // 3600)) // 60) + ":" + str(time % 60)
 
 def restore(sid):
-    return sid.replace("bili:","https://www.bilibili.com/video/").replace("sc:","https://soundcloud.com/").replace("yt:","https://youtube.com/watch?v=").replace("nico:","https://www.nicovideo.jp/watch/").replace("yf:","https://ysmfilm.net/view.php?id=")
+    return sid.replace("daily:","https://www.dailymotion.com/video/").replace("bili:","https://www.bilibili.com/video/").replace("sc:","https://soundcloud.com/").replace("yt:","https://youtube.com/watch?v=").replace("nico:","https://www.nicovideo.jp/watch/").replace("yf:","https://ysmfilm.net/view.php?id=")
 class Queue():
     def __init__(self,url):
         self.url = url
@@ -91,6 +91,14 @@ class Queue():
                 self.title = info['title']
                 self.duration = info["duration"]
                 self.sid = "bili:" + info["webpage_url"].replace("https://www.bilibili.com/video/","")
+            elif "dailymotion" in self.url:
+                YDL_OPTIONS["format"] = "mp4"
+                with YoutubeDL(YDL_OPTIONS) as ydl:
+                    info = ydl.extract_info(self.url, download=False)
+                self.source = info['url']
+                self.title = info['title']
+                self.duration = info["duration"]
+                self.sid = "daily:" + info["id"]
         except Exception as e:
             print(str(e))
             print("Music Load Error")
