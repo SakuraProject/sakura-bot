@@ -31,7 +31,7 @@ def fmt_time(time):
     if time== '--:--:--':
         return '--:--:--'
     else:
-        time = str(time)
+        time = int(time)
         return str(time // 3600) + ":" + str((time - (time // 3600)) // 60) + ":" + str(time % 60)
 
 def restore(sid):
