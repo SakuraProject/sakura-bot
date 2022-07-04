@@ -87,7 +87,7 @@ class gban(commands.Cog):
                         et = ""
                         for e in ev:
                             et = et + "[証拠](" + e + ")\n"
-                        ebd = discord.Embed(title=uname,description="userid:" + str(r[0]) + "\n" + row[1] + "\n" + et)
+                        ebd = discord.Embed(title=uname,description="userid:" + str(r[0]) + "\n" + r[1] + "\n" + et)
                         ebds.append(ebd)
                     await ctx.send(embeds=[ebds[0]],view=NextButton(ebds))
 
