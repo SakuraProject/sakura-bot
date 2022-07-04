@@ -111,7 +111,7 @@ class gban(commands.Cog):
         await ctx.send(q)
         while True:
             try:
-                message = await client.wait_for('message', timeout= 180.0, check= check)
+                message = await self.bot.wait_for('message', timeout= 180.0, check= check)
             except asyncio.TimeoutError:
                 await ctx.channel.send('入力を待機中です。キャンセルする場合は「キャンセルする」と送ってください')
             else:
@@ -120,7 +120,7 @@ class gban(commands.Cog):
                 await ctx.channel.send("入力を受け付けました。確定する場合は「ok」と送って下さい。やり直す場合は「修正」と送ってください")
                 while True:
                     try:
-                        message1 = await client.wait_for('message', timeout= 180.0, check= check)
+                        message1 = await self.bot.wait_for('message', timeout= 180.0, check= check)
                     except asyncio.TimeoutError:
                         await ctx.channel.send('タイムアウトしました。入力をやりなおしてください')
                         break
