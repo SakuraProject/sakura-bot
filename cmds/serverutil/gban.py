@@ -133,6 +133,7 @@ class NextButton(discord.ui.View):
     def __init__(self, ebds):
         self.it = ebds
         self.page = 0
+        super().__init__()
 
     @discord.ui.button(label="<")
     async def left(self, bt,interaction: discord.Interaction):
