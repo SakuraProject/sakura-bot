@@ -59,8 +59,11 @@ class gban(commands.Cog):
                     if len(res) != 0:
                         if res[0][1] == "off":
                             continue
-                    await g.ban(await self.bot.fetch_user(user_id),reason="sakura gbanのため")
-                    await asyncio.sleep(1)
+                    try:
+                        await g.ban(await self.bot.fetch_user(user_id),reason="sakura gbanのため")
+                        await asyncio.sleep(1)
+                    except Exception as e:
+                        await ctx.send(str(e) + '\n' + str(g.id))
                 await cur.execute("INSERT INTO `gban` (`userid`,`reason`,`evidence`) VALUES (%s,%s,%s);",(user_id,reason,evif))
                 await ctx.send("完了しました")
 
@@ -84,7 +87,7 @@ class gban(commands.Cog):
                         et = ""
                         for e in ev:
                             et = et + "[証拠](" + e + ")\n"
-                        ebd = discord.Embed(title=uname,description="userid:" + str(r[0]) + "\n" + row[1] + "\n" + et)
+                        ebd = discord.Embed(title=uname,description="userid:" + str(r[0]) + "\n" + r[1] + "\n" + et)
                         ebds.append(ebd)
                     await ctx.send(embeds=[ebds[0]],view=NextButton(ebds))
 
@@ -108,7 +111,7 @@ class gban(commands.Cog):
         await ctx.send(q)
         while True:
             try:
-                message = await client.wait_for('message', timeout= 180.0, check= check)
+                message = await self.bot.wait_for('message', timeout= 180.0, check= check)
             except asyncio.TimeoutError:
                 await ctx.channel.send('入力を待機中です。キャンセルする場合は「キャンセルする」と送ってください')
             else:
@@ -117,7 +120,7 @@ class gban(commands.Cog):
                 await ctx.channel.send("入力を受け付けました。確定する場合は「ok」と送って下さい。やり直す場合は「修正」と送ってください")
                 while True:
                     try:
-                        message1 = await client.wait_for('message', timeout= 180.0, check= check)
+                        message1 = await self.bot.wait_for('message', timeout= 180.0, check= check)
                     except asyncio.TimeoutError:
                         await ctx.channel.send('タイムアウトしました。入力をやりなおしてください')
                         break
@@ -130,16 +133,17 @@ class NextButton(discord.ui.View):
     def __init__(self, ebds):
         self.it = ebds
         self.page = 0
+        super().__init__()
 
     @discord.ui.button(label="<")
-    async def left(self, bt,interaction: discord.Interaction):
+    async def left(self, interaction: discord.Interaction, bt):
         if self.page != 0:
             self.page = self.page -1
             await interaction.response.edit_message(embeds=[self.it[self.page]],view=self)
         else:
             return await interaction.response.send_message("このページが最初です", ephemeral=True)
     @discord.ui.button(label=">")
-    async def right(self, bt,interaction: discord.Interaction):
+    async def right(self, interaction: discord.Interaction,  bt):
         if self.page != len(self.it) - 1:
             self.page = self.page + 1
             await interaction.response.edit_message(embeds=[self.it[self.page]],view=self)
