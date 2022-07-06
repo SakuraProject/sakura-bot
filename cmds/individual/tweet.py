@@ -130,6 +130,18 @@ class tweet(commands.Cog, AsyncStreamingClient):
     @commands.has_permissions(manage_channels=True, manage_webhooks=True)
     @tweet.command()
     async def set(self,ctx,*,name):
+        """
+        NLang ja twitter通知を設定するコマンドです
+        Twitterのツイートをdiscordに送信する機能を設定します
+        **使いかた：**
+        EVAL self.bot.command_prefix+'tweet set Twitterのユーザーid'
+        ELang ja
+        NLang default This is a command to set Twitter notifications.
+        Set the ability to send Twitter tweets to discord
+        **How to use:**
+        EVAL self.bot.command_prefix+'tweet set Twitter_User_ID'
+        ELang default
+        """
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
                 await cur.execute("select * from `tweet` where twiname=%s and cid=%s;",(name,ctx.channel.id))
@@ -149,6 +161,18 @@ class tweet(commands.Cog, AsyncStreamingClient):
     @commands.has_permissions(manage_channels=True, manage_webhooks=True)
     @tweet.command()
     async def remove(self,ctx,*,name):
+        """
+        NLang ja twitter通知を解除するコマンドです
+        Twitterのツイートをdiscordに送信する機能を解除します
+        **使いかた：**
+        EVAL self.bot.command_prefix+'tweet set Twitterのユーザーid'
+        ELang ja
+        NLang default This is a command to cancel Twitter notifications.
+        Unlock the ability to send Twitter tweets to discord
+        **How to use:**
+        EVAL self.bot.command_prefix+'tweet remove Twitter_user_id'
+        ELang default
+        """
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
                 await cur.execute("delete from `tweet` where twiname=%s and cid=%s limit 1;",(name,ctx.channel.id))
