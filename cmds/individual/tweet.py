@@ -127,6 +127,7 @@ class tweet(commands.Cog, AsyncStreamingClient):
         if not ctx.invoked_subcommand:
             await ctx.reply("使用方法が違います。")
 
+    @commands.has_permissions(manage_channels=True, manage_webhooks=True)
     @tweet.command()
     async def set(self,ctx,*,name):
         async with self.bot.pool.acquire() as conn:
@@ -145,6 +146,7 @@ class tweet(commands.Cog, AsyncStreamingClient):
                 else:
                     await ctx.send("すでに設定されています")
 
+    @commands.has_permissions(manage_channels=True, manage_webhooks=True)
     @tweet.command()
     async def remove(self,ctx,*,name):
         async with self.bot.pool.acquire() as conn:
