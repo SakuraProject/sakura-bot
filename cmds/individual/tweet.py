@@ -39,6 +39,10 @@ class tweet(commands.Cog, AsyncStreamingClient):
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
                 await cur.execute(csql)
+        rs=await self.get_rules()
+        if rs.data !=None:
+            for r in rs.data:
+                await self.delete_rules(r.id)
         await self.setfilter()
     async def setrule(self):
         async with self.bot.pool.acquire() as conn:
@@ -159,7 +163,10 @@ class tweet(commands.Cog, AsyncStreamingClient):
                     if self.rid.data != None:
                         await self.delete_rules(ids=self.rid.data[0].id)
                     else:
-                        await self.delete_rules(ids=self.rid.errors[0]["id"])
+                        try:
+                            await self.delete_rules(ids=self.rid.errors[0]["id"])
+                        except KeyError:
+                            str("初めて通知設定されたとき")
                     await self.setfilter()
                 else:
                     await ctx.send("すでに設定されています")
@@ -186,7 +193,10 @@ class tweet(commands.Cog, AsyncStreamingClient):
                 if self.rid.data != None:
                     await self.delete_rules(ids=self.rid.data[0].id)
                 else:
-                    await self.delete_rules(ids=self.rid.errors[0]["id"])
+                    try:
+                        await self.delete_rules(ids=self.rid.errors[0]["id"])
+                    except KeyError:
+                        str("通知設定がまだされてないとき")
                 await self.setfilter()
 
 async def setup(bot):
