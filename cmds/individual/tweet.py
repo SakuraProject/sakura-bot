@@ -7,8 +7,14 @@ from tweepy.errors import NotFound, Forbidden, Unauthorized, TweepyException
 from tweepy.client import Response
 from math import inf
 import os
+from aiohttp import ClientSession
 
 class tweet(commands.Cog, AsyncStreamingClient):
+    @property
+    def session(self):
+        if self._session.closed:
+            self._session = ClientSession()
+        return self._session
     def __init__(self, bot):
         self.bot = bot
         self.task = None
@@ -22,7 +28,7 @@ class tweet(commands.Cog, AsyncStreamingClient):
         self.consumer_secret=os.environ["TWITTERSECRET"]
         self.access_token=os.environ["TWITTERTOKEN"]
         self.access_token_secret=os.environ["TWITTERTOKENSEC"]
-        self.session = None
+        self._session=ClientSession()
         self.user_agent = "Python/3.9"
         self.max_retries = inf
         self.proxy = None
