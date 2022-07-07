@@ -86,10 +86,10 @@ class tweet(commands.Cog, AsyncStreamingClient):
         image = user.profile_image_url
         if tweet.referenced_tweets != None:
             if tweet.referenced_tweets[0].type == "quoted":
-                tweet.text = twiname + " ReTweeted [This Tweet](https://twitter.com/" + self.api.get_user(id=tweet.referenced_tweets[0].author_id).data.username + "/status/" + tweet.referenced_tweets[0].id + ")\n" + status.text
+                tweet.text = twiname + " ReTweeted [This Tweet](https://twitter.com/" + self.api.get_user(id=self.api.get_tweet(tweet.referenced_tweets[0].id,user_fields="username",expansions="author_id").data.author_id,user_fields="username,profile_image_url").data.username + "/status/" + tweet.referenced_tweets[0].id + ")\n" + tweet.text
             tweet.text = status.text.replace("RT @",twiname + " ReTweeted @",1)
             if tweet.referenced_tweets[0].type == "replied_to":
-                status.text = twiname + " Reply to [This Tweet](https://twitter.com/" + self.api.get_user(id=tweet.referenced_tweets[0].author_id).data.username + "/status/" + tweet.referenced_tweets[0].id + ")\n" + status.text
+                status.text = twiname + " Reply to [This Tweet](https://twitter.com/" + self.api.get_user(id=self.api.get_tweet(tweet.referenced_tweets[0].id,user_fields="username",expansions="author_id").data.author_id,user_fields="username,profile_image_url").data.username + "/status/" + tweet.referenced_tweets[0].id + ")\n" + tweet.text
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
                 await cur.execute("SELECT cid,twiname FROM `tweet` where `twiname`=%s",(twiname,))
