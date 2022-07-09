@@ -101,6 +101,17 @@ class automod(commands.Cog):
         await self.save(ctx.guild.id)
         await ctx.send("Ok")
 
+    @commands.Cog.listener()
+    async def on_guild_channel_create(self.channel):
+        try:
+            role = channel.guild.get_role(self.settings[str(member.guild.id)]["muterole"]))
+            overwrite = channel.overwrites_for(role)
+            overwrite.update(**{"send_messages":False,"add_reactions":False,"create_public_threads":False,"send_messages_in_threads":False,"connect":False,"speak":False})
+            overwrites = channel.overwrites
+            overwrites[role] = overwrite
+            await channel.edit(overwrites=overwrites)
+        except:
+            str("error")
     def raidcheck(member):
         try:
             str(self.m[str(member.guild.id)])
