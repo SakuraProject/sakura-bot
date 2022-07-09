@@ -263,17 +263,17 @@ class automod(commands.Cog):
     @commands.command()
     async def ignore(self, ctx, id:int = 0):
         try:
-            str(self.settings[str(msg.guild.id)])
+            str(self.settings[str(ctx.guild.id)])
         except KeyError:
-            self.settings[str(msg.guild.id)]=dict()
+            self.settings[str(ctx.guild.id)]=dict()
         try:
-            str(self.settings[str(msg.guild.id)]["ch"])
+            str(self.settings[str(ctx.guild.id)]["ch"])
         except KeyError:
-            self.settings[str(msg.guild.id)]["ch"]=list()
+            self.settings[str(ctx.guild.id)]["ch"]=list()
         try:
-            str(self.settings[str(msg.guild.id)]["role"])
+            str(self.settings[str(ctx.guild.id)]["role"])
         except KeyError:
-            self.settings[str(msg.guild.id)]["role"]=list()
+            self.settings[str(ctx.guild.id)]["role"]=list()
         if id == 0:
             id = ctx.channel.id
         ch = ctx.guild.get_channel(id)
