@@ -67,7 +67,7 @@ class automod(commands.Cog):
         await ctx.send("Ok")
 
     @commands.command()
-    async def muterolesetup(self, ctx, role = None):
+    async def muterolesetup(self, ctx, role:discord.Role = None):
         if role == None:
             role = await ctx.guild.create_role(name="sakura Muted",color=self.bot.Color)
         for tc in ctx.guild.text_channels:
