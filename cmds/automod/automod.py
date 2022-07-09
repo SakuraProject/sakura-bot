@@ -68,14 +68,10 @@ class automod(commands.Cog):
 
     @commands.command()
     async def muterolesetup(self, ctx, role:discord.Role = None):
-        try:
-            tmp=len(self.settings[str(ctx.guild.id)])
-        except KeyError:
-            self.settings[str(ctx.guild.id)]=dict()
-        try:
-            tmp=len(self.settings[str(ctx.guild.id)]['adminrole'])
-        except KeyError:
-            self.settings[str(ctx.guild.id)]['adminrole']=list()
+        if not str(ctx.guild.id) in self.settings:
+            self.settings[str(ctx.guild.id)] = dict()
+        if not "adminrole" in self.settings[str(ctx.guild.id)]:
+            self.settings[str(ctx.guild.id)]["adminrole"] = list()
         if not (ctx.author.guild_permissions.administrator or arrayinarray([r.id for r in ctx.author.roles],self.settings[str(ctx.guild.id)]['adminrole'])):
             await self.no_admin_perm(ctx)
             return
@@ -93,10 +89,8 @@ class automod(commands.Cog):
             overwrites = tc.overwrites
             overwrites[role] = overwrite
             await tc.edit(overwrites=overwrites)
-        try:
-            tmp=len(self.settings[str(ctx.guild.id)])
-        except KeyError:
-            self.settings[str(ctx.guild.id)]=dict()
+        if not str(ctx.guild.id) in self.settings:
+            self.settings[str(ctx.guild.id)] = dict()
         self.settings[str(ctx.guild.id)]["muterole"] = role.id
         await self.save(ctx.guild.id)
         await ctx.send("Ok")
@@ -113,13 +107,9 @@ class automod(commands.Cog):
         except:
             str("error")
     def raidcheck(member):
-        try:
-            str(self.m[str(member.guild.id)])
-        except KeyError:
+        if not str(member.guild.id) in self.m:
             self.m[str(member.guild.id)]=list()
-        try:
-            str(self.time_[str(member.guild.id)])
-        except KeyError:
+        if not str(member.guild.id) in self.time_:
             self.time_[str(member.guild.id)]=time.time()
         self.m[str(member.guild.id)].append(member)
         if time.time() - self.time_[str(member.guild.id)] >=15.0:
@@ -145,9 +135,7 @@ class automod(commands.Cog):
                 if self.settings[str(member.guild.id)]['raidaction']=='mute':
                     for memb in self.m[str(member.guild.id)]:
                         await memb.add_roles(int(member.guild.get_role(self.settings[str(member.guild.id)]["muterole"])),reason="sakura anti raid")
-                        try:
-                            str(self.muteds[str(member.guild.id)])
-                        except KeyError:
+                        if not str(member.guild.id) in self.muteds:
                             self.muteds[str(member.guild.id)] = dict()
                         if self.settings[str(member.guild.id)]['raidactiontime'] != None:
                             self.muteds[str(member.guild.id)][str(memb.id)] = dict()
@@ -165,21 +153,15 @@ class automod(commands.Cog):
 
     @ngword.command()
     async def set(self,ctx,*,word):
-        try:
-            tmp=len(self.settings[str(ctx.guild.id)])
-        except KeyError:
-            self.settings[str(ctx.guild.id)]=dict()
-        try:
-            tmp=len(self.settings[str(ctx.guild.id)]['adminrole'])
-        except KeyError:
-            self.settings[str(ctx.guild.id)]['adminrole']=list()
+        if not str(ctx.guild.id) in self.settings:
+            self.settings[str(ctx.guild.id)] = dict()
+        if not "adminrole" in self.settings[str(ctx.guild.id)]:
+            self.settings[str(ctx.guild.id)]["adminrole"] = list()
         if not (ctx.author.guild_permissions.administrator or arrayinarray([r.id for r in ctx.author.roles],self.settings[str(ctx.guild.id)]['adminrole'])):
             await self.no_admin_perm(ctx)
             return
-        try:
-            tmp=len(self.settings[str(ctx.guild.id)]["ngword"])
-        except KeyError:
-            self.settings[str(ctx.guild.id)]["ngword"]=list()
+        if not "ngword" in self.settings[str(ctx.guild.id)]:
+            self.settings[str(ctx.guild.id)]["ngword"] = list()
         if word in self.settings[str(ctx.guild.id)]["ngword"]:
             await ctx.send("すでに設定されています")
         else:
@@ -189,21 +171,15 @@ class automod(commands.Cog):
 
     @ngword.command()
     async def remove(self,ctx,*,word):
-        try:
-            tmp=len(self.settings[str(ctx.guild.id)])
-        except KeyError:
-            self.settings[str(ctx.guild.id)]=dict()
-        try:
-            tmp=len(self.settings[str(ctx.guild.id)]['adminrole'])
-        except KeyError:
-            self.settings[str(ctx.guild.id)]['adminrole']=list()
+        if not str(ctx.guild.id) in self.settings:
+            self.settings[str(ctx.guild.id)] = dict()
+        if not "adminrole" in self.settings[str(ctx.guild.id)]:
+            self.settings[str(ctx.guild.id)]["adminrole"] = list()
         if not (ctx.author.guild_permissions.administrator or arrayinarray([r.id for r in ctx.author.roles],self.settings[str(ctx.guild.id)]['adminrole'])):
             await self.no_admin_perm(ctx)
             return
-        try:
-            tmp=len(self.settings[str(ctx.guild.id)]["ngword"])
-        except KeyError:
-            self.settings[str(ctx.guild.id)]["ngword"]=list()
+        if not "ngword" in self.settings[str(ctx.guild.id)]:
+            self.settings[str(ctx.guild.id)]["ngword"] = list()
         if word in self.settings[str(ctx.guild.id)]["ngword"]:
             self.settings[str(ctx.guild.id)]["ngword"].pop(word)
             await ctx.send("削除しました")
@@ -213,110 +189,47 @@ class automod(commands.Cog):
 
     @commands.command()
     async def antiraid(self,ctx,joincount:int,action='kick',time=None):
-        try:
-            tmp=len(self.settings[str(ctx.guild.id)])
-        except KeyError:
-            self.settings[str(ctx.guild.id)]=dict()
-        try:
-            tmp=len(self.settings[str(ctx.guild.id)]['adminrole'])
-        except KeyError:
-            self.settings[str(ctx.guild.id)]['adminrole']=list()
+        if not str(ctx.guild.id) in self.settings:
+            self.settings[str(ctx.guild.id)] = dict()
+        if not "adminrole" in self.settings[str(ctx.guild.id)]:
+            self.settings[str(ctx.guild.id)]["adminrole"] = list()
         if not (ctx.author.guild_permissions.administrator or arrayinarray([r.id for r in ctx.author.roles],self.settings[str(ctx.guild.id)]['adminrole'])):
             await self.no_admin_perm(ctx)
             return
         if time != None:
             time = timeparse(time)
         if action == 'kick':
-            try:
-                str(self.settings[str(ctx.guild.id)])
-                self.settings[str(ctx.guild.id)]['antiraid']='on'
-                self.settings[str(ctx.guild.id)]['raidcount']=joincount
-                self.settings[str(ctx.guild.id)]['raidaction']=action
-            except KeyError:
-                self.settings[str(ctx.guild.id)]=dict()
-                self.settings[str(ctx.guild.id)]['antiraid']='on'
-                self.settings[str(ctx.guild.id)]['raidcount']=joincount
-                self.settings[str(ctx.guild.id)]['raidaction']=action
+            self.settings[str(ctx.guild.id)].update({"antiraid":"on","raidcount":joincount,"raidaction":action})
             await ctx.send("設定をonにしました")
 
         if action == 'ban':
-            try:
-                str(self.settings[str(ctx.guild.id)])
-                self.settings[str(ctx.guild.id)]['antiraid']='on'
-                self.settings[str(ctx.guild.id)]['raidcount']=joincount
-                self.settings[str(ctx.guild.id)]['raidaction']=action
-                self.settings[str(ctx.guild.id)]['raidactiontime'] = time
-            except KeyError:
-                self.settings[str(ctx.guild.id)]=dict()
-                self.settings[str(ctx.guild.id)]['antiraid']='on'
-                self.settings[str(ctx.guild.id)]['raidcount']=joincount
-                self.settings[str(ctx.guild.id)]['raidaction']=action
-                self.settings[str(ctx.guild.id)]['raidactiontime'] = time
+            self.settings[str(ctx.guild.id)].update({"antiraid":"on","raidcount":joincount,"raidaction":action,'raidactiontime':time})
             await ctx.send("設定をonにしました")
 
         if action == 'mute':
-            try:
-                str(self.settings[str(ctx.guild.id)])
-                self.settings[str(ctx.guild.id)]['antiraid']='on'
-                self.settings[str(ctx.guild.id)]['raidcount']=joincount
-                self.settings[str(ctx.guild.id)]['raidaction']=action
-                self.settings[str(ctx.guild.id)]['raidactiontime'] = time
-            except KeyError:
-                self.settings[str(ctx.guild.id)]=dict()
-                self.settings[str(ctx.guild.id)]['antiraid']='on'
-                self.settings[str(ctx.guild.id)]['raidcount']=joincount
-                self.settings[str(ctx.guild.id)]['raidaction']=action
-                self.settings[str(ctx.guild.id)]['raidactiontime'] = time
+            self.settings[str(ctx.guild.id)].update({"antiraid":"on","raidcount":joincount,"raidaction":action,'raidactiontime':time})
             await ctx.send("設定をonにしました")
         if action == 'timeout':
-            try:
-                str(self.settings[str(ctx.guild.id)])
-                self.settings[str(ctx.guild.id)]['antiraid']='on'
-                self.settings[str(ctx.guild.id)]['raidcount']=joincount
-                self.settings[str(ctx.guild.id)]['raidaction']=action
-                self.settings[str(ctx.guild.id)]['raidactiontime'] = time
-            except KeyError:
-                self.settings[str(ctx.guild.id)]=dict()
-                self.settings[str(ctx.guild.id)]['antiraid']='on'
-                self.settings[str(ctx.guild.id)]['raidcount']=joincount
-                self.settings[str(ctx.guild.id)]['raidaction']=action
-                self.settings[str(ctx.guild.id)]['raidactiontime'] = time
+            self.settings[str(ctx.guild.id)].update({"antiraid":"on","raidcount":joincount,"raidaction":action,'raidactiontime':time})
             await ctx.send("設定をonにしました")
         if action == 'none':
-            try:
-                str(self.settings[str(ctx.guild.id)])
-                self.settings[str(ctx.guild.id)]['antiraid']='off'
-                self.settings[str(ctx.guild.id)]['raidcount']=0
-                self.settings[str(ctx.guild.id)]['raidaction']=action
-            except KeyError:
-                self.settings[str(ctx.guild.id)]=dict()
-                self.settings[str(ctx.guild.id)]['antiraid']='off'
-                self.settings[str(ctx.guild.id)]['raidcount']=0
-                self.settings[str(ctx.guild.id)]['raidaction']=action
+            self.settings[str(ctx.guild.id)].update({"antiraid":"off","raidcount":joincount,"raidaction":action})
             await ctx.send("設定をoffにしました")
         await self.save(ctx.guild.id)
 
     @commands.command()
     async def ignore(self, ctx, id:int = 0):
-        try:
-            str(self.settings[str(ctx.guild.id)])
-        except KeyError:
-            self.settings[str(ctx.guild.id)]=dict()
-        try:
-            tmp=len(self.settings[str(ctx.guild.id)]['adminrole'])
-        except KeyError:
-            self.settings[str(ctx.guild.id)]['adminrole']=list()
+        if not str(ctx.guild.id) in self.settings:
+            self.settings[str(ctx.guild.id)] = dict()
+        if not "adminrole" in self.settings[str(ctx.guild.id)]:
+            self.settings[str(ctx.guild.id)]["adminrole"] = list()
         if not (ctx.author.guild_permissions.administrator or arrayinarray([r.id for r in ctx.author.roles],self.settings[str(ctx.guild.id)]['adminrole'])):
             await self.no_admin_perm(ctx)
             return
-        try:
-            str(self.settings[str(ctx.guild.id)]["ch"])
-        except KeyError:
-            self.settings[str(ctx.guild.id)]["ch"]=list()
-        try:
-            str(self.settings[str(ctx.guild.id)]["role"])
-        except KeyError:
-            self.settings[str(ctx.guild.id)]["role"]=list()
+        if not "ch" in self.settings[str(ctx.guild.id)]:
+            self.settings[str(ctx.guild.id)]["ch"] = list()
+        if not "role" in self.settings[str(ctx.guild.id)]:
+            self.settings[str(ctx.guild.id)]["role"] = list()
         if id == 0:
             id = ctx.channel.id
         ch = ctx.guild.get_channel(id)
@@ -331,18 +244,12 @@ class automod(commands.Cog):
             await self.save(ctx.guild.id)
 
     def ig(self,msg):
-        try:
-            str(self.settings[str(msg.guild.id)])
-        except KeyError:
+        if not str(msg.guild.id) in self.settings:
             self.settings[str(msg.guild.id)]=dict()
-        try:
-            str(self.settings[str(msg.guild.id)]["ch"])
-        except KeyError:
-            self.settings[str(msg.guild.id)]["ch"]=list()
-        try:
-            str(self.settings[str(msg.guild.id)]["role"])
-        except KeyError:
-            self.settings[str(msg.guild.id)]["role"]=list()
+        if not "ch" in self.settings[str(msg.guild.id)]:
+            self.settings[str(msg.guild.id)]["ch"] = list()
+        if not "role" in self.settings[str(msg.guild.id)]:
+            self.settings[str(msg.guild.id)]["role"] = list()
         if msg.channel.id in self.settings[str(msg.guild.id)]["ch"]:
             return True
         try:
@@ -356,33 +263,19 @@ class automod(commands.Cog):
 
     @commands.command()
     async def antitokens(self,ctx,onoff):
-        try:
-            tmp=len(self.settings[str(ctx.guild.id)])
-        except KeyError:
-            self.settings[str(ctx.guild.id)]=dict()
-        try:
-            tmp=len(self.settings[str(ctx.guild.id)]['adminrole'])
-        except KeyError:
-            self.settings[str(ctx.guild.id)]['adminrole']=list()
+        if not str(ctx.guild.id) in self.settings:
+            self.settings[str(ctx.guild.id)] = dict()
+        if not "adminrole" in self.settings[str(ctx.guild.id)]:
+            self.settings[str(ctx.guild.id)]["adminrole"] = list()
         if not (ctx.author.guild_permissions.administrator or arrayinarray([r.id for r in ctx.author.roles],self.settings[str(ctx.guild.id)]['adminrole'])):
             await self.no_admin_perm(ctx)
             return
         if onoff == 'on':
-            try:
-                str(self.settings[str(ctx.guild.id)])
-                self.settings[str(ctx.guild.id)]['tokens']='on'
-            except KeyError:
-                self.settings[str(ctx.guild.id)]=dict()
-                self.settings[str(ctx.guild.id)]['tokens']='on'
+            self.settings[str(ctx.guild.id)]['tokens']='on'
             await self.save(ctx.guild.id)
             await ctx.send('antitokenモードをonにしました')
         if onoff == 'off':
-            try:
-                str(self.settings[str(ctx.guild.id)])
-                self.settings[str(ctx.guild.id)]['tokens']='off'
-            except KeyError:
-                self.settings[str(ctx.guild.id)]=dict()
-                self.settings[str(ctx.guild.id)]['tokens']='off'
+            self.settings[str(ctx.guild.id)]['tokens']='off'
             await self.save(ctx.guild.id)
             await ctx.send('antitokenモードをoffにしました')
 
@@ -390,29 +283,19 @@ class automod(commands.Cog):
     async def punishment(self,ctx,strike,modaction,sec=None):
         if sec != None:
             sec = timeparse(sec)
-        try:
-            tmp=len(self.settings[str(ctx.guild.id)])
-        except KeyError:
-            self.settings[str(ctx.guild.id)]=dict()
-        try:
-            tmp=len(self.settings[str(ctx.guild.id)]['adminrole'])
-        except KeyError:
-            self.settings[str(ctx.guild.id)]['adminrole']=list()
-        try:
-            tmp=len(self.settings[str(ctx.guild.id)]['modrole'])
-        except KeyError:
+        if not str(ctx.guild.id) in self.settings:
+            self.settings[str(ctx.guild.id)] = dict()
+        if not "adminrole" in self.settings[str(ctx.guild.id)]:
+            self.settings[str(ctx.guild.id)]["adminrole"] = list()
+        if not "modrole" in self.settings[str(ctx.guild.id)]:
             self.settings[str(ctx.guild.id)]['modrole']=list()
         if not (ctx.author.guild_permissions.manage_guild or arrayinarray([r.id for r in ctx.author.roles],self.settings[str(ctx.guild.id)]['adminrole']) or arrayinarray([r.id for r in ctx.author.roles],self.settings[str(ctx.guild.id)]['modrole'])):
             await no_manserver_perm(ctx)
             return
         stri=int(strike)
-        try:
-            str(self.settings[str(ctx.guild.id)])
-        except KeyError:
-            self.settings[str(ctx.guild.id)]=dict()
-        try:
-            str(self.settings[str(ctx.guild.id)]['action'])
-        except KeyError:
+        if not str(ctx.guild.id) in self.settings:
+            self.settings[str(ctx.guild.id)] = dict()
+        if not "action" in self.settings[str(ctx.guild.id)]:
             self.settings[str(ctx.guild.id)]['action']=dict()
         if modaction=='ban' and sec != None:
             self.settings[str(ctx.guild.id)]['action'][str(stri)]='ban,'+str(int(sec))
@@ -433,14 +316,10 @@ class automod(commands.Cog):
 
     @commands.command()
     async def antispam(self,ctx,spamcount:int):
-        try:
-            tmp=len(self.settings[str(ctx.guild.id)])
-        except KeyError:
-            self.settings[str(ctx.guild.id)]=dict()
-        try:
-            tmp=len(self.settings[str(ctx.guild.id)]['adminrole'])
-        except KeyError:
-            self.settings[str(ctx.guild.id)]['adminrole']=list()
+        if not str(ctx.guild.id) in self.settings:
+            self.settings[str(ctx.guild.id)] = dict()
+        if not "adminrole" in self.settings[str(ctx.guild.id)]:
+            self.settings[str(ctx.guild.id)]["adminrole"] = list()
         if not (ctx.author.guild_permissions.administrator or arrayinarray([r.id for r in ctx.author.roles],self.settings[str(ctx.guild.id)]['adminrole'])):
             await self.no_admin_perm(ctx)
             return
@@ -477,17 +356,11 @@ class automod(commands.Cog):
         await ctx.send("banしました")
     @commands.command()
     async def mute(self,ctx,member:discord.Member):
-        try:
-            tmp=len(self.settings[str(ctx.guild.id)])
-        except KeyError:
-            self.settings[str(ctx.guild.id)]=dict()
-        try:
-            tmp=len(self.settings[str(ctx.guild.id)]['adminrole'])
-        except KeyError:
-            self.settings[str(ctx.guild.id)]['adminrole']=list()
-        try:
-            tmp=len(self.settings[str(ctx.guild.id)]['modrole'])
-        except KeyError:
+        if not str(ctx.guild.id) in self.settings:
+            self.settings[str(ctx.guild.id)] = dict()
+        if not "adminrole" in self.settings[str(ctx.guild.id)]:
+            self.settings[str(ctx.guild.id)]["adminrole"] = list()
+        if not "modrole" in self.settings[str(ctx.guild.id)]:
             self.settings[str(ctx.guild.id)]['modrole']=list()
         if not (ctx.author.guild_permissions.manage_guild or arrayinarray([r.id for r in ctx.author.roles],self.settings[str(ctx.guild.id)]['adminrole']) or arrayinarray([r.id for r in ctx.author.roles],self.settings[str(ctx.guild.id)]['modrole'])):
             await no_manserver_perm(ctx)
@@ -496,17 +369,11 @@ class automod(commands.Cog):
         await ctx.send("muteしました")
     @commands.command()
     async def unmute(self,ctx,member:discord.Member):
-        try:
-            tmp=len(self.settings[str(ctx.guild.id)])
-        except KeyError:
-            self.settings[str(ctx.guild.id)]=dict()
-        try:
-            tmp=len(self.settings[str(ctx.guild.id)]['adminrole'])
-        except KeyError:
-            self.settings[str(ctx.guild.id)]['adminrole']=list()
-        try:
-            tmp=len(self.settings[str(ctx.guild.id)]['modrole'])
-        except KeyError:
+        if not str(ctx.guild.id) in self.settings:
+            self.settings[str(ctx.guild.id)] = dict()
+        if not "adminrole" in self.settings[str(ctx.guild.id)]:
+            self.settings[str(ctx.guild.id)]["adminrole"] = list()
+        if not "modrole" in self.settings[str(ctx.guild.id)]:
             self.settings[str(ctx.guild.id)]['modrole']=list()
         if not (ctx.author.guild_permissions.manage_guild or arrayinarray([r.id for r in ctx.author.roles],self.settings[str(ctx.guild.id)]['adminrole']) or arrayinarray([r.id for r in ctx.author.roles],self.settings[str(ctx.guild.id)]['modrole'])):
             await no_manserver_perm(ctx)
@@ -524,13 +391,9 @@ class automod(commands.Cog):
                 if re.search(tkreg,msg.content) != None:
                     userid=msg.author.id
                     guildid=msg.guild.id
-                    try:
-                        tmp=len(self.punishments[str(ctx.guild.id)])
-                    except KeyError:
+                    if not str(ctx.guild.id) in self.punishments:
                         self.punishments[str(ctx.guild.id)]=dict()
-                    try:
-                        str(self.punishments[str(msg.guild.id)][str(userid)])
-                    except KeyError:
+                    if str(userid) in self.punishments[str(msg.guild.id)]:
                         self.punishments[str(msg.guild.id)][str(userid)]=0
                     self.punishments[str(msg.guild.id)][str(userid)]=self.punishments[str(msg.guild.id)][str(userid)]+1
                     await msg.delete()
@@ -587,23 +450,18 @@ class automod(commands.Cog):
         if time.time()-self.sendtime[str(msg.guild.id)][str(msg.author.id)]<=5.0:
             self.sendtime[str(msg.guild.id)][str(msg.author.id)]=time.time()
             self.sendmsgs[str(msg.guild.id)][str(msg.author.id)].append(msg)
-            try:
-                len(self.settings[str(msg.guild.id)])
-            except:
+            if not str(msg.guild.id) in self.settings:
                 self.settings[str(msg.guild.id)]=dict()
-            try:
-                str(self.settings[str(msg.guild.id)]['duplct'])
-            except:
+            if not 'duplct' in self.settings[str(msg.guild.id)]:
                 self.settings[str(msg.guild.id)]['duplct']=5
             if len(self.sendmsgs[str(msg.guild.id)][str(msg.author.id)])>=int(self.settings[str(msg.guild.id)]['duplct']):
                 userid=msg.author.id
                 guildid=msg.guild.id
-                try:
-                    str(self.punishments[str(msg.guild.id)][str(userid)])
-                except KeyError:
+                if not str(ctx.guild.id) in self.punishments:
+                    self.punishments[str(ctx.guild.id)]=dict()
+                if str(userid) in self.punishments[str(msg.guild.id)]:
                     self.punishments[str(msg.guild.id)][str(userid)]=0
                 self.punishments[str(msg.guild.id)][str(userid)]=self.punishments[str(msg.guild.id)][str(userid)]+1
-                str(self.punishments[str(msg.guild.id)][str(userid)])
                 await msg.channel.send('Spamは禁止されています')
                 await self.save(msg.guild.id)
                 for dmsg in self.sendmsgs[str(msg.guild.id)][str(msg.author.id)]:
@@ -636,9 +494,7 @@ class automod(commands.Cog):
             self.sendmsgs[str(msg.guild.id)][str(msg.author.id)]=list()
             self.sendmsgs[str(msg.guild.id)][str(msg.author.id)].append(msg)
             self.sendcont[str(msg.guild.id)][str(msg.author.id)]=msg.content
-        try:
-            tmp=len(self.settings[str(msg.guild.id)]["ngword"])
-        except KeyError:
+        if not "ngword" in self.settings[str(msg.guild.id)]:
             self.settings[str(msg.guild.id)]["ngword"]=list()
         for nw in self.settings[str(msg.guild.id)]["ngword"]:
             if msg.content.find(nw) != -1:
@@ -713,21 +569,15 @@ class automod(commands.Cog):
 
     @commands.command()
     async def addadminrole(ctx,role:discord.Role):
-        try:
-            tmp=len(self.settings[str(ctx.guild.id)])
-        except KeyError:
-            self.settings[str(ctx.guild.id)]=dict()
-        try:
-            tmp=len(self.settings[str(ctx.guild.id)]['adminrole'])
-        except KeyError:
-            self.settings[str(ctx.guild.id)]['adminrole']=list()
+        if not str(ctx.guild.id) in self.settings:
+            self.settings[str(ctx.guild.id)] = dict()
+        if not "adminrole" in self.settings[str(ctx.guild.id)]:
+            self.settings[str(ctx.guild.id)]["adminrole"] = list()
         if not (ctx.author.guild_permissions.administrator or arrayinarray([r.id for r in ctx.author.roles],self.settings[str(ctx.guild.id)]['adminrole'])):
             await self.no_admin_perm(ctx)
             return
-        try:
-            str(self.settings[str(ctx.guild.id)])
-        except KeyError:
-            self.settings[str(ctx.guild.id)]=dict()
+        if not str(ctx.guild.id) in self.settings:
+            self.settings[str(ctx.guild.id)] = dict()
             self.settings[str(ctx.guild.id)]['adminrole']=list()
         if role.id in self.settings[str(ctx.guild.id)]['adminrole']:
             await ctx.send('このロールはすでに追加されています')
@@ -737,26 +587,18 @@ class automod(commands.Cog):
             await ctx.send('追加完了しました')
     @commands.command()
     async def addmodrole(ctx,role:discord.Role):
-        try:
-            tmp=len(self.settings[str(ctx.guild.id)])
-        except KeyError:
-            self.settings[str(ctx.guild.id)]=dict()
-        try:
-            tmp=len(self.settings[str(ctx.guild.id)]['adminrole'])
-        except KeyError:
-            self.settings[str(ctx.guild.id)]['adminrole']=list()
+        if not str(ctx.guild.id) in self.settings:
+            self.settings[str(ctx.guild.id)] = dict()
+        if not "adminrole" in self.settings[str(ctx.guild.id)]:
+            self.settings[str(ctx.guild.id)]["adminrole"] = list()
         if not (ctx.author.guild_permissions.administrator or arrayinarray([r.id for r in ctx.author.roles],self.settings[str(ctx.guild.id)]['adminrole'])):
             await self.no_admin_perm(ctx)
             return
-        try:
-            str(self.settings[str(ctx.guild.id)])
-        except KeyError:
-            self.settings[str(ctx.guild.id)]=dict()
+        if not str(ctx.guild.id) in self.settings:
+            self.settings[str(ctx.guild.id)] = dict()
             self.settings[str(ctx.guild.id)]['modrole']=list()
-        try:
-            str(self.settings[str(ctx.guild.id)]['modrole'])
-        except KeyError:
-            self.settings[str(ctx.guild.id)]['modrole']=list()
+        if not "modrole" in self.settings[str(ctx.guild.id)]:
+            self.settings[str(ctx.guild.id)]["modrole"] = list()
         if role.id in self.settings[str(ctx.guild.id)]['modrole']:
             await ctx.send('このロールはすでに追加されています')
         else:
@@ -765,21 +607,15 @@ class automod(commands.Cog):
             await ctx.send('追加完了しました')
     @commands.command()
     async def removeadminrole(ctx,role:discord.Role):
-        try:
-            tmp=len(self.settings[str(ctx.guild.id)])
-        except KeyError:
-            self.settings[str(ctx.guild.id)]=dict()
-        try:
-            tmp=len(self.settings[str(ctx.guild.id)]['adminrole'])
-        except KeyError:
-            self.settings[str(ctx.guild.id)]['adminrole']=list()
+        if not str(ctx.guild.id) in self.settings:
+            self.settings[str(ctx.guild.id)] = dict()
+        if not "adminrole" in self.settings[str(ctx.guild.id)]:
+            self.settings[str(ctx.guild.id)]["adminrole"] = list()
         if not (ctx.author.guild_permissions.administrator or arrayinarray([r.id for r in ctx.author.roles],self.settings[str(ctx.guild.id)]['adminrole'])):
             await self.no_admin_perm(ctx)
             return
-        try:
-            str(self.settings[str(ctx.guild.id)])
-        except KeyError:
-            self.settings[str(ctx.guild.id)]=dict()
+        if not str(ctx.guild.id) in self.settings:
+            self.settings[str(ctx.guild.id)] = dict()
             self.settings[str(ctx.guild.id)]['adminrole']=list()
         if role.id in self.settings[str(ctx.guild.id)]['adminrole']:
             self.settings[str(ctx.guild.id)]['adminrole'].remove(role.id)
@@ -789,26 +625,15 @@ class automod(commands.Cog):
             await ctx.send('このロールは追加されていません')
     @commands.command()
     async def removemodrole(ctx,role:discord.Role):
-        try:
-            tmp=len(self.settings[str(ctx.guild.id)])
-        except KeyError:
-            self.settings[str(ctx.guild.id)]=dict()
-        try:
-            tmp=len(self.settings[str(ctx.guild.id)]['adminrole'])
-        except KeyError:
-            self.settings[str(ctx.guild.id)]['adminrole']=list()
+        if not str(ctx.guild.id) in self.settings:
+            self.settings[str(ctx.guild.id)] = dict()
+        if not "adminrole" in self.settings[str(ctx.guild.id)]:
+            self.settings[str(ctx.guild.id)]["adminrole"] = list()
         if not (ctx.author.guild_permissions.administrator or arrayinarray([r.id for r in ctx.author.roles],self.settings[str(ctx.guild.id)]['adminrole'])):
             await self.no_admin_perm(ctx)
             return
-        try:
-            str(self.settings[str(ctx.guild.id)])
-        except KeyError:
-            self.settings[str(ctx.guild.id)]=dict()
-            self.settings[str(ctx.guild.id)]['modrole']=list()
-        try:
-            str(self.settings[str(ctx.guild.id)]['modrole'])
-        except KeyError:
-            self.settings[str(ctx.guild.id)]['modrole']=list()
+        if not "modrole" in self.settings[str(ctx.guild.id)]:
+            self.settings[str(ctx.guild.id)]["modrole"] = list()
         if role.id in self.settings[str(ctx.guild.id)]['modrole']:
             self.settings[str(ctx.guild.id)]['modrole'].remove(role.id)
             await self.save(ctx.guild.id)
@@ -823,18 +648,12 @@ class automod(commands.Cog):
         raise discord.ext.commands.MissingPermissions(["administrator"])
 
     async def save(self,gid):
-        try:
-            tmp=len(self.settings[str(gid)])
-        except KeyError:
-            self.settings[str(gid)]=dict()
-        try:
-            tmp=len(self.muteds[str(gid)])
-        except KeyError:
-            self.muteds[str(gid)]=dict()
-        try:
-            tmp=len(self.punishments[str(gid)])
-        except KeyError:
-            self.punishments[str(gid)]=dict()
+        if not str(gid) in self.settings:
+            self.settings[str(gid)] = dict()
+        if not str(gid) in self.muteds:
+            self.muteds[str(gid)] = dict()
+        if not str(gid) in self.punishments:
+            self.punishments[str(gid)] = dict()
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
                 await cur.execute("select * from `automod` where `gid`=%s",(gid))
