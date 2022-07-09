@@ -104,7 +104,7 @@ class automod(commands.Cog):
     @commands.Cog.listener()
     async def on_guild_channel_create(self,channel):
         try:
-            role = channel.guild.get_role(int(self.settings[str(member.guild.id)]["muterole"]))
+            role = channel.guild.get_role(int(self.settings[str(.guild.id)]["muterole"]))
             overwrite = channel.overwrites_for(role)
             overwrite.update(**{"send_messages":False,"add_reactions":False,"create_public_threads":False,"send_messages_in_threads":False,"connect":False,"speak":False})
             overwrites = channel.overwrites
