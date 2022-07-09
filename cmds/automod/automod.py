@@ -111,7 +111,7 @@ class automod(commands.Cog):
                 return False
 
     @commands.Cog.listener()
-    async def on_member_join(member):
+    async def on_member_join(self,member):
         if self.settings[str(member.guild.id)]['antiraid']=='on':
             if raidcheck(member):
                 if self.settings[str(member.guild.id)]['raidaction']=='ban':
