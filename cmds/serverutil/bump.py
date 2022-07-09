@@ -156,7 +156,7 @@ class bump(commands.Cog):
                 res = await cur.fetchall()
                 await conn.commit()
                 if len(res) == 0:
-                    await cur.execute("INSERT INTO `bumpset` (`gid`, `type`, `onoff`, `role`) VALUES (%s,%s,%s);",(ctx.guild.id,"frrtraise",onoff.replace("true","on"),roleid))
+                    await cur.execute("INSERT INTO `bumpset` (`gid`, `type`, `onoff`, `role`) VALUES (%s,%s,%s,%s);",(ctx.guild.id,"frrtraise",onoff.replace("true","on"),roleid))
                 else:
                     await cur.execute("UPDATE `bumpset` SET `gid` = %s,`type` = %s,`onoff` = %s,`role` = %s where `gid` = %s and `type` = %s;",(ctx.guild.id,"frrtraise",onoff.replace("true","on"),roleid,ctx.guild.id,"frrtraise"))
                 await ctx.reply("設定しました")
@@ -174,7 +174,7 @@ class bump(commands.Cog):
                 res = await cur.fetchall()
                 await conn.commit()
                 if len(res) == 0:
-                    await cur.execute("INSERT INTO `bumpset` (`gid`, `type`, `onoff`, `role`) VALUES (%s,%s,%s);",(ctx.guild.id,"raise",onoff.replace("true","on"),roleid))
+                    await cur.execute("INSERT INTO `bumpset` (`gid`, `type`, `onoff`, `role`) VALUES (%s,%s,%s,%s);",(ctx.guild.id,"raise",onoff.replace("true","on"),roleid))
                 else:
                     await cur.execute("UPDATE `bumpset` SET `gid` = %s,`type` = %s,`onoff` = %s,`role` = %s where `gid` = %s and `type` = %s;",(ctx.guild.id,"raise",onoff.replace("true","on"),roleid,ctx.guild.id,"raise"))
                 await ctx.reply("設定しました")
@@ -192,7 +192,7 @@ class bump(commands.Cog):
                 res = await cur.fetchall()
                 await conn.commit()
                 if len(res) == 0:
-                    await cur.execute("INSERT INTO `bumpset` (`gid`, `type`, `onoff`, `role`) VALUES (%s,%s,%s);",(ctx.guild.id,"bump",onoff.replace("true","on"),roleid))
+                    await cur.execute("INSERT INTO `bumpset` (`gid`, `type`, `onoff`, `role`) VALUES (%s,%s,%s,%s);",(ctx.guild.id,"bump",onoff.replace("true","on"),roleid))
                 else:
                     await cur.execute("UPDATE `bumpset` SET `gid` = %s,`type` = %s,`onoff` = %s,`role` = %s where `gid` = %s and `type` = %s;",(ctx.guild.id,"bump",onoff.replace("true","on"),roleid,ctx.guild.id,"bump"))
                 await ctx.reply("設定しました")
@@ -210,7 +210,7 @@ class bump(commands.Cog):
                 res = await cur.fetchall()
                 await conn.commit()
                 if len(res) == 0:
-                    await cur.execute("INSERT INTO `bumpset` (`gid`, `type`, `onoff`, `role`) VALUES (%s,%s,%s);",(ctx.guild.id,"toss",onoff.replace("true","on"),roleid))
+                    await cur.execute("INSERT INTO `bumpset` (`gid`, `type`, `onoff`, `role`) VALUES (%s,%s,%s,%s);",(ctx.guild.id,"toss",onoff.replace("true","on"),roleid))
                 else:
                     await cur.execute("UPDATE `bumpset` SET `gid` = %s,`type` = %s,`onoff` = %s,`role` = %s where `gid` = %s and `type` = %s;",(ctx.guild.id,"toss",onoff.replace("true","on"),roleid,ctx.guild.id,"toss"))
                 await ctx.reply("設定しました")
@@ -228,7 +228,7 @@ class bump(commands.Cog):
                 res = await cur.fetchall()
                 await conn.commit()
                 if len(res) == 0:
-                    await cur.execute("INSERT INTO `bumpset` (`gid`, `type`, `onoff`, `role`) VALUES (%s,%s,%s);",(ctx.guild.id,"up",onoff.replace("true","on"),roleid))
+                    await cur.execute("INSERT INTO `bumpset` (`gid`, `type`, `onoff`, `role`) VALUES (%s,%s,%s,%s);",(ctx.guild.id,"up",onoff.replace("true","on"),roleid))
                 else:
                     await cur.execute("UPDATE `bumpset` SET `gid` = %s,`type` = %s,`onoff` = %s,`role` = %s where `gid` = %s and `type` = %s;",(ctx.guild.id,"up",onoff.replace("true","on"),roleid,ctx.guild.id,"up"))
                 await ctx.reply("設定しました")
