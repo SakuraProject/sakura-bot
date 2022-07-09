@@ -775,7 +775,7 @@ class automod(commands.Cog):
 
     async def save(self,gid):
         try:
-            tmp=len(self.self.settings[str(gid)])
+            tmp=len(self.settings[str(gid)])
         except KeyError:
             self.settings[str(gid)]=dict()
         try:
