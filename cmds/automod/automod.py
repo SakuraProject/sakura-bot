@@ -55,7 +55,7 @@ class automod(commands.Cog):
     @commands.command()
     @commands.has_permissions(ban_members=True)
     async def timeout(self, ctx, member:discord.Member, *,time):
-        sec = timeparse(time)
+        sec = timeparse(sec)
         tdl = timedelta(seconds=sec)
         await member.timeout(tdl,reason="timeout command")
         await ctx.send("Ok")
@@ -346,7 +346,7 @@ class automod(commands.Cog):
     @commands.command()
     async def punishment(self,ctx,strike,modaction,sec=None):
         if sec != None:
-            sec = timeparse(time)
+            sec = timeparse(sec)
         try:
             tmp=len(self.settings[str(ctx.guild.id)])
         except KeyError:
