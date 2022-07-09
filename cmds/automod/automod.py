@@ -113,7 +113,7 @@ class automod(commands.Cog):
     @commands.Cog.listener()
     async def on_member_join(self,member):
         if self.settings[str(member.guild.id)]['antiraid']=='on':
-            if raidcheck(member):
+            if self.raidcheck(member):
                 if self.settings[str(member.guild.id)]['raidaction']=='ban':
                     for memb in m[str(member.guild.id)]:
                         await memb.ban(reason="sakura anti raid")
