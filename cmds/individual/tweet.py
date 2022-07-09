@@ -7,8 +7,14 @@ from tweepy.errors import NotFound, Forbidden, Unauthorized, TweepyException
 from tweepy.client import Response
 from math import inf
 import os
+from aiohttp import ClientSession, ClientTimeout
 
 class tweet(commands.Cog, AsyncStreamingClient):
+    @property
+    def session(self):
+        if self._session.closed:
+            self._session = ClientSession(timeout=self.timeout)
+        return self._session
     def __init__(self, bot):
         self.bot = bot
         self.task = None
@@ -22,7 +28,8 @@ class tweet(commands.Cog, AsyncStreamingClient):
         self.consumer_secret=os.environ["TWITTERSECRET"]
         self.access_token=os.environ["TWITTERTOKEN"]
         self.access_token_secret=os.environ["TWITTERTOKENSEC"]
-        self.session = None
+        self.timeout = ClientTimeout(sock_read=90)
+        self._session=ClientSession(timeout=self.timeout)
         self.user_agent = "Python/3.9"
         self.max_retries = inf
         self.proxy = None
@@ -33,6 +40,10 @@ class tweet(commands.Cog, AsyncStreamingClient):
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
                 await cur.execute(csql)
+        rs=await self.get_rules()
+        if rs.data !=None:
+            for r in rs.data:
+                await self.delete_rules(r.id)
         await self.setfilter()
     async def setrule(self):
         async with self.bot.pool.acquire() as conn:
@@ -76,10 +87,10 @@ class tweet(commands.Cog, AsyncStreamingClient):
         image = user.profile_image_url
         if tweet.referenced_tweets != None:
             if tweet.referenced_tweets[0].type == "quoted":
-                tweet.text = twiname + " ReTweeted [This Tweet](https://twitter.com/" + self.api.get_user(id=self.api.get_tweet(tweet.referenced_tweets[0].id,user_fields="username",expansions="author_id").data.author_id,user_fields="username,profile_image_url").data.username + "/status/" + tweet.referenced_tweets[0].id + ")\n" + tweet.text
-            tweet.text = status.text.replace("RT @",twiname + " ReTweeted @",1)
+                tweet.text = twiname + " ReTweeted [This Tweet](https://twitter.com/" + self.api.get_user(id=self.api.get_tweet(tweet.referenced_tweets[0].id,user_fields="username",expansions="author_id").data.author_id,user_fields="username,profile_image_url").data.username + "/status/" + str(tweet.referenced_tweets[0].id) + ")\n" + tweet.text
+            tweet.text = tweet.text.replace("RT @",twiname + " ReTweeted @",1)
             if tweet.referenced_tweets[0].type == "replied_to":
-                status.text = twiname + " Reply to [This Tweet](https://twitter.com/" + self.api.get_user(id=self.api.get_tweet(tweet.referenced_tweets[0].id,user_fields="username",expansions="author_id").data.author_id,user_fields="username,profile_image_url").data.username + "/status/" + tweet.referenced_tweets[0].id + ")\n" + tweet.text
+                tweet.text = twiname + " Reply to [This Tweet](https://twitter.com/" + self.api.get_user(id=self.api.get_tweet(tweet.referenced_tweets[0].id,user_fields="username",expansions="author_id").data.author_id,user_fields="username,profile_image_url").data.username + "/status/" + str(tweet.referenced_tweets[0].id) + ")\n" + tweet.text
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
                 await cur.execute("SELECT cid,twiname FROM `tweet` where `twiname`=%s",(twiname,))
@@ -153,7 +164,10 @@ class tweet(commands.Cog, AsyncStreamingClient):
                     if self.rid.data != None:
                         await self.delete_rules(ids=self.rid.data[0].id)
                     else:
-                        await self.delete_rules(ids=self.rid.errors[0]["id"])
+                        try:
+                            await self.delete_rules(ids=self.rid.errors[0]["id"])
+                        except KeyError:
+                            str("初めて通知設定されたとき")
                     await self.setfilter()
                 else:
                     await ctx.send("すでに設定されています")
@@ -180,7 +194,10 @@ class tweet(commands.Cog, AsyncStreamingClient):
                 if self.rid.data != None:
                     await self.delete_rules(ids=self.rid.data[0].id)
                 else:
-                    await self.delete_rules(ids=self.rid.errors[0]["id"])
+                    try:
+                        await self.delete_rules(ids=self.rid.errors[0]["id"])
+                    except KeyError:
+                        str("通知設定がまだされてないとき")
                 await self.setfilter()
 
 async def setup(bot):
