@@ -73,13 +73,13 @@ class automod(commands.Cog):
         for tc in ctx.guild.text_channels:
             overwrite = tc.overwrites_for(role)
             overwrite.update(**{"send_messages":False,"add_reactions":False,"create_public_threads":False,"send_messages_in_threads":False})
-            overwrites = dict()
+            overwrites = tc.overwrites
             overwrites[role] = overwrite
             await tc.edit(overwrites=overwrites)
         for tc in ctx.guild.voice_channels:
             overwrite = tc.overwrites_for(role)
             overwrite.update(**{"send_messages":False,"add_reactions":False,"connect":False,"speak":False})
-            overwrites = dict()
+            overwrites = tc.overwrites
             overwrites[role] = overwrite
             await tc.edit(overwrites=overwrites)
         try:
