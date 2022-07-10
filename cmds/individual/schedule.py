@@ -12,6 +12,7 @@ class schedule(commands.Cog):
         self.cache = dict()
         self.ready = Event()
         self.pool = self.bot.pool
+        self.before = ""
         self.process_notice.start()
 
     async def _prepare_table(self):
