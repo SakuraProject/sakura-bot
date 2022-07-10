@@ -393,7 +393,7 @@ class automod(commands.Cog):
                     guildid=msg.guild.id
                     if not str(ctx.guild.id) in self.punishments:
                         self.punishments[str(ctx.guild.id)]=dict()
-                    if str(userid) in self.punishments[str(msg.guild.id)]:
+                    if not str(userid) in self.punishments[str(msg.guild.id)]:
                         self.punishments[str(msg.guild.id)][str(userid)]=0
                     self.punishments[str(msg.guild.id)][str(userid)]=self.punishments[str(msg.guild.id)][str(userid)]+1
                     await msg.delete()
@@ -457,9 +457,9 @@ class automod(commands.Cog):
             if len(self.sendmsgs[str(msg.guild.id)][str(msg.author.id)])>=int(self.settings[str(msg.guild.id)]['duplct']):
                 userid=msg.author.id
                 guildid=msg.guild.id
-                if not str(ctx.guild.id) in self.punishments:
+                if not str(msg.guild.id) in self.punishments:
                     self.punishments[str(ctx.guild.id)]=dict()
-                if str(userid) in self.punishments[str(msg.guild.id)]:
+                if not str(userid) in self.punishments[str(msg.guild.id)]:
                     self.punishments[str(msg.guild.id)][str(userid)]=0
                 self.punishments[str(msg.guild.id)][str(userid)]=self.punishments[str(msg.guild.id)][str(userid)]+1
                 await msg.channel.send('Spamは禁止されています')
@@ -494,6 +494,16 @@ class automod(commands.Cog):
             self.settings[str(msg.guild.id)]["ngword"]=list()
         for nw in self.settings[str(msg.guild.id)]["ngword"]:
             if msg.content.find(nw) != -1:
+                userid=msg.author.id
+                guildid=msg.guild.id
+                if not str(msg.guild.id) in self.punishments:
+                    self.punishments[str(ctx.guild.id)]=dict()
+                if not str(userid) in self.punishments[str(msg.guild.id)]:
+                    self.punishments[str(msg.guild.id)][str(userid)]=0
+                self.punishments[str(msg.guild.id)][str(userid)]=self.punishments[str(msg.guild.id)][str(userid)]+1
+                await msg.channel.send('禁止ワードが含まれています')
+                await self.save(msg.guild.id)
+                await msg.delete()
                 try:
                     if self.settings[str(msg.guild.id)]['action'][str(self.punishments[str(msg.guild.id)][str(userid)])]=='ban':
                         if self.settings[str(msg.guild.id)]['action'][str(self.punishments[str(msg.guild.id)][str(userid)])].startswith('mute,'):
