@@ -485,10 +485,6 @@ class automod(commands.Cog):
                         await msg.author.timeout(timedelta(seconds=int(self.settings[str(msg.guild.id)]['action'][str(self.punishments[str(msg.guild.id)][str(userid)])].replace('timeout,',''))),reason="sakura automod")
                 except KeyError:
                     str('keyerror')
-            else:
-                self.sendtime[str(msg.guild.id)][str(msg.author.id)]=time.time()
-                self.sendmsgs[str(msg.guild.id)][str(msg.author.id)]=list()
-                self.sendmsgs[str(msg.guild.id)][str(msg.author.id)].append(msg)
         else:
             self.sendtime[str(msg.guild.id)][str(msg.author.id)]=time.time()
             self.sendmsgs[str(msg.guild.id)][str(msg.author.id)]=list()
