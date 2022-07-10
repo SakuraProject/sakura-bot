@@ -167,13 +167,22 @@ class shopping(commands.Cog):
             catarr = loads(rpt)
             ctls = ""
             i = 1
+            ebdin = 1
+            catebds = []
             for cat in catarr:
+                if ebdin == 41:
+                    ebdin = 1
+                    evd = discord.Embed(title="カテゴリ一覧",description=ctls,color=self.bot.Color)
+                    catebds.append(evd)
+                    ctls = ""
                 ctls = ctls + "No." + str(i) + cat["name"] + "\n"
                 i = i + 1
+                ebdin = ebdin + 1
             evd = discord.Embed(title="カテゴリ一覧",description=ctls,color=self.bot.Color)
-            await ctx.send(embeds=[evd])
+            catebds.append(evd)
+            await ctx.send(embeds=catebds)
             cno = int((await self.input(ctx,"カテゴリを選んでカテゴリーナンバーを数値で送信してください")).content)
-            req["category"] = catarr[cno-1]
+            req["category"] = catarr[cno-1]["name"]
             async with self.bot.session.post("http://ystore.jp/api/add.php",data=req) as resp:
                 rpt = await resp.text()
                 await ctx.send(rpt)
@@ -225,13 +234,22 @@ class shopping(commands.Cog):
             catarr = loads(rpt)
             ctls = ""
             i = 1
+            ebdin = 1
+            catebds = []
             for cat in catarr:
+                if ebdin == 41:
+                    ebdin = 1
+                    evd = discord.Embed(title="カテゴリ一覧",description=ctls,color=self.bot.Color)
+                    catebds.append(evd)
+                    ctls = ""
                 ctls = ctls + "No." + str(i) + cat["name"] + "\n"
                 i = i + 1
+                ebdin = ebdin + 1
             evd = discord.Embed(title="カテゴリ一覧",description=ctls,color=self.bot.Color)
-            await ctx.send(embeds=[evd])
+            catebds.append(evd)
+            await ctx.send(embeds=catebds)
             cno = int((await self.input(ctx,"カテゴリを選んでカテゴリーナンバーを数値で送信してください")).content)
-            req["category"] = catarr[cno-1]
+            req["category"] = catarr[cno-1]["name"]
             async with self.bot.session.post("http://ystore.jp/api/edit.php",data=req) as resp:
                 rpt = await resp.text()
                 await ctx.send(rpt)
