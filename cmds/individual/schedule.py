@@ -38,6 +38,7 @@ class schedule(commands.Cog):
 
     async def cog_load(self):
         await self._prepare_table()
+        self.ready.set()
 
     @commands.hybrid_group(
         aliases=["予定", "sch"]
