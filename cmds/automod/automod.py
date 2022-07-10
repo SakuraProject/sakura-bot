@@ -385,6 +385,8 @@ class automod(commands.Cog):
     async def on_message(self,msg):
         if msg.author.id == self.bot.user.id:
             return
+        if msg.guild.get_member(msg.author.id) != None:
+            msg.author = msg.guild.get_member(msg.author.id)
         try:
             if self.settings[str(msg.guild.id)]['tokens'] =='on':
                 tkreg=r'[\w-]{24}\.[\w-]{6}\.[\w-]{27}'
@@ -465,7 +467,10 @@ class automod(commands.Cog):
                 await msg.channel.send('Spamは禁止されています')
                 await self.save(msg.guild.id)
                 for dmsg in self.sendmsgs[str(msg.guild.id)][str(msg.author.id)]:
-                    await dmsg.delete()
+                     try:
+                         await dmsg.delete()
+                     except:
+                         str("メッセージが見つかりません")
                 try:
                     if self.settings[str(msg.guild.id)]['action'][str(self.punishments[str(msg.guild.id)][str(userid)])]=='ban':
                         if self.settings[str(msg.guild.id)]['action'][str(self.punishments[str(msg.guild.id)][str(userid)])].startswith('mute,'):
