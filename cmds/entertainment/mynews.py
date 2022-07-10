@@ -3,13 +3,13 @@ import discord
 from ujson import loads
 import urllib
 
-class news(commands.Cog): 
+class mynews(commands.Cog): 
 
     def __init__(self, bot): 
         self.bot = bot
     
     @commands.group()
-    async def news(self,ctx):
+    async def mynews(self,ctx):
         if ctx.invoked_subcommand is None:
             return await ctx.send("使用方法が違います。")
 
@@ -38,7 +38,7 @@ class news(commands.Cog):
                         elif message1.content == "修正":
                             break
 
-    @news.command()
+    @mynews.command()
     async def post(self,ctx):
         """
         NLang ja newsを投稿するコマンドです。
@@ -64,7 +64,7 @@ class news(commands.Cog):
         except SyntaxError:
             await ctx.send("投稿をキャンセルしました")
 
-    @news.command()
+    @mynews.command()
     async def day(self,ctx,day):
         """
         NLang ja 年月日でニュースを探すコマンドです
@@ -95,7 +95,7 @@ class news(commands.Cog):
                     vie.add_item(SearchList(gj))
                 await ctx.send("見たい記事を選択してください",view=vie)
 
-    @news.command()
+    @mynews.command()
     async def today(self,ctx):
         """
         NLang ja 今日のnewsを表示します
@@ -150,4 +150,4 @@ class SearchList(discord.ui.Select):
 async def setup(bot):
     global client
     client = bot
-    await bot.add_cog(news(bot))
+    await bot.add_cog(mynews(bot))
