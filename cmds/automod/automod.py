@@ -398,26 +398,27 @@ class automod(commands.Cog):
                     if not str(userid) in self.punishments[str(msg.guild.id)]:
                         self.punishments[str(msg.guild.id)][str(userid)]=0
                     self.punishments[str(msg.guild.id)][str(userid)]=self.punishments[str(msg.guild.id)][str(userid)]+1
+                    punish=self.punishments[str(msg.guild.id)][str(userid)]
                     await msg.delete()
                     await msg.channel.send("tokenの送信はこのサーバーで禁止されています")
                     userid=msg.author.id
                     try:
-                        if self.settings[str(msg.guild.id)]['action'][str(self.punishments[str(msg.guild.id)][str(userid)])].startswith('ban'):
-                            if self.settings[str(msg.guild.id)]['action'][str(self.punishments[str(msg.guild.id)][str(userid)])].startswith('ban,'):
+                        if self.settings[str(msg.guild.id)]['action'][str(punish)].startswith('ban'):
+                            if self.settings[str(msg.guild.id)]['action'][str(punish)].startswith('ban,'):
                                 self.muteds[str(msg.guild.id)][str(userid)] = dict()
-                                self.muteds[str(msg.guild.id)][str(userid)]["time"] = int(time.time()) + int(self.settings[str(msg.guild.id)]['action'][str(self.punishments[str(msg.guild.id)][str(userid)])].replace('ban,',''))
+                                self.muteds[str(msg.guild.id)][str(userid)]["time"] = int(time.time()) + int(self.settings[str(msg.guild.id)]['action'][str(punish)].replace('ban,',''))
                                 self.muteds[str(msg.guild.id)][str(userid)]["type"] = "ban"
                             await msg.author.ban()
-                        if self.settings[str(msg.guild.id)]['action'][str(self.punishments[str(msg.guild.id)][str(userid)])]=='kick':
+                        if self.settings[str(msg.guild.id)]['action'][str(punish)]=='kick':
                             await msg.author.kick()
-                        if self.settings[str(msg.guild.id)]['action'][str(self.punishments[str(msg.guild.id)][str(userid)])].startswith('mute'):
-                            if self.settings[str(msg.guild.id)]['action'][str(self.punishments[str(msg.guild.id)][str(userid)])].startswith('mute,'):
+                        if self.settings[str(msg.guild.id)]['action'][str(punish)].startswith('mute'):
+                            if self.settings[str(msg.guild.id)]['action'][str(punish)].startswith('mute,'):
                                 self.muteds[str(msg.guild.id)][str(userid)] = dict()
-                                self.muteds[str(msg.guild.id)][str(userid)]["time"] = int(time.time()) + int(self.settings[str(msg.guild.id)]['action'][str(self.punishments[str(msg.guild.id)][str(userid)])].replace('mute,',''))
+                                self.muteds[str(msg.guild.id)][str(userid)]["time"] = int(time.time()) + int(self.settings[str(msg.guild.id)]['action'][str(punish)].replace('mute,',''))
                                 self.muteds[str(msg.guild.id)][str(userid)]["type"] = "mute"
                             await msg.author.add_roles(msg.guild.get_role(self.settings[str(msg.guild.id)]["muterole"]))
-                        if self.settings[str(msg.guild.id)]['action'][str(self.punishments[str(msg.guild.id)][str(userid)])].startswith('timeout'):
-                            await msg.author.timeout(timedelta(seconds=int(self.settings[str(msg.guild.id)]['action'][str(self.punishments[str(msg.guild.id)][str(userid)])].replace('timeout,',''))),reason="sakura automod")
+                        if self.settings[str(msg.guild.id)]['action'][str(punish)].startswith('timeout'):
+                            await msg.author.timeout(timedelta(seconds=int(self.settings[str(msg.guild.id)]['action'][str(punish)].replace('timeout,',''))),reason="sakura automod")
                     except KeyError:
                         str('keyerror')
                     await self.save(msg.guild.id)
@@ -464,6 +465,7 @@ class automod(commands.Cog):
                 if not str(userid) in self.punishments[str(msg.guild.id)]:
                     self.punishments[str(msg.guild.id)][str(userid)]=0
                 self.punishments[str(msg.guild.id)][str(userid)]=self.punishments[str(msg.guild.id)][str(userid)]+1
+                punish=self.punishments[str(msg.guild.id)][str(userid)]
                 await msg.channel.send('Spamは禁止されています')
                 await self.save(msg.guild.id)
                 for dmsg in self.sendmsgs[str(msg.guild.id)][str(msg.author.id)]:
@@ -473,22 +475,22 @@ class automod(commands.Cog):
                          str("メッセージが見つかりません")
                 try:
                     memb = msg.author
-                    if self.settings[str(msg.guild.id)]['action'][str(self.punishments[str(msg.guild.id)][str(userid)])].startswith('ban'):
-                        if self.settings[str(msg.guild.id)]['action'][str(self.punishments[str(msg.guild.id)][str(userid)])].startswith('ban,'):
+                    if self.settings[str(msg.guild.id)]['action'][str(punish)].startswith('ban'):
+                        if self.settings[str(msg.guild.id)]['action'][str(punish)].startswith('ban,'):
                             self.muteds[str(memb.guild.id)][str(memb.id)] = dict()
-                            self.muteds[str(memb.guild.id)][str(memb.id)]["time"] = int(time.time()) + int(self.settings[str(msg.guild.id)]['action'][str(self.punishments[str(msg.guild.id)][str(userid)])].replace('ban,',''))
+                            self.muteds[str(memb.guild.id)][str(memb.id)]["time"] = int(time.time()) + int(self.settings[str(msg.guild.id)]['action'][str(punish)].replace('ban,',''))
                             self.muteds[str(memb.guild.id)][str(memb.id)]["type"] = "ban"
                         await msg.author.ban()
-                    if self.settings[str(msg.guild.id)]['action'][str(self.punishments[str(msg.guild.id)][str(userid)])]=='kick':
+                    if self.settings[str(msg.guild.id)]['action'][str(punish)]=='kick':
                         await msg.author.kick()
-                    if self.settings[str(msg.guild.id)]['action'][str(self.punishments[str(msg.guild.id)][str(userid)])].startswith('mute'):
-                        if self.settings[str(msg.guild.id)]['action'][str(self.punishments[str(msg.guild.id)][str(userid)])].startswith('mute,'):
+                    if self.settings[str(msg.guild.id)]['action'][str(punish)].startswith('mute'):
+                        if self.settings[str(msg.guild.id)]['action'][str(punish)].startswith('mute,'):
                             self.muteds[str(memb.guild.id)][str(memb.id)] = dict()
-                            self.muteds[str(memb.guild.id)][str(memb.id)]["time"] = int(time.time()) + int(self.settings[str(msg.guild.id)]['action'][str(self.punishments[str(msg.guild.id)][str(userid)])].replace('mute,',''))
+                            self.muteds[str(memb.guild.id)][str(memb.id)]["time"] = int(time.time()) + int(self.settings[str(msg.guild.id)]['action'][str(punish)].replace('mute,',''))
                             self.muteds[str(memb.guild.id)][str(memb.id)]["type"] = "mute"
                         await msg.author.add_roles(msg.guild.get_role(self.settings[str(memb.guild.id)]["muterole"]))
-                    if self.settings[str(msg.guild.id)]['action'][str(self.punishments[str(msg.guild.id)][str(userid)])].startswith('timeout'):
-                        await msg.author.timeout(timedelta(seconds=int(self.settings[str(msg.guild.id)]['action'][str(self.punishments[str(msg.guild.id)][str(userid)])].replace('timeout,',''))),reason="sakura automod")
+                    if self.settings[str(msg.guild.id)]['action'][str(punish)].startswith('timeout'):
+                        await msg.author.timeout(timedelta(seconds=int(self.settings[str(msg.guild.id)]['action'][str(punish)].replace('timeout,',''))),reason="sakura automod")
                 except KeyError:
                     str('keyerror')
         else:
@@ -507,27 +509,28 @@ class automod(commands.Cog):
                 if not str(userid) in self.punishments[str(msg.guild.id)]:
                     self.punishments[str(msg.guild.id)][str(userid)]=0
                 self.punishments[str(msg.guild.id)][str(userid)]=self.punishments[str(msg.guild.id)][str(userid)]+1
+                punish=self.punishments[str(msg.guild.id)][str(userid)]
                 await msg.channel.send('禁止ワードが含まれています')
                 await self.save(msg.guild.id)
                 await msg.delete()
                 try:
                     memb = msg.author
-                    if self.settings[str(msg.guild.id)]['action'][str(self.punishments[str(msg.guild.id)][str(userid)])].startswith('ban'):
-                        if self.settings[str(msg.guild.id)]['action'][str(self.punishments[str(msg.guild.id)][str(userid)])].startswith('ban,'):
+                    if self.settings[str(msg.guild.id)]['action'][str(punish)].startswith('ban'):
+                        if self.settings[str(msg.guild.id)]['action'][str(punish)].startswith('ban,'):
                             self.muteds[str(memb.guild.id)][str(memb.id)] = dict()
-                            self.muteds[str(memb.guild.id)][str(memb.id)]["time"] = int(time.time()) + int(self.settings[str(msg.guild.id)]['action'][str(self.punishments[str(msg.guild.id)][str(userid)])].replace('ban,',''))
+                            self.muteds[str(memb.guild.id)][str(memb.id)]["time"] = int(time.time()) + int(self.settings[str(msg.guild.id)]['action'][str(punish)].replace('ban,',''))
                             self.muteds[str(memb.guild.id)][str(memb.id)]["type"] = "ban"
                         await msg.author.ban()
-                    if self.settings[str(msg.guild.id)]['action'][str(self.punishments[str(msg.guild.id)][str(userid)])]=='kick':
+                    if self.settings[str(msg.guild.id)]['action'][str(punish)]=='kick':
                         await msg.author.kick()
-                    if self.settings[str(msg.guild.id)]['action'][str(self.punishments[str(msg.guild.id)][str(userid)])].startswith('mute'):
-                        if self.settings[str(msg.guild.id)]['action'][str(self.punishments[str(msg.guild.id)][str(userid)])].startswith('mute,'):
+                    if self.settings[str(msg.guild.id)]['action'][str(punish)].startswith('mute'):
+                        if self.settings[str(msg.guild.id)]['action'][str(punish)].startswith('mute,'):
                             self.muteds[str(memb.guild.id)][str(memb.id)] = dict()
-                            self.muteds[str(memb.guild.id)][str(memb.id)]["time"] = int(time.time()) + int(self.settings[str(msg.guild.id)]['action'][str(self.punishments[str(msg.guild.id)][str(userid)])].replace('mute,',''))
+                            self.muteds[str(memb.guild.id)][str(memb.id)]["time"] = int(time.time()) + int(self.settings[str(msg.guild.id)]['action'][str(punish)].replace('mute,',''))
                             self.muteds[str(memb.guild.id)][str(memb.id)]["type"] = "mute"
                         await msg.author.add_roles(msg.guild.get_role(self.settings[str(memb.guild.id)]["muterole"]))
-                    if self.settings[str(msg.guild.id)]['action'][str(self.punishments[str(msg.guild.id)][str(userid)])].startswith('timeout'):
-                        await msg.author.timeout(timedelta(seconds=int(self.settings[str(msg.guild.id)]['action'][str(self.punishments[str(msg.guild.id)][str(userid)])].replace('timeout,',''))),reason="sakura automod")
+                    if self.settings[str(msg.guild.id)]['action'][str(punish)].startswith('timeout'):
+                        await msg.author.timeout(timedelta(seconds=int(self.settings[str(msg.guild.id)]['action'][str(punish)].replace('timeout,',''))),reason="sakura automod")
                 except KeyError:
                     str('keyerror')
 
