@@ -12,6 +12,7 @@ class schedule(commands.Cog):
         self.cache = dict()
         self.ready = Event()
         self.pool = self.bot.pool
+        self.before = ""
         self.process_notice.start()
 
     async def _prepare_table(self):
@@ -37,6 +38,7 @@ class schedule(commands.Cog):
 
     async def cog_load(self):
         await self._prepare_table()
+        self.ready.set()
 
     @commands.hybrid_group(
         aliases=["予定", "sch"]
