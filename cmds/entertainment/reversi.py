@@ -11,8 +11,6 @@ class reversi(commands.Cog):
     
     @commands.command()
     async def reversi(self,ctx):
-        if not ctx.guild.id in self.boards:
-            self.boards[ctx.guild.id] = list()
         b = board(self.bot)
         await b.start(ctx)
 class board():
