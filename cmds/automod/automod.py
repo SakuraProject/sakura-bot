@@ -394,7 +394,7 @@ class automod(commands.Cog):
                     userid=msg.author.id
                     guildid=msg.guild.id
                     if not str(ctx.guild.id) in self.punishments:
-                        self.punishments[str(ctx.guild.id)]=dict()
+                        self.punishments[str(msg.guild.id)]=dict()
                     if not str(userid) in self.punishments[str(msg.guild.id)]:
                         self.punishments[str(msg.guild.id)][str(userid)]=0
                     self.punishments[str(msg.guild.id)][str(userid)]=self.punishments[str(msg.guild.id)][str(userid)]+1
@@ -461,7 +461,7 @@ class automod(commands.Cog):
                 userid=msg.author.id
                 guildid=msg.guild.id
                 if not str(msg.guild.id) in self.punishments:
-                    self.punishments[str(ctx.guild.id)]=dict()
+                    self.punishments[str(msg.guild.id)]=dict()
                 if not str(userid) in self.punishments[str(msg.guild.id)]:
                     self.punishments[str(msg.guild.id)][str(userid)]=0
                 self.punishments[str(msg.guild.id)][str(userid)]=self.punishments[str(msg.guild.id)][str(userid)]+1
@@ -505,7 +505,7 @@ class automod(commands.Cog):
                 userid=msg.author.id
                 guildid=msg.guild.id
                 if not str(msg.guild.id) in self.punishments:
-                    self.punishments[str(ctx.guild.id)]=dict()
+                    self.punishments[str(msg.guild.id)]=dict()
                 if not str(userid) in self.punishments[str(msg.guild.id)]:
                     self.punishments[str(msg.guild.id)][str(userid)]=0
                 self.punishments[str(msg.guild.id)][str(userid)]=self.punishments[str(msg.guild.id)][str(userid)]+1
