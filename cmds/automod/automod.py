@@ -1,3 +1,5 @@
+from typing import Literal
+
 from discord.ext import commands, tasks
 import discord
 from pytimeparse.timeparse import timeparse
@@ -7,14 +9,12 @@ import time
 import re
 
 
-def arrayinarray(list1, list2):
-    for l1 in list1:
-        if l1 in list2:
-            return True
-    return False
+def arrayinarray(list1, list2) -> bool:
+    "list1の項目がlist2の中に一つでも含まれているかをチェックします。"
+    return any(item in list2 for item in list1)
 
 
-class automod(commands.Cog):
+class AutoMod(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
@@ -40,10 +40,35 @@ class automod(commands.Cog):
                     self.punishments[str(row[0])] = loads(row[2])
                     self.muteds[str(row[0])] = loads(row[3])
 
+    async def check_permissions(
+        self, type_: Literal["admin", "manage-guild"], ctx: commands.Context
+    ) -> None:
+        "ctx.authorが特定のtypeの権限を持っているか確認します。持っていなければエラーを送出します。"
+        if type_ == "admin" and not (
+            ctx.author.guild_permissions.administrator
+            or arrayinarray(
+                [r.id for r in ctx.author.roles],
+                self.settings[str(ctx.guild.id)]['adminrole']
+            )
+        ):
+            return self.raise_missing_parms(ctx, ["administrator"])
+        if type == "manage-guild" and not (
+            ctx.author.guild_permissions.manage_guild
+            or arrayinarray(
+                [r.id for r in ctx.author.roles],
+                self.settings[str(ctx.guild.id)]['adminrole']
+            ) or arrayinarray(
+                [r.id for r in ctx.author.roles],
+                self.settings[str(ctx.guild.id)]['modrole']
+            )
+        ):
+            return self.raise_missing_parms(ctx, ["manage_guild"])
+
     @tasks.loop(seconds=10)
     async def untask(self):
+        # Unban / unmute用のループ。
         now = int(time.time())
-        for gid in self.muteds.keys():
+        for gid in self.muteds:
             g = self.bot.get_guild(int(gid))
             for uid in self.muteds[gid].keys():
                 if int(self.muteds[gid][uid]["time"]) < now:
@@ -56,7 +81,7 @@ class automod(commands.Cog):
 
     @commands.command()
     @commands.has_permissions(ban_members=True)
-    async def timeout(self, ctx, member: discord.Member, *, time):
+    async def timeout(self, ctx, member: discord.Member, *, sec):
         sec = timeparse(sec)
         tdl = timedelta(seconds=sec)
         await member.timeout(tdl, reason="timeout command")
@@ -74,10 +99,10 @@ class automod(commands.Cog):
             self.settings[str(ctx.guild.id)] = dict()
         if not "adminrole" in self.settings[str(ctx.guild.id)]:
             self.settings[str(ctx.guild.id)]["adminrole"] = list()
-        if not (ctx.author.guild_permissions.administrator or arrayinarray([r.id for r in ctx.author.roles], self.settings[str(ctx.guild.id)]['adminrole'])):
-            await self.no_admin_perm(ctx)
-            return
-        if role == None:
+
+        await self.check_permissions("admin", ctx)
+
+        if role is None:
             role = await ctx.guild.create_role(name="sakura Muted", color=self.bot.Color)
         for tc in ctx.guild.text_channels:
             overwrite = tc.overwrites_for(role)
@@ -110,8 +135,8 @@ class automod(commands.Cog):
             overwrites = channel.overwrites
             overwrites[role] = overwrite
             await channel.edit(overwrites=overwrites)
-        except:
-            str("error")
+        except discord.Forbidden:
+            pass
 
     def raidcheck(self, member):
         if not str(member.guild.id) in self.m:
@@ -123,11 +148,10 @@ class automod(commands.Cog):
             self.time_[str(member.guild.id)] = time.time()
             if time.time() - self.time_[str(member.guild.id)] >= 60.0:
                 self.m[str(member.guild.id)] = list()
+        elif len(self.m[str(member.guild.id)]) >= int(self.settings[str(member.guild.id)]['raidcount']) and time.time() - self.time_[str(member.guild.id)] <= 15.0:
+            return True
         else:
-            if len(self.m[str(member.guild.id)]) >= int(self.settings[str(member.guild.id)]['raidcount']) and time.time() - self.time_[str(member.guild.id)] <= 15.0:
-                return True
-            else:
-                return False
+            return False
 
     @commands.Cog.listener()
     async def on_member_join(self, member):
@@ -167,9 +191,7 @@ class automod(commands.Cog):
             self.settings[str(ctx.guild.id)] = dict()
         if not "adminrole" in self.settings[str(ctx.guild.id)]:
             self.settings[str(ctx.guild.id)]["adminrole"] = list()
-        if not (ctx.author.guild_permissions.administrator or arrayinarray([r.id for r in ctx.author.roles], self.settings[str(ctx.guild.id)]['adminrole'])):
-            await self.no_admin_perm(ctx)
-            return
+        await self.check_permissions("admin", ctx)
         if not "ngword" in self.settings[str(ctx.guild.id)]:
             self.settings[str(ctx.guild.id)]["ngword"] = list()
         if word in self.settings[str(ctx.guild.id)]["ngword"]:
@@ -185,9 +207,7 @@ class automod(commands.Cog):
             self.settings[str(ctx.guild.id)] = dict()
         if not "adminrole" in self.settings[str(ctx.guild.id)]:
             self.settings[str(ctx.guild.id)]["adminrole"] = list()
-        if not (ctx.author.guild_permissions.administrator or arrayinarray([r.id for r in ctx.author.roles], self.settings[str(ctx.guild.id)]['adminrole'])):
-            await self.no_admin_perm(ctx)
-            return
+        await self.check_permissions("admin", ctx)
         if not "ngword" in self.settings[str(ctx.guild.id)]:
             self.settings[str(ctx.guild.id)]["ngword"] = list()
         if word in self.settings[str(ctx.guild.id)]["ngword"]:
@@ -203,9 +223,7 @@ class automod(commands.Cog):
             self.settings[str(ctx.guild.id)] = dict()
         if not "adminrole" in self.settings[str(ctx.guild.id)]:
             self.settings[str(ctx.guild.id)]["adminrole"] = list()
-        if not (ctx.author.guild_permissions.administrator or arrayinarray([r.id for r in ctx.author.roles], self.settings[str(ctx.guild.id)]['adminrole'])):
-            await self.no_admin_perm(ctx)
-            return
+        await self.check_permissions("admin", ctx)
         if time != None:
             time = timeparse(time)
         if action == 'kick':
@@ -238,9 +256,7 @@ class automod(commands.Cog):
             self.settings[str(ctx.guild.id)] = dict()
         if not "adminrole" in self.settings[str(ctx.guild.id)]:
             self.settings[str(ctx.guild.id)]["adminrole"] = list()
-        if not (ctx.author.guild_permissions.administrator or arrayinarray([r.id for r in ctx.author.roles], self.settings[str(ctx.guild.id)]['adminrole'])):
-            await self.no_admin_perm(ctx)
-            return
+        await self.check_permissions("admin", ctx)
         if not "ch" in self.settings[str(ctx.guild.id)]:
             self.settings[str(ctx.guild.id)]["ch"] = list()
         if not "role" in self.settings[str(ctx.guild.id)]:
@@ -282,9 +298,7 @@ class automod(commands.Cog):
             self.settings[str(ctx.guild.id)] = dict()
         if not "adminrole" in self.settings[str(ctx.guild.id)]:
             self.settings[str(ctx.guild.id)]["adminrole"] = list()
-        if not (ctx.author.guild_permissions.administrator or arrayinarray([r.id for r in ctx.author.roles], self.settings[str(ctx.guild.id)]['adminrole'])):
-            await self.no_admin_perm(ctx)
-            return
+        await self.check_permissions("admin", ctx)
         if onoff == 'on':
             self.settings[str(ctx.guild.id)]['tokens'] = 'on'
             await self.save(ctx.guild.id)
@@ -304,9 +318,7 @@ class automod(commands.Cog):
             self.settings[str(ctx.guild.id)]["adminrole"] = list()
         if not "modrole" in self.settings[str(ctx.guild.id)]:
             self.settings[str(ctx.guild.id)]['modrole'] = list()
-        if not (ctx.author.guild_permissions.manage_guild or arrayinarray([r.id for r in ctx.author.roles], self.settings[str(ctx.guild.id)]['adminrole']) or arrayinarray([r.id for r in ctx.author.roles], self.settings[str(ctx.guild.id)]['modrole'])):
-            await no_manserver_perm(ctx)
-            return
+        await self.check_permissions("manage-guild", ctx)
         stri = int(strike)
         if not str(ctx.guild.id) in self.settings:
             self.settings[str(ctx.guild.id)] = dict()
@@ -338,9 +350,7 @@ class automod(commands.Cog):
             self.settings[str(ctx.guild.id)] = dict()
         if not "adminrole" in self.settings[str(ctx.guild.id)]:
             self.settings[str(ctx.guild.id)]["adminrole"] = list()
-        if not (ctx.author.guild_permissions.administrator or arrayinarray([r.id for r in ctx.author.roles], self.settings[str(ctx.guild.id)]['adminrole'])):
-            await self.no_admin_perm(ctx)
-            return
+        await self.check_permissions("admin", ctx)
         self.settings[str(ctx.guild.id)]['duplct'] = spamcount
         await self.save(ctx.guild.id)
         await ctx.send(str(spamcount)+'回連投で1Strike付与します')
@@ -386,11 +396,9 @@ class automod(commands.Cog):
             self.settings[str(ctx.guild.id)]["adminrole"] = list()
         if not "modrole" in self.settings[str(ctx.guild.id)]:
             self.settings[str(ctx.guild.id)]['modrole'] = list()
-        if not (ctx.author.guild_permissions.manage_guild or arrayinarray([r.id for r in ctx.author.roles], self.settings[str(ctx.guild.id)]['adminrole']) or arrayinarray([r.id for r in ctx.author.roles], self.settings[str(ctx.guild.id)]['modrole'])):
-            await no_manserver_perm(ctx)
-            return
+        await self.check_permissions("manage-guild", ctx)
         await member.add_roles(ctx.guild.get_role(self.settings[str(member.guild.id)]["muterole"]))
-        await ctx.send("muteしました")
+        await ctx.send(f"{member.mention}をmuteしました。")
 
     @commands.command()
     async def unmute(self, ctx, member: discord.Member):
@@ -400,11 +408,9 @@ class automod(commands.Cog):
             self.settings[str(ctx.guild.id)]["adminrole"] = list()
         if not "modrole" in self.settings[str(ctx.guild.id)]:
             self.settings[str(ctx.guild.id)]['modrole'] = list()
-        if not (ctx.author.guild_permissions.manage_guild or arrayinarray([r.id for r in ctx.author.roles], self.settings[str(ctx.guild.id)]['adminrole']) or arrayinarray([r.id for r in ctx.author.roles], self.settings[str(ctx.guild.id)]['modrole'])):
-            await no_manserver_perm(ctx)
-            return
+        await self.check_permissions("manage-guild", ctx)
         await member.remove_roles(ctx.guild.get_role(self.settings[str(member.guild.id)]["muterole"]))
-        await ctx.send("unmuteしました")
+        await ctx.send(f"{member.mention}をunmuteしました。")
 
     @commands.Cog.listener()
     async def on_message(self, msg):
@@ -418,7 +424,7 @@ class automod(commands.Cog):
                 if re.search(tkreg, msg.content) != None:
                     userid = msg.author.id
                     guildid = msg.guild.id
-                    if not str(ctx.guild.id) in self.punishments:
+                    if not str(msg.guild.id) in self.punishments:
                         self.punishments[str(msg.guild.id)] = dict()
                     if not str(userid) in self.punishments[str(msg.guild.id)]:
                         self.punishments[str(msg.guild.id)][str(userid)] = 0
@@ -452,37 +458,24 @@ class automod(commands.Cog):
                         if self.settings[str(msg.guild.id)]['action'][str(punish)].startswith('timeout'):
                             await msg.author.timeout(timedelta(seconds=int(self.settings[str(msg.guild.id)]['action'][str(punish)].replace('timeout,', ''))), reason="sakura automod")
                     except KeyError:
-                        str('keyerror')
+                        pass
                     await self.save(msg.guild.id)
         except KeyError:
-            str('KeyError')
+            pass
         if self.ig(msg):
             return
-        try:
-            str(self.sendcont[str(msg.guild.id)])
-        except:
-            self.sendcont[str(msg.guild.id)] = dict()
-        try:
-            str(self.sendcont[str(msg.guild.id)][str(msg.author.id)])
-        except:
-            self.sendcont[str(msg.guild.id)][str(msg.author.id)] = ''
-        try:
-            len(self.sendmsgs[str(msg.guild.id)])
-        except:
-            self.sendmsgs[str(msg.guild.id)] = dict()
-        try:
-            len(self.sendmsgs[str(msg.guild.id)][str(msg.author.id)])
-        except:
-            self.sendmsgs[str(msg.guild.id)][str(msg.author.id)] = list()
-        try:
-            len(self.sendtime[str(msg.guild.id)])
-        except:
-            self.sendtime[str(msg.guild.id)] = dict()
-        try:
-            str(self.sendtime[str(msg.guild.id)][str(msg.author.id)])
-        except:
-            self.sendtime[str(msg.guild.id)][str(msg.author.id)] = time.time()
-        if time.time()-self.sendtime[str(msg.guild.id)][str(msg.author.id)] <= 5.0:
+
+        # デフォルトの設定
+        self.sendcount.setdefault(str(msg.guild.id), dict())
+        self.sendcount[str(msg.guild.id)].setdefault(str(msg.author.id), '')
+
+        self.sendmsgs.setdefault(str(msg.guild.id), dict())
+        self.sendmsgs[str(msg.guild.id)].setdefault(str(msg.author.id), list())
+
+        self.sendtime.setdefault(str(msg.guild.id), dict())
+        self.sendtime[str(msg.guild.id)].setdefault(str(msg.author.id), time.time())
+
+        if time.time() - self.sendtime[str(msg.guild.id)][str(msg.author.id)] <= 5.0:
             self.sendtime[str(msg.guild.id)][str(msg.author.id)] = time.time()
             self.sendmsgs[str(msg.guild.id)][str(msg.author.id)].append(msg)
             if not str(msg.guild.id) in self.settings:
@@ -491,7 +484,6 @@ class automod(commands.Cog):
                 self.settings[str(msg.guild.id)]['duplct'] = 5
             if len(self.sendmsgs[str(msg.guild.id)][str(msg.author.id)]) >= int(self.settings[str(msg.guild.id)]['duplct']):
                 userid = msg.author.id
-                guildid = msg.guild.id
                 if not str(msg.guild.id) in self.punishments:
                     self.punishments[str(msg.guild.id)] = dict()
                 if not str(userid) in self.punishments[str(msg.guild.id)]:
@@ -534,15 +526,13 @@ class automod(commands.Cog):
                     str('keyerror')
         else:
             self.sendtime[str(msg.guild.id)][str(msg.author.id)] = time.time()
-            self.sendmsgs[str(msg.guild.id)][str(msg.author.id)] = list()
-            self.sendmsgs[str(msg.guild.id)][str(msg.author.id)].append(msg)
+            self.sendmsgs[str(msg.guild.id)][str(msg.author.id)] = [msg]
             self.sendcont[str(msg.guild.id)][str(msg.author.id)] = msg.content
         if not "ngword" in self.settings[str(msg.guild.id)]:
             self.settings[str(msg.guild.id)]["ngword"] = list()
         for nw in self.settings[str(msg.guild.id)]["ngword"]:
             if msg.content.find(nw) != -1:
                 userid = msg.author.id
-                guildid = msg.guild.id
                 if not str(msg.guild.id) in self.punishments:
                     self.punishments[str(msg.guild.id)] = dict()
                 if not str(userid) in self.punishments[str(msg.guild.id)]:
@@ -637,9 +627,7 @@ class automod(commands.Cog):
             self.settings[str(ctx.guild.id)] = dict()
         if not "adminrole" in self.settings[str(ctx.guild.id)]:
             self.settings[str(ctx.guild.id)]["adminrole"] = list()
-        if not (ctx.author.guild_permissions.administrator or arrayinarray([r.id for r in ctx.author.roles], self.settings[str(ctx.guild.id)]['adminrole'])):
-            await self.no_admin_perm(ctx)
-            return
+        await self.check_permissions("admin", ctx)
         if not str(ctx.guild.id) in self.settings:
             self.settings[str(ctx.guild.id)] = dict()
             self.settings[str(ctx.guild.id)]['adminrole'] = list()
@@ -656,12 +644,9 @@ class automod(commands.Cog):
             self.settings[str(ctx.guild.id)] = dict()
         if not "adminrole" in self.settings[str(ctx.guild.id)]:
             self.settings[str(ctx.guild.id)]["adminrole"] = list()
-        if not (ctx.author.guild_permissions.administrator or arrayinarray([r.id for r in ctx.author.roles], self.settings[str(ctx.guild.id)]['adminrole'])):
-            await self.no_admin_perm(ctx)
-            return
+        await self.check_permissions("admin", ctx)
         if not str(ctx.guild.id) in self.settings:
-            self.settings[str(ctx.guild.id)] = dict()
-            self.settings[str(ctx.guild.id)]['modrole'] = list()
+            self.settings[str(ctx.guild.id)] = {"modrole": []}
         if not "modrole" in self.settings[str(ctx.guild.id)]:
             self.settings[str(ctx.guild.id)]["modrole"] = list()
         if role.id in self.settings[str(ctx.guild.id)]['modrole']:
@@ -677,12 +662,9 @@ class automod(commands.Cog):
             self.settings[str(ctx.guild.id)] = dict()
         if not "adminrole" in self.settings[str(ctx.guild.id)]:
             self.settings[str(ctx.guild.id)]["adminrole"] = list()
-        if not (ctx.author.guild_permissions.administrator or arrayinarray([r.id for r in ctx.author.roles], self.settings[str(ctx.guild.id)]['adminrole'])):
-            await self.no_admin_perm(ctx)
-            return
+        await self.check_permissions("admin", ctx)
         if not str(ctx.guild.id) in self.settings:
-            self.settings[str(ctx.guild.id)] = dict()
-            self.settings[str(ctx.guild.id)]['adminrole'] = list()
+            self.settings[str(ctx.guild.id)] = {"adminrole": []}
         if role.id in self.settings[str(ctx.guild.id)]['adminrole']:
             self.settings[str(ctx.guild.id)]['adminrole'].remove(role.id)
             await self.save(ctx.guild.id)
@@ -696,9 +678,7 @@ class automod(commands.Cog):
             self.settings[str(ctx.guild.id)] = dict()
         if not "adminrole" in self.settings[str(ctx.guild.id)]:
             self.settings[str(ctx.guild.id)]["adminrole"] = list()
-        if not (ctx.author.guild_permissions.administrator or arrayinarray([r.id for r in ctx.author.roles], self.settings[str(ctx.guild.id)]['adminrole'])):
-            await self.no_admin_perm(ctx)
-            return
+        await self.check_permissions("admin", ctx)
         if not "modrole" in self.settings[str(ctx.guild.id)]:
             self.settings[str(ctx.guild.id)]["modrole"] = list()
         if role.id in self.settings[str(ctx.guild.id)]['modrole']:
@@ -708,11 +688,9 @@ class automod(commands.Cog):
         else:
             await ctx.send('このロールは追加されていません')
 
-    async def no_admin_perm(self, ctx):
-        """
-        admin roleがなく、権限がないときに通常のdiscordと同じエラーを発生させます
-        """
-        raise discord.ext.commands.MissingPermissions(["administrator"])
+    def raise_missing_parms(self, ctx: commands.Context, permissions: list) -> None:
+        "権限が足りないことを表すエラーを創出します。"
+        raise commands.MissingPermissions(ctx, permissions)
 
     async def save(self, gid):
         if not str(gid) in self.settings:
@@ -734,4 +712,4 @@ class automod(commands.Cog):
 
 
 async def setup(bot):
-    await bot.add_cog(automod(bot))
+    await bot.add_cog(AutoMod(bot))
