@@ -5,9 +5,9 @@ from datetime import datetime
 from asyncio import Event
 
 
-class schedule(commands.Cog): 
+class schedule(commands.Cog):
 
-    def __init__(self, bot): 
+    def __init__(self, bot):
         self.bot = bot
         self.cache = dict()
         self.ready = Event()
@@ -27,8 +27,8 @@ class schedule(commands.Cog):
                 # キャッシュを用意しておく。
                 await cursor.execute(f"SELECT * FROM schedule;")
                 for row in await cursor.fetchall():
-                    if row and row[1]: 
-                        try: 
+                    if row and row[1]:
+                        try:
                             self.cache[row[0]][row[1]] = {
                                 'UserID': row[0], 'body': row[1], 'stime': row[2], 'etime': row[3], 'day': row[4], 'dmnotice': row[5]}
                         except KeyError:
@@ -43,8 +43,8 @@ class schedule(commands.Cog):
     @commands.hybrid_group(
         aliases=["予定", "sch"]
     )
-    async def schedule(self, ctx: commands.Context): 
-        if not ctx.invoked_subcommand: 
+    async def schedule(self, ctx: commands.Context):
+        if not ctx.invoked_subcommand:
             await ctx.reply("使用方法が違います。")
 
     @schedule.command(
@@ -57,7 +57,7 @@ class schedule(commands.Cog):
         }
     )
     @app_commands.describe(start="予定開始時間", end="予定終了時間", day="日付", notice="DM通知するかどうか", title="タイトル")
-    async def set_(self, ctx: commands.Context, start, end, day, notice: bool, *, title): 
+    async def set_(self, ctx: commands.Context, start, end, day, notice: bool, *, title):
         notice = "on" if notice else "off"
         await ctx.typing()
         await self.set_schedule(ctx.author.id, start, end, day, notice, title)
@@ -143,7 +143,8 @@ class schedule(commands.Cog):
             for dal in sdays:
                 val = ""
                 for dt in dal[1]:
-                    val = val + dt['stime'] + "~" + dt['etime'] + '\n' + dt['body'] + "\n"
+                    val = val + dt['stime'] + "~" + \
+                        dt['etime'] + '\n' + dt['body'] + "\n"
                 embed.add_field(
                     name=dal[0],
                     value=val
@@ -159,7 +160,8 @@ class schedule(commands.Cog):
             except KeyError:
                 self.cache[userid] = dict()
                 self.cache[userid][title] = dict()
-            m = {'stime': start, 'etime': end, 'day': day, 'dmnotice': notice, 'body': title}
+            m = {'stime': start, 'etime': end, 'day': day,
+                 'dmnotice': notice, 'body': title}
             self.cache[userid][title].update(m)
         elif userid in self.cache:
             del self.cache[userid]

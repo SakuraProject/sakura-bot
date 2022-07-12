@@ -26,7 +26,8 @@ class GameSearch(commands.Cog):
         ELang default
         """
         async with self.bot.session.get(
-            "https://ysmsrv.wjg.jp/disbot/gamesearch.php?q=" + quote_plus(name, encoding='utf-8')
+            "https://ysmsrv.wjg.jp/disbot/gamesearch.php?q=" +
+                quote_plus(name, encoding='utf-8')
         ) as resp:
             gj = loads(await resp.text())
             hdw = ""
@@ -41,7 +42,8 @@ class GameSearch(commands.Cog):
             else:
                 embed = discord.Embed(
                     title=gametitle + "の詳細",
-                    description=game["Item"]["itemCaption"].replace('\\n', '\n'),
+                    description=game["Item"]["itemCaption"].replace(
+                        '\\n', '\n'),
                     color=self.bot.Color
                 )
                 embed.add_field(name="機種", value=hdw)
