@@ -1,5 +1,7 @@
 import discord
 from discord.ext import commands
+
+
 class ticket(commands.Cog):
     def __init__(self, bot):
         self.bot, self.before = bot, ""
@@ -10,7 +12,7 @@ class ticket(commands.Cog):
             await ctx.reply("使用方法が違います")
 
     @ticket.command()
-    async def panel(self, ctx, title, bttext, *,description):
+    async def panel(self, ctx, title, bttext, *, description):
         """
         NLang ja チケット作成用パネルコマンドです
         チケットを作成するためのパネルを送信します
@@ -23,15 +25,17 @@ class ticket(commands.Cog):
         EVAL self.bot.command_prefix+'ticket panel ticket_name button_contents embed_description'
         ELang default
         """
-        embed = discord.Embed(title=title,color=self.bot.Color,description=description)
-        bts=list()
-        button=discord.ui.Button(label=bttext,custom_id="sakuraticket",style=discord.ButtonStyle.green)
+        embed = discord.Embed(
+            title=title, color=self.bot.Color, description=description)
+        bts = list()
+        button = discord.ui.Button(
+            label=bttext, custom_id="sakuraticket", style=discord.ButtonStyle.green)
         bts.append(button)
-        views=MainView(bts)
-        await ctx.send(embeds=[embed],view=views)
+        views = MainView(bts)
+        await ctx.send(embeds=[embed], view=views)
 
     @ticket.command()
-    async def close(self,ctx):
+    async def close(self, ctx):
         """
         NLang ja チケットを閉じるコマンドです
         チケットを閉じるコマンドです。チケット作成者が実行できます。サーバーの管理者が削除したい場合はチャンネルをそのまま削除してください
@@ -44,12 +48,13 @@ class ticket(commands.Cog):
         EVAL self.bot.command_prefix+'ticket close'
         ELang default
         """
-        if ctx.channel.topic.find('（sakuraticket')!=-1:
-            id=int(ctx.channel.topic[ctx.channel.topic.rfind("（")+13:ctx.channel.topic.rfind('）')])
-            if id==ctx.author.id:
+        if ctx.channel.topic.find('（sakuraticket') != -1:
+            id = int(ctx.channel.topic[ctx.channel.topic.rfind(
+                "（")+13:ctx.channel.topic.rfind('）')])
+            if id == ctx.author.id:
                 for obj in ctx.channel.overwrites.keys():
                     perms = ctx.channel.overwrites_for(obj)
-                    perms.read_messages=False
+                    perms.read_messages = False
                     await ctx.channel.set_permissions(obj, overwrite=perms)
             else:
                 await ctx.send("あなたは実行できません")
@@ -57,7 +62,7 @@ class ticket(commands.Cog):
             await ctx.send("このチャンネルはチケットではありません")
 
     @ticket.command()
-    async def hide(self,ctx):
+    async def hide(self, ctx):
         """
         NLang ja 見れるユーザーを減らします
         チケットチャンネルを見れなくします
@@ -75,40 +80,43 @@ class ticket(commands.Cog):
     @commands.Cog.listener()
     async def on_interaction(self, interaction: discord.Interaction):
         if interaction.data.get("custom_id", "") == "sakuraticket":
-            chan=interaction.channel
-            cat=chan.category
+            chan = interaction.channel
+            cat = chan.category
             permission = {
                 interaction.guild.default_role: discord.PermissionOverwrite(read_messages=False),
                 interaction.guild.me: discord.PermissionOverwrite(read_messages=True),
-                interaction.user: discord.PermissionOverwrite(read_messages=True)
+                interaction.user: discord.PermissionOverwrite(
+                    read_messages=True)
             }
-            ch = await interaction.guild.create_text_channel(name=interaction.user.name+'-'+interaction.message.embeds[0].title,overwrites=permission,category=cat,topic='（sakuraticket'+str(interaction.user.id)+'）')
-            await interaction.response.send_message(content="作成しました",ephemeral=True)
+            ch = await interaction.guild.create_text_channel(name=interaction.user.name+'-'+interaction.message.embeds[0].title, overwrites=permission, category=cat, topic='（sakuraticket'+str(interaction.user.id)+'）')
+            await interaction.response.send_message(content="作成しました", ephemeral=True)
             await ch.send(interaction.user.mention + "チャンネルを作成しました。閉じる場合は" + self.bot.command_prefix + "ticket closeと発言してください。ユーザをメンションすることで他のユーザーを参加させることも出来ます")
 
     @commands.Cog.listener()
     async def on_message(self, msg):
-        if not isinstance(msg.channel,discord.TextChannel):
+        if not isinstance(msg.channel, discord.TextChannel):
             return
         if msg.channel.topic == None:
             return
-        if msg.channel.topic.find('（sakuraticket')!=-1:
-            id=int(msg.channel.topic[msg.channel.topic.rfind('（')+13:msg.channel.topic.rfind('）')])
-            if id==msg.author.id:
-                if len(msg.mentions)!=0:
-                    if msg.content.find(self.bot.command_prefix+'hide ')==0:
+        if msg.channel.topic.find('（sakuraticket') != -1:
+            id = int(msg.channel.topic[msg.channel.topic.rfind(
+                '（')+13:msg.channel.topic.rfind('）')])
+            if id == msg.author.id:
+                if len(msg.mentions) != 0:
+                    if msg.content.find(self.bot.command_prefix+'hide ') == 0:
                         for m in msg.mentions:
                             perms = msg.channel.overwrites_for(m)
-                            perms.read_messages=False
+                            perms.read_messages = False
                             await msg.channel.set_permissions(m, overwrite=perms)
                     else:
                         for m in msg.mentions:
                             perms = msg.channel.overwrites_for(m)
-                            perms.read_messages=True
+                            perms.read_messages = True
                             await msg.channel.set_permissions(m, overwrite=perms)
 
+
 class MainView(discord.ui.View):
-    def __init__(self,args):
+    def __init__(self, args):
         super().__init__(timeout=None)
 
         for txt in args:

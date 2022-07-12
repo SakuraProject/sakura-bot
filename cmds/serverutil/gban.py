@@ -1,7 +1,8 @@
 from discord.ext import commands
 import discord
 import asyncio
-from ujson import loads,dumps
+from ujson import loads, dumps
+
 
 class gban(commands.Cog):
     def __init__(self, bot):
@@ -16,7 +17,7 @@ class gban(commands.Cog):
                 await cur.execute(csql1)
 
     @commands.group()
-    async def gban(self,ctx):
+    async def gban(self, ctx):
         if not ctx.invoked_subcommand:
             await ctx.reply("使用方法が違います。")
 
@@ -25,12 +26,12 @@ class gban(commands.Cog):
     async def onoff(self, ctx, onoff):
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
-                await cur.execute("SELECT * FROM `gbanset` where `gid` = %s",(ctx.guild.id,))
+                await cur.execute("SELECT * FROM `gbanset` where `gid` = %s", (ctx.guild.id,))
                 res = await cur.fetchall()
                 if len(res) == 0:
-                    await cur.execute("INSERT INTO `gbanset` (`gid`, `onoff`) VALUES (%s,%s);",(ctx.guild.id,onoff.replace("true","on")))
+                    await cur.execute("INSERT INTO `gbanset` (`gid`, `onoff`) VALUES (%s,%s);", (ctx.guild.id, onoff.replace("true", "on")))
                 else:
-                    await cur.execute("UPDATE `gbanset` SET `gid` = %s,`onoff` = %s,`role` = %s where `gid` = %s;",(ctx.guild.id,onoff.replace("true","on"),roleid,ctx.guild.id))
+                    await cur.execute("UPDATE `gbanset` SET `gid` = %s,`onoff` = %s,`role` = %s where `gid` = %s;", (ctx.guild.id, onoff.replace("true", "on"), roleid, ctx.guild.id))
                 await ctx.reply("設定しました")
 
     @gban.command()
@@ -38,7 +39,7 @@ class gban(commands.Cog):
     async def add(self, ctx, user_id: int, *, reason):
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
-                await cur.execute("SELECT * FROM `gban` where `userid` = %s",(user_id,))
+                await cur.execute("SELECT * FROM `gban` where `userid` = %s", (user_id,))
                 res = await cur.fetchall()
                 if len(res) != 0:
                     await ctx.send("そのユーザーはすでに登録されています")
@@ -47,28 +48,28 @@ class gban(commands.Cog):
                     evi = [a.url for a in ctx.message.attachments]
                 else:
                     try:
-                        mes = await self.input(ctx,"証拠画像を送信してください")
+                        mes = await self.input(ctx, "証拠画像を送信してください")
                         evi = [a.url for a in mes.attachments]
                     except SyntaxError:
                         await ctx.send("キャンセルしました")
                         return
                 evif = dumps(evi)
                 for g in self.bot.guilds:
-                    await cur.execute("SELECT * FROM `gbanset` where `gid` = %s",(g.id,))
+                    await cur.execute("SELECT * FROM `gbanset` where `gid` = %s", (g.id,))
                     res = await cur.fetchall()
                     if len(res) != 0:
                         if res[0][1] == "off":
                             continue
                     try:
-                        await g.ban(await self.bot.fetch_user(user_id),reason="sakura gbanのため")
+                        await g.ban(await self.bot.fetch_user(user_id), reason="sakura gbanのため")
                         await asyncio.sleep(1)
                     except Exception as e:
                         await ctx.send(str(e) + '\n' + str(g.id))
-                await cur.execute("INSERT INTO `gban` (`userid`,`reason`,`evidence`) VALUES (%s,%s,%s);",(user_id,reason,evif))
+                await cur.execute("INSERT INTO `gban` (`userid`,`reason`,`evidence`) VALUES (%s,%s,%s);", (user_id, reason, evif))
                 await ctx.send("完了しました")
 
     @gban.command()
-    async def list(self,ctx):
+    async def list(self, ctx):
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
                 await cur.execute("SELECT * FROM `gban`")
@@ -76,7 +77,7 @@ class gban(commands.Cog):
                 if len(res) == 0:
                     await ctx.send("gbanされた人はまだいません")
                 else:
-                    ebds=list()
+                    ebds = list()
                     for r in res:
                         user = self.bot.get_user(r[0])
                         if user == None:
@@ -87,31 +88,32 @@ class gban(commands.Cog):
                         et = ""
                         for e in ev:
                             et = et + "[証拠](" + e + ")\n"
-                        ebd = discord.Embed(title=uname,description="userid:" + str(r[0]) + "\n" + r[1] + "\n" + et)
+                        ebd = discord.Embed(
+                            title=uname, description="userid:" + str(r[0]) + "\n" + r[1] + "\n" + et)
                         ebds.append(ebd)
-                    await ctx.send(embeds=[ebds[0]],view=NextButton(ebds))
+                    await ctx.send(embeds=[ebds[0]], view=NextButton(ebds))
 
     @commands.Cog.listener()
     async def on_member_join(self, member: discord.Member):
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
-                await cur.execute("SELECT * FROM `gbanset` where `gid` = %s",(str(member.guild.id),))
+                await cur.execute("SELECT * FROM `gbanset` where `gid` = %s", (str(member.guild.id),))
                 res = await cur.fetchall()
                 if len(res) != 0:
                     if res[0][1] == "off":
                         return
-                await cur.execute("SELECT * FROM `gban` where `userid` = %s",(str(member.id),))
+                await cur.execute("SELECT * FROM `gban` where `userid` = %s", (str(member.id),))
                 res = await cur.fetchall()
                 if len(res) != 0:
                     await member.ban(reason="Sakura gbanのため")
 
-    async def input(self,ctx,q):
+    async def input(self, ctx, q):
         def check(m):
             return m.author == ctx.author and m.channel == ctx.channel
         await ctx.send(q)
         while True:
             try:
-                message = await self.bot.wait_for('message', timeout= 180.0, check= check)
+                message = await self.bot.wait_for('message', timeout=180.0, check=check)
             except asyncio.TimeoutError:
                 await ctx.channel.send('入力を待機中です。キャンセルする場合は「キャンセルする」と送ってください')
             else:
@@ -120,7 +122,7 @@ class gban(commands.Cog):
                 await ctx.channel.send("入力を受け付けました。確定する場合は「ok」と送って下さい。やり直す場合は「修正」と送ってください")
                 while True:
                     try:
-                        message1 = await self.bot.wait_for('message', timeout= 180.0, check= check)
+                        message1 = await self.bot.wait_for('message', timeout=180.0, check=check)
                     except asyncio.TimeoutError:
                         await ctx.channel.send('タイムアウトしました。入力をやりなおしてください')
                         break
@@ -129,6 +131,8 @@ class gban(commands.Cog):
                             return message
                         elif message1.content == "修正":
                             break
+
+
 class NextButton(discord.ui.View):
     def __init__(self, ebds):
         self.it = ebds
@@ -138,16 +142,19 @@ class NextButton(discord.ui.View):
     @discord.ui.button(label="<")
     async def left(self, interaction: discord.Interaction, bt):
         if self.page != 0:
-            self.page = self.page -1
-            await interaction.response.edit_message(embeds=[self.it[self.page]],view=self)
+            self.page = self.page - 1
+            await interaction.response.edit_message(embeds=[self.it[self.page]], view=self)
         else:
             return await interaction.response.send_message("このページが最初です", ephemeral=True)
+
     @discord.ui.button(label=">")
     async def right(self, interaction: discord.Interaction,  bt):
         if self.page != len(self.it) - 1:
             self.page = self.page + 1
-            await interaction.response.edit_message(embeds=[self.it[self.page]],view=self)
+            await interaction.response.edit_message(embeds=[self.it[self.page]], view=self)
         else:
             return await interaction.response.send_message("次のページはありません", ephemeral=True)
+
+
 async def setup(bot):
     await bot.add_cog(gban(bot))
