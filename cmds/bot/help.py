@@ -2,14 +2,16 @@ import discord
 from discord.ext import commands
 import os
 
+
 class help(commands.Cog):
     def __init__(self, bot):
         self.bot, self.before = bot, ""
         self.helps = dict()
+
     @commands.command(
         aliases=["ヘルプ"]
     )
-    async def help(self, ctx: commands.Context,cmd = None,subcmd = None):
+    async def help(self, ctx: commands.Context, cmd=None, subcmd=None):
         """
         NLang ja ヘルプを表示します
         あなたが今実行しているコマンドです。ヘルプを表示します
@@ -24,11 +26,12 @@ class help(commands.Cog):
         EVAL self.bot.command_prefix+'help command name'
         ELang default
         """
-        hl = await self.hpl(cmd,subcmd)
+        hl = await self.hpl(cmd, subcmd)
         view = discord.ui.View()
         view.add_item(CatList(self))
-        await ctx.send(embeds=[hl["ebd"]],view=view)
-    async def hpl(self,cmd = None,subcmd = None):
+        await ctx.send(embeds=[hl["ebd"]], view=view)
+
+    async def hpl(self, cmd=None, subcmd=None):
         l = "ja"
         sed = "これはBotのヘルプです。下の選択メニューからカテゴリを選ぶことによりコマンドを選択できます。これを見てもよくわからない方はサポートサーバーまでお問い合わせください"
         if cmd != None:
@@ -41,9 +44,13 @@ class help(commands.Cog):
                         if gcm.callback.__doc__ != None:
                             doc = await self.parsedoc(gcm.callback.__doc__)
                             try:
-                                sed = sed + self.bot.command_prefix + comd.name + " " + gcm.name + " : " + doc["sd"][l] + "\n"
+                                sed = sed + self.bot.command_prefix + comd.name + \
+                                    " " + gcm.name + " : " + \
+                                    doc["sd"][l] + "\n"
                             except KeyError:
-                                sed = sed + self.bot.command_prefix + comd.name + " " + gcm.name + " : " + doc["sd"]["default"] + "\n"
+                                sed = sed + self.bot.command_prefix + comd.name + \
+                                    " " + gcm.name + " : " + \
+                                    doc["sd"]["default"] + "\n"
                         else:
                             sed = sed + self.bot.command_prefix + comd.name + " " + gcm.name + " : \n"
                 if type(comd).__name__ == "Command":
@@ -66,12 +73,12 @@ class help(commands.Cog):
                             sed = doc["desc"]["default"]
                     else:
                         sed = "このコマンドの詳細はサポートサーバーでお問い合わせください"
-        ebd = discord.Embed(color=self.bot.Color,description=sed)
+        ebd = discord.Embed(color=self.bot.Color, description=sed)
         redic = dict()
-        redic["ebd"]=ebd
+        redic["ebd"] = ebd
         return redic
 
-    async def parsedoc(self,doc):
+    async def parsedoc(self, doc):
         spl = doc.splitlines()
         lang = dict()
         res = dict()
@@ -79,12 +86,12 @@ class help(commands.Cog):
         dol = False
         dln = ""
         for cmds in spl:
-            cmds = cmds.replace("    ","")
+            cmds = cmds.replace("    ", "")
             cmd = cmds.split(" ")
             if cmd[0] == "NLang":
                 dol = True
                 dln = cmd[1]
-                sdesc[dln] = cmds.replace("NLang " + dln + " ","")
+                sdesc[dln] = cmds.replace("NLang " + dln + " ", "")
                 lang[dln] = ""
                 continue
             if cmd[0] == "ELang":
@@ -93,28 +100,32 @@ class help(commands.Cog):
                 continue
             if dol:
                 if cmd[0] == "EVAL":
-                    lang[dln] = lang[dln] + eval(cmds.replace("EVAL ","")) + "\n"
+                    lang[dln] = lang[dln] + \
+                        eval(cmds.replace("EVAL ", "")) + "\n"
                 else:
                     lang[dln] = lang[dln] + cmds + "\n"
         res["sd"] = sdesc
         res["desc"] = lang
         return res
+
+
 class CatList(discord.ui.Select):
-    def __init__(self,cog):
+    def __init__(self, cog):
         l = "ja"
         self.cog = cog
         options = []
         for name in os.listdir("cmds"):
-            if not name.startswith((".","_")):
+            if not name.startswith((".", "_")):
                 try:
-                    exec("from cmds." + name +" import name as " + name)
+                    exec("from cmds." + name + " import name as " + name)
                     try:
                         rname = eval(name)[l]
                     except KeyError:
                         rname = eval(name)["default"]
                 except ImportError:
                     rname = name
-                options.append(discord.SelectOption(label=name, description='',value=rname))
+                options.append(discord.SelectOption(
+                    label=name, description='', value=rname))
         super().__init__(placeholder='', min_values=1, max_values=1, options=options)
 
     async def callback(self, interaction: discord.Interaction):
@@ -128,27 +139,32 @@ class CatList(discord.ui.Select):
                 if cm.callback.__doc__ != None:
                     doc = await self.cog.parsedoc(cm.callback.__doc__)
                     try:
-                        sed = sed + self.cog.bot.command_prefix + cm.name + " : " + doc["sd"][l] + "\n"
+                        sed = sed + self.cog.bot.command_prefix + \
+                            cm.name + " : " + doc["sd"][l] + "\n"
                     except KeyError:
-                        sed = sed + self.cog.bot.command_prefix + cm.name + " : " + doc["sd"]["default"] + "\n"
+                        sed = sed + self.cog.bot.command_prefix + \
+                            cm.name + " : " + doc["sd"]["default"] + "\n"
                 else:
-                    sed =  sed + self.cog.bot.command_prefix + cm.name + " : \n"
+                    sed = sed + self.cog.bot.command_prefix + cm.name + " : \n"
                 cmds.append(cm)
-        ebd = discord.Embed(color=self.cog.bot.Color,description=sed)
+        ebd = discord.Embed(color=self.cog.bot.Color, description=sed)
         view.add_item(self)
-        view.add_item(CmdList(cmds,self.cog))
-        await interaction.response.edit_message(embeds=[ebd],view=view)
-        
+        view.add_item(CmdList(cmds, self.cog))
+        await interaction.response.edit_message(embeds=[ebd], view=view)
+
+
 class CmdList(discord.ui.Select):
-    def __init__(self,cmds,cog):
+    def __init__(self, cmds, cog):
         self.cog = cog
         options = []
         self.cmds = cmds
         for cm in cmds:
             if cm.parent == None:
-                options.append(discord.SelectOption(label=self.cog.bot.command_prefix + cm.name, description='',value=cm.name))
+                options.append(discord.SelectOption(
+                    label=self.cog.bot.command_prefix + cm.name, description='', value=cm.name))
             else:
-                options.append(discord.SelectOption(label=self.cog.bot.command_prefix + cm.parent.qualified_name + " " + cm.name, description='',value=cm.parent.qualified_name + " " + cm.name))
+                options.append(discord.SelectOption(label=self.cog.bot.command_prefix + cm.parent.qualified_name +
+                               " " + cm.name, description='', value=cm.parent.qualified_name + " " + cm.name))
         super().__init__(placeholder='', min_values=1, max_values=1, options=options)
 
     async def callback(self, interaction: discord.Interaction):
@@ -158,7 +174,7 @@ class CmdList(discord.ui.Select):
         if type(cmd).__name__ == "Command" or type(cmd).__name__ == "HybridCommand":
             if cmd.parent != None:
                 spl = val.split(" ")
-                hl = await self.cog.hpl(spl[0],spl[1])
+                hl = await self.cog.hpl(spl[0], spl[1])
             else:
                 hl = await self.cog.hpl(val)
             ebd = hl["ebd"]
@@ -168,7 +184,9 @@ class CmdList(discord.ui.Select):
             ebd = hl["ebd"]
             view = discord.ui.View()
             view.add_item(CatList(self.cog))
-            view.add_item(CmdList(list(cmd.commands),self.cog))
-            await interaction.response.edit_message(embeds=[ebd],view=view)
+            view.add_item(CmdList(list(cmd.commands), self.cog))
+            await interaction.response.edit_message(embeds=[ebd], view=view)
+
+
 async def setup(bot):
     await bot.add_cog(help(bot))
