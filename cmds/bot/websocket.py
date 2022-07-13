@@ -64,7 +64,7 @@ class websocket(commands.Cog):
         self.bot = bot
         self.res = dict()
     async def cog_load(self):
-        self.uri = "ws://localhost:3000/ws"
+        self.uri = "ws://sakura-bot.net:80/ws"
         self.sock = await websockets.connect(self.uri)
         asyncio.ensure_future(self.wilp())
 
