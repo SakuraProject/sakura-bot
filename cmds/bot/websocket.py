@@ -62,24 +62,26 @@ class WSContext(Context):
 class websocket(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.res = dict()
     async def cog_load(self):
-        self.uri = "ws://sakura-bot.net:80/ws"
+        self.uri = "ws://localhost:3000/ws"
         self.sock = await websockets.connect(self.uri)
         asyncio.ensure_future(self.wilp())
 
     async def wilp(self):
         while True:
             try:
-                await self.sock.send("numdata")
-                count = int(await self.sock.recv())
-                cmd = dict()
-                for i in range(count):
-                    cmd[i] = loads(await self.sock.recv())
-                    name = cmd[i]["cmd"]
-                    res = await getattr(self, name)(cmd[i]["args"])
-                    cmd[i]["args"] = res
-                    recv = dumps(cmd[i])
+                cmd = loads(await self.sock.recv())
+                if cmd["type"] == "cmd":
+                    name = cmd["cmd"]
+                    res = await getattr(self, name)(cmd["args"])
+                    cmd["args"] = res
+                    recv = dumps(cmd)
                     await self.sock.send(recv)
+                elif cmd["type"] == "res":
+                    if not cmd["cmd"] in self.res:
+                        self.res[cmd["cmd"]] = dict()
+                    self.res[cmd["cmd"]][cmd["args"]["id"]] = cmd["args"]
             except ConnectionClosed:
                 self.sock = await websockets.connect(self.uri)
             await asyncio.sleep(1)
