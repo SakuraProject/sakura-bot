@@ -57,6 +57,7 @@ class WSContext(Context):
         args = dict()
         args["content"] = sc
         sen["args"] = args
+        sen["type"] = "res"
         await self.bot.cogs["websocket"].sock.send(dumps(sen))
 
 class websocket(commands.Cog):
