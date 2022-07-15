@@ -42,6 +42,7 @@ class giveaway(commands.Cog):
                         users = list()
                         for i in range(len(gaway['cid'])):
                             try:
+                                new_message = None
                                 channel = self.bot.get_channel(
                                     int(gaway['cid'][str(i)]))
                                 if channel != None:
