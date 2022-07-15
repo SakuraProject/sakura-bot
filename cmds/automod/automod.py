@@ -478,6 +478,9 @@ class AutoMod(commands.Cog):
 
         self.sendtime.setdefault(str(msg.guild.id), dict())
         self.sendtime[str(msg.guild.id)].setdefault(str(msg.author.id), time.time())
+        
+        self.sendcont.setdefault(str(msg.guild.id), dict())
+        self.sendcont[str(msg.guild.id)].setdefault(str(msg.author.id), '')
 
         if time.time() - self.sendtime[str(msg.guild.id)][str(msg.author.id)] <= 5.0:
             self.sendtime[str(msg.guild.id)][str(msg.author.id)] = time.time()
