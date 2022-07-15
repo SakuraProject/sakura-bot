@@ -26,6 +26,7 @@ class AutoMod(commands.Cog):
         self.sendtime = dict()
         self.sendcont = dict()
         self.sendmsgs = dict()
+        self.sendcount = dict()
         self.untask.start()
 
     async def cog_load(self):
@@ -72,12 +73,15 @@ class AutoMod(commands.Cog):
             g = self.bot.get_guild(int(gid))
             for uid in self.muteds[gid].keys():
                 if int(self.muteds[gid][uid]["time"]) < now:
-                    if self.muteds[gid][uid]["type"] == "ban":
-                        member = await self.bot.fetch_user(int(uid))
-                        await g.unban(member)
-                    elif self.muteds[gid][uid]["type"] == "mute":
-                        member = g.get_member(int(uid))
-                        await member.remove_roles(g.get_role(self.settings[str(gid)]["muterole"]))
+                    try:
+                        if self.muteds[gid][uid]["type"] == "ban":
+                            member = await self.bot.fetch_user(int(uid))
+                            await g.unban(member)
+                        elif self.muteds[gid][uid]["type"] == "mute":
+                            member = g.get_member(int(uid))
+                            await member.remove_roles(g.get_role(self.settings[str(gid)]["muterole"]))
+                    except:
+                        pass
 
     @commands.command()
     @commands.has_permissions(ban_members=True)
