@@ -11,8 +11,12 @@ class ObjectInfo(commands.Cog):
         self.bot = bot
 
     @commands.command()
-    async def userinfo(self, ctx, arg: discord.User):
-        e = discord.Embed()
+    async def userinfo(self, ctx: commands.Context, target: discord.User):
+        e = discord.Embed(
+            title=f"{target}{'🤖' if target.bot else ''}の情報",
+            description=f"ID: `{target.id}`"
+        )
+        await ctx.reply(embed=e)
 
 
 async def setup(bot: commands.Bot) -> None:
