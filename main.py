@@ -12,8 +12,9 @@ import aiomysql
 
 
 load_dotenv()
-intent = discord.Intents.all()
-bot = commands.Bot(command_prefix='sk!', intents=intent, help_command=None)
+
+bot = commands.Bot(command_prefix='sk!', intents=discord.Intents.all(), help_command=None, 
+    allowed_mentions=discord.AllowedMentions(everyone=False))
 
 
 @bot.listen()
