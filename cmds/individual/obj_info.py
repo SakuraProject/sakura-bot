@@ -21,16 +21,24 @@ class ObjectInfo(commands.Cog):
         "UserFlags.hypesquad_brilliance": "<:discord_hypesquad_briliance_disc:991962274816331796>",
         "UserFlags.hypesquad_balance": "<:discord_hypesquad_balance_disc:991962200879157288>"
     }
-    BOT = "<:discord_Bot_disc:991962236706885734>"
-    VERIFIED_BOT = "<:verified_bot:991963186234413139>"
+    BOT_EMOJI = "<:discord_Bot_disc:991962236706885734>"
+    VERIFIED_BOT_EMOJI = "<:verified_bot:991963186234413139>"
 
 
-    @commands.command()
+    @commands.command(aliases=("ui", "lookup", "user", "ユーザー情報"))
     async def userinfo(
         self, ctx: commands.Context, target: discord.Member | discord.User = commands.Author
     ):
+        badge = "".join(self.BADGES.get(str(flg), "") for flg in target.public_flags.all())
+
+        bot_badge = ""
+        if user.public_flags.verified_bot:
+            bot_badge = self.VERIFIED_BOT_EMOJI
+        elif target.bot:
+            bot_badge = self.BOT_EMOJI
+
         e = discord.Embed(
-            title=f"{target}{'🤖' if target.bot else ''}の情報",
+            title=f"{target}{bot_badge}{badge}の情報",
             description=f"ID: `{target.id}`"
         )
         await ctx.reply(embed=e)
