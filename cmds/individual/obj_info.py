@@ -41,6 +41,27 @@ class ObjectInfo(commands.Cog):
             description=f"ID: `{target.id}`"
         )
         e.set_thumbnail(url=target.display_avatar.url)
+
+        e.add_field(
+            name="アカウント作成日",
+            value=discord.utils.format_dt(target.created_at)
+        )
+        if target.avatar is not None:
+            e.add_field(name="アイコンurl", value=target.avatar.url)
+
+        if isinstance(target, discord.Member):
+            if target.guild_avatar is not None:
+                e.add_field(
+                    name="このサーバーでのアイコンurl",
+                    value=target.guild_avatar.url
+                )
+            if target.display_name != target.name:
+                e.add_field(name="表示名", value=target.display_name)
+            e.add_field(
+                name="サーバーへの参加日",
+                value=discord.utils.format_dt(target.joined_at)
+            )
+
         await ctx.reply(embed=e)
 
     @commands.command()
