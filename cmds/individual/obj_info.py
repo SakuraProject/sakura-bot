@@ -24,24 +24,31 @@ class ObjectInfo(commands.Cog):
     BOT_EMOJI = "<:discord_Bot_disc:991962236706885734>"
     VERIFIED_BOT_EMOJI = "<:verified_bot:991963186234413139>"
 
-
-    @commands.command(aliases=("ui", "lookup", "user", "ユーザー情報"))
-    async def userinfo(
+    @commands.command(aliases=("ui2", "lookup", "user", "ユーザー情報"))
+    async def userinfo2(
         self, ctx: commands.Context, target: discord.Member | discord.User = commands.Author
     ):
-        badge = "".join(self.BADGES.get(str(flg), "") for flg in target.public_flags.all())
-
-        bot_badge = ""
+        badge = ""
         if user.public_flags.verified_bot:
-            bot_badge = self.VERIFIED_BOT_EMOJI
+            badge = self.VERIFIED_BOT_EMOJI
         elif target.bot:
-            bot_badge = self.BOT_EMOJI
+            badge = self.BOT_EMOJI
+
+        badge += "".join(self.BADGES.get(str(flg), "") for flg in target.public_flags.all())
 
         e = discord.Embed(
-            title=f"{target}{bot_badge}{badge}の情報",
+            title=f"{target}{badge}の情報",
             description=f"ID: `{target.id}`"
         )
+        e.set_thumbnail(url=target.display_avatar.url)
         await ctx.reply(embed=e)
+
+    @commands.command()
+    async def serverinfo(
+        self, ctx: commands.Context, target: discord.Guild = commands.CurrentGuild
+    ):
+        e = discord.Embed(title=f"{target.name}の情報", description=f"ID: `{target.id}`")
+        await ctx.send(embed=e)
 
 
 async def setup(bot: commands.Bot) -> None:
