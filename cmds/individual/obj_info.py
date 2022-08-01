@@ -4,6 +4,30 @@ from discord.ext import commands
 import discord
 
 
+PERMISSIONS = {
+    "administrator": "管理者",
+    "ban_members": "メンバーをBAN",
+    "kick_members": "メンバーをキック",
+    "create_instant_invite": "招待を作成",
+    "manage_channels":　"チャンネルの管理",
+    "manage_guild": "サーバーの管理",
+    "view_audit_log": "監査ログの表示",
+    "add_reactions": "リアクションの追加",
+    "priority_speaker": "優先スピーカー",
+    "stream": "配信",
+    "view_channel": "チャンネルを見る",
+    "read_message_history": "メッセージ履歴を読む",
+    "send_messages": "メッセージの送信",
+    "send_tts_messages": "ttsコマンドの使用",
+    "manage_messages": "メッセージの管理",
+    "embed_links": "埋め込みリンクを使用",
+    "attach_files": "ファイルの送信",
+    "mention_everyone": "すべてのロールにメンション",
+    "use_external_emojis": "外部の絵文字の使用",
+    "use_external_stickers": "外部のスタンプの使用",
+}
+
+
 class ObjectInfo(commands.Cog):
     "discordのオブジェクト情報表示コマンドのコグです。"
 
@@ -11,15 +35,15 @@ class ObjectInfo(commands.Cog):
         self.bot = bot
 
     BADGES = {
-        "UserFlags.verified_bot_developer": "<:verified_bot_developer:991964080292233306>",
-        "UserFlags.early_supporter": "<:early_supporter:991963681502003230>",
-        "UserFlags.staff": "<:discord_staff:991963642729869372>",
-        "UserFlags.partner": "<:partnered_server_owner:991964149884137472>",
-        "UserFlags.hypesquad": "<:discord_HypeSquad_disc:991962182604566639>",
-        "UserFlags.bug_hunter": "<:bug_hunter:991963877770276944>",
-        "UserFlags.hypesquad_bravery": "<:discord_hypesquad_bravery_disc:991962211641741392>",
-        "UserFlags.hypesquad_brilliance": "<:discord_hypesquad_briliance_disc:991962274816331796>",
-        "UserFlags.hypesquad_balance": "<:discord_hypesquad_balance_disc:991962200879157288>"
+        "verified_bot_developer": "<:verified_bot_developer:991964080292233306>",
+        "early_supporter": "<:early_supporter:991963681502003230>",
+        "staff": "<:discord_staff:991963642729869372>",
+        "partner": "<:partnered_server_owner:991964149884137472>",
+        "hypesquad": "<:discord_HypeSquad_disc:991962182604566639>",
+        "bug_hunter": "<:bug_hunter:991963877770276944>",
+        "hypesquad_bravery": "<:discord_hypesquad_bravery_disc:991962211641741392>",
+        "hypesquad_brilliance": "<:discord_hypesquad_briliance_disc:991962274816331796>",
+        "hypesquad_balance": "<:discord_hypesquad_balance_disc:991962200879157288>"
     }
     BOT_EMOJI = "<:discord_Bot_disc:991962236706885734>"
     VERIFIED_BOT_EMOJI = "<:verified_bot:991963186234413139>"
@@ -34,7 +58,7 @@ class ObjectInfo(commands.Cog):
         elif target.bot:
             badge = self.BOT_EMOJI
 
-        badge += "".join(self.BADGES.get(str(flg), "") for flg in target.public_flags.all())
+        badge += "".join(self.BADGES.get(str(flg)[10:], "") for flg in target.public_flags.all())
 
         embed = discord.Embed(
             title=f"{target}{badge}の情報",
@@ -79,7 +103,9 @@ class ObjectInfo(commands.Cog):
         )
         embed.add_field(
             name="総チャンネル数 (カテゴリ数, ボイスチャンネル数, テキストチャンネル数)",
-            value=f"`{len(target.channels)}` (`{len(target.text_channels)}`)"
+            value=f"`{len(target.channels)}` (`"
+                  f"{sum(iainstance(c, discord.CategoryChannel) for c in target.channels)}`, "
+                  f"`{len(target.voice_channels)}`, `{len(target.text_channels)}`)"
         )
         await ctx.send(embed=embed)
 
