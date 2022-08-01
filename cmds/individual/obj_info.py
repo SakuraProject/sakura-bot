@@ -36,40 +36,52 @@ class ObjectInfo(commands.Cog):
 
         badge += "".join(self.BADGES.get(str(flg), "") for flg in target.public_flags.all())
 
-        e = discord.Embed(
+        embed = discord.Embed(
             title=f"{target}{badge}の情報",
             description=f"ID: `{target.id}`"
         )
-        e.set_thumbnail(url=target.display_avatar.url)
+        embed.set_thumbnail(url=target.display_avatar.url)
 
-        e.add_field(
+        embed.add_field(
             name="アカウント作成日",
             value=discord.utils.format_dt(target.created_at)
         )
         if target.avatar is not None:
-            e.add_field(name="アイコンurl", value=target.avatar.url)
+            embed.add_field(name="アイコンurl", value=target.avatar.url)
 
         if isinstance(target, discord.Member):
             if target.guild_avatar is not None:
-                e.add_field(
+                embed.add_field(
                     name="このサーバーでのアイコンurl",
                     value=target.guild_avatar.url
                 )
             if target.display_name != target.name:
-                e.add_field(name="表示名", value=target.display_name)
-            e.add_field(
+                embed.add_field(name="表示名", value=target.display_name)
+            embed.add_field(
                 name="サーバーへの参加日",
                 value=discord.utils.format_dt(target.joined_at)
             )
 
-        await ctx.reply(embed=e)
+        await ctx.reply(embed=embed)
 
     @commands.command()
     async def serverinfo(
         self, ctx: commands.Context, target: discord.Guild = commands.CurrentGuild
     ):
-        e = discord.Embed(title=f"{target.name}の情報", description=f"ID: `{target.id}`")
-        await ctx.send(embed=e)
+        embed = discord.Embed(
+            title=f"{target.name}の情報",
+            description=f"ID: `{target.id}`",
+            color=self.bot.Color
+        )
+        embed.add_field(
+            name="サーバー作成日時",
+            value=discord.utils.format_dt(target.created_at)
+        )
+        embed.add_field(
+            name="総チャンネル数 (カテゴリ数, ボイスチャンネル数, テキストチャンネル数)",
+            value=f"`{len(target.channels)}` (`{len(target.text_channels)}`)"
+        )
+        await ctx.send(embed=embed)
 
 
 async def setup(bot: commands.Bot) -> None:
