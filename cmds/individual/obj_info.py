@@ -3,35 +3,62 @@
 from discord.ext import commands
 import discord
 
+from utils import Bot
+
 
 PERMISSIONS = {
     "administrator": "管理者",
-    "ban_members": "メンバーをBAN",
-    "kick_members": "メンバーをキック",
-    "create_instant_invite": "招待を作成",
-    "manage_channels":　"チャンネルの管理",
+    "view_audit_log": "監査ログを表示",
     "manage_guild": "サーバーの管理",
-    "view_audit_log": "監査ログの表示",
-    "add_reactions": "リアクションの追加",
-    "priority_speaker": "優先スピーカー",
-    "stream": "配信",
-    "view_channel": "チャンネルを見る",
-    "read_message_history": "メッセージ履歴を読む",
-    "send_messages": "メッセージの送信",
-    "send_tts_messages": "ttsコマンドの使用",
+    "manage_roles": "ロールの管理",
+    "manage_channels": "チャンネルの管理",
+    "kick_members": "メンバーをキック",
+    "ban_members": "メンバーをBAN",
+    "create_instant_invite": "招待を作成",
+    "change_nickname": "ニックネームの変更",
+    "manage_nicknames": "ニックネームの管理",
+    "manage_emojis": "絵文字の管理",
+    "manage_webhooks": "ウェブフックの管理",
+    "manage_events": "イベントの管理",
+    "manage_threads": "スレッドの管理",
+    "use_slash_commands": "スラッシュコマンドの使用",
+    "view_guild_insights": "テキストチャンネルの閲覧＆ボイスチャンネルの表示",
+    "send_messages": "メッセージを送信",
+    "send_tts_messages": "TTSメッセージを送信",
     "manage_messages": "メッセージの管理",
-    "embed_links": "埋め込みリンクを使用",
-    "attach_files": "ファイルの送信",
-    "mention_everyone": "すべてのロールにメンション",
-    "use_external_emojis": "外部の絵文字の使用",
-    "use_external_stickers": "外部のスタンプの使用",
+    "embed_links": "埋め込みリンク",
+    "attach_files": "ファイルを添付",
+    "read_message_history": "メッセージ履歴を読む",
+    "mention_everyone": "@everyone、@here、全てのロールにメンション",
+    "external_emojis": "外部の絵文字の使用",
+    "add_reactions": "リアクションの追加"
 }
+
+
+class EmbedSelect(discord.ui.Select):
+    def __init__(self, embeds: list[discord.Embed]):
+        self.embeds = embeds
+        options = [discord.SelectOption(
+            label=e.title or "...", description=e.description or "...", value=str(count)
+        ) for count, e in enumerate(embeds)]
+
+        super().__init__(placeholder='見たい項目を選んでください...', min_values=1, max_values=1, options=options)
+
+    async def callback(self, interaction: discord.Interaction):
+        await interaction.response.edit_message(embed=self.embeds[int(self.value)])
+
+
+class EmbedsView(discord.ui.View):
+    def __init__(self, embeds: list[discord.Embed]):
+        super().__init__()
+
+        self.add_item(EmbedSelect(embeds))
 
 
 class ObjectInfo(commands.Cog):
     "discordのオブジェクト情報表示コマンドのコグです。"
 
-    def __init__(self, bot: commands.Bot) -> None:
+    def __init__(self, bot: Bot) -> None:
         self.bot = bot
 
     BADGES = {
@@ -53,7 +80,7 @@ class ObjectInfo(commands.Cog):
         self, ctx: commands.Context, target: discord.Member | discord.User = commands.Author
     ):
         badge = ""
-        if user.public_flags.verified_bot:
+        if target.public_flags.verified_bot:
             badge = self.VERIFIED_BOT_EMOJI
         elif target.bot:
             badge = self.BOT_EMOJI
@@ -83,7 +110,7 @@ class ObjectInfo(commands.Cog):
                 embed.add_field(name="表示名", value=target.display_name)
             embed.add_field(
                 name="サーバーへの参加日",
-                value=discord.utils.format_dt(target.joined_at)
+                value=discord.utils.format_dt(target.joined_at) if target.joined_at else "不明"
             )
 
         await ctx.reply(embed=embed)
@@ -104,11 +131,11 @@ class ObjectInfo(commands.Cog):
         embed.add_field(
             name="総チャンネル数 (カテゴリ数, ボイスチャンネル数, テキストチャンネル数)",
             value=f"`{len(target.channels)}` (`"
-                  f"{sum(iainstance(c, discord.CategoryChannel) for c in target.channels)}`, "
+                  f"{sum(isinstance(c, discord.CategoryChannel) for c in target.channels)}`, "
                   f"`{len(target.voice_channels)}`, `{len(target.text_channels)}`)"
         )
         await ctx.send(embed=embed)
 
 
-async def setup(bot: commands.Bot) -> None:
+async def setup(bot: Bot) -> None:
     await bot.add_cog(ObjectInfo(bot))
