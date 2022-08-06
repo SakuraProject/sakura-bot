@@ -45,7 +45,7 @@ class EmbedSelect(discord.ui.Select):
         super().__init__(placeholder='見たい項目を選んでください...', min_values=1, max_values=1, options=options)
 
     async def callback(self, interaction: discord.Interaction):
-        await interaction.response.edit_message(embed=self.embeds[int(self.value)])
+        await interaction.response.edit_message(embed=self.embeds[int(self.values[0])])
 
 
 class EmbedsView(discord.ui.View):
