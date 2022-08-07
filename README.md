@@ -3,6 +3,10 @@ discordBotプロジェクトです。
 
 
 # Developer向け
+
+## 最低要件
+* python3.10以上
+
 ## このBotを個人でホストする場合
 
 1.pipenv, pyenvのインストールを行う。
