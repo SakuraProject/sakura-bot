@@ -86,7 +86,6 @@ class websocket(commands.Cog):
                     self.res[cmd["cmd"]][cmd["args"]["id"]] = cmd["args"]
             except ConnectionClosed:
                 self.sock = await websockets.connect(self.uri)
-            await asyncio.sleep(1)
 
     async def shareguilds(self,args):
         share = [g for g in self.bot.guilds if g.get_member(int(args["id"]))!=None]
