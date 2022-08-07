@@ -12,7 +12,7 @@ class giveaway(commands.Cog):
         self.bot, self.before = bot, ""
 
     async def cog_load(self):
-        ctsql = "CREATE TABLE if not exists `giveaway` (`id` VARCHAR(100) NOT NULL,`cid` JSON NOT NULL,`mid` JSON NOT NULL,`end` VARCHAR(200) NOT NULL,`price` VARCHAR(1000) NOT NULL,`author` VARCHAR(100) NOT NULL,PRIMARY KEY (`id`)) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin;"
+        ctsql = "CREATE TABLE if not exists `giveaway` (`id` VARCHAR(100) NOT NULL,`cid` JSON NOT NULL,`mid` JSON NOT NULL,`end` VARCHAR(200) NOT NULL,`price` VARCHAR(1000) NOT NULL,`author` VARCHAR(100) NOT NULL,`win` VARCHAR(100) NOT NULL,PRIMARY KEY (`id`)) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin;"
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
                 await cur.execute(ctsql)
@@ -29,6 +29,7 @@ class giveaway(commands.Cog):
                     self.gavs[row[0]]["cid"] = loads(row[1])
                     self.gavs[row[0]]["mid"] = loads(row[2])
                     self.gavs[row[0]]["author"] = row[5]
+                    self.gavs[row[0]]["win"] = row[6]
         asyncio.ensure_future(self.runtensec())
 
     async def runtensec(self):
@@ -115,9 +116,9 @@ class giveaway(commands.Cog):
                 res = await cur.fetchall()
                 await conn.commit()
                 if len(res) == 0:
-                    await cur.execute("INSERT INTO `gombot`.`giveaway` (`id`, `cid`, `mid`, `end`, `price`, `author`) VALUES (%s, %s, %s, %s, %s, %s);", (gv, dumps(self.gavs[gv]["cid"]), dumps(self.gavs[gv]["mid"]), str(self.gavs[gv]["end"]), self.gavs[gv]["prize"], self.gavs[gv]["author"]))
+                    await cur.execute("INSERT INTO `gombot`.`giveaway` (`id`, `cid`, `mid`, `end`, `price`, `author`,`win`) VALUES (%s, %s, %s, %s, %s, %s, %s);", (gv, dumps(self.gavs[gv]["cid"]), dumps(self.gavs[gv]["mid"]), str(self.gavs[gv]["end"]), self.gavs[gv]["prize"], self.gavs[gv]["author"], self.gavs[gv]["win"]))
                 else:
-                    await cur.execute("UPDATE `giveaway` SET `cid` = %s, `mid` = %s, `end` = %s, `price` = %s, `author` = %s WHERE (`id` = %s);", (dumps(self.gavs[gv]["cid"]), dumps(self.gavs[gv]["mid"]), str(self.gavs[gv]["end"]), self.gavs[gv]["prize"], self.gavs[gv]["author"], gv))
+                    await cur.execute("UPDATE `giveaway` SET `cid` = %s, `mid` = %s, `end` = %s, `price` = %s, `author` = %s, `win` = %s WHERE (`id` = %s);", (dumps(self.gavs[gv]["cid"]), dumps(self.gavs[gv]["mid"]), str(self.gavs[gv]["end"]), self.gavs[gv]["prize"], self.gavs[gv]["author"], self.gavs[gv]["win"], gv))
                 await conn.commit()
 
     @commands.group(aliases=["抽選"])
