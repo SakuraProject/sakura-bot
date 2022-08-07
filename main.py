@@ -12,8 +12,9 @@ import aiomysql
 
 
 load_dotenv()
-intent = discord.Intents.all()
-bot = commands.Bot(command_prefix='sk!', intents=intent, help_command=None)
+
+bot = commands.Bot(command_prefix='sk!', intents=discord.Intents.all(), help_command=None, 
+    allowed_mentions=discord.AllowedMentions.none())
 
 
 @bot.listen()
@@ -35,5 +36,5 @@ async def on_ready():
                 print("[Log][load]" + name)
     print("[Log]Complete Booting,Thank you for using " + bot.user.name)
 
-
-bot.run(os.environ["TOKEN"])
+if __name__ == "__main__":
+    bot.run(os.environ["TOKEN"])
