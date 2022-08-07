@@ -20,6 +20,18 @@ class rocations(commands.Cog):
     @serverads.command()
     @commands.has_guild_permissions(administrator=True)
     async def register(self,ctx):
+        """
+        NLang ja サーバーを掲示板に登録します
+        サーバーをサーバー掲示板に登録します。コマンド実行後質問に答えていくだけで簡単に登録できます
+        **使いかた：**
+        EVAL self.bot.command_prefix+'serverads register'
+        ELang ja
+        NLang default Register your server on the bulletin board
+        Register your server on the bulletin board
+        **How to use:**
+        EVAL self.bot.command_prefix+'serverads register'
+        ELang default
+        """
         try:
             await ctx.send("サーバー登録を開始します。質問を行いますので、質問に回答してくださいね。^^")
             desc = (await self.input(ctx,"このサーバーの説明を入力してください。")).content
@@ -44,6 +56,18 @@ class rocations(commands.Cog):
 
     @commands.command()
     async def push(self,ctx):
+        """
+        NLang ja サーバー掲示板での表示順位を上げます
+        サーバー掲示板での表示順位を上げます
+        **使いかた：**
+        EVAL self.bot.command_prefix+'push'
+        ELang ja
+        NLang default Increase the display ranking on the server bulletin board
+        Increase the display ranking on the server bulletin board
+        **How to use:**
+        EVAL self.bot.command_prefix+'push'
+        ELang default
+        """
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
                 await cur.execute("SELECT * FROM `rocations` where `gid`=%s",(ctx.guild.id,))
