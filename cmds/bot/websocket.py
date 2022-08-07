@@ -136,6 +136,47 @@ class websocket(commands.Cog):
         ctx = await self.bot.get_context(message,cls=WSContext)
         await self.bot.invoke(ctx)
         return args
+    
+    async def help_catlist(self,args):
+        options = []
+        for name in os.listdir("cmds"):
+            if not name.startswith((".", "_")):
+                try:
+                    exec("from cmds." + name + " import name as " + name)
+                    try:
+                        rname = eval(name)[l]
+                    except KeyError:
+                        rname = eval(name)["default"]
+                except ImportError:
+                    rname = name
+                data = dict()
+                data["rname"] = rname
+                data["name"] = name
+                options.append(data)
+        args["res"] = options
+        return args
+    
+    async def help_cmdlist(self,args):
+        bot = self.bot
+        cmds = list()
+        l = args["l"]
+        for c in [m for m in bot.cogs.values() if m.__module__.startswith("cmds."+args["id"])]:
+            for cm in c.get_commands():
+                cmds.append(await self.command({"id":cm.name}))
+        args["res"] = cmds
+        return args
+    
+    async def command(self,args):
+        cm = self.bot.get_command(args["id"])
+        dc = dict()
+        if type(cm).__name__ == "Group" or type(cm).__name__ == "HybridGroup":
+            comds = list(cm.commands)
+            cl = list()
+            for c in comds:
+                cl.append(await self.command({"id":cm.name + " " + c.name}))
+            dc["commands"] = cl
+        dc.name = args["id"]
+        
 
 def setup(bot):
     return bot.add_cog(websocket(bot))
