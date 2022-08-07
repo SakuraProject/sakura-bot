@@ -21,7 +21,7 @@ class rocations(commands.Cog):
     @commands.has_guild_permissions(administrator=True)
     async def register(self,ctx):
         try:
-            await ctx.,send("サーバー登録を開始します。質問を行いますので、質問に回答してくださいね。^^")
+            await ctx.send("サーバー登録を開始します。質問を行いますので、質問に回答してくださいね。^^")
             desc = (await self.input(ctx,"このサーバーの説明を入力してください。")).content
             cat = (await self.input(ctx,"カテゴリーを,区切りで入力してください(例:ゲーム,VC,雑談)")).content
             invite = await ctx.channel.create_invite(reason="サーバー掲示板登録のため")
