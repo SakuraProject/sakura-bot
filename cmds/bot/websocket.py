@@ -144,7 +144,7 @@ class websocket(commands.Cog):
                 try:
                     exec("from cmds." + name + " import name as " + name)
                     try:
-                        rname = eval(name)[l]
+                        rname = eval(name)[args["l"]]
                     except KeyError:
                         rname = eval(name)["default"]
                 except ImportError:
