@@ -58,7 +58,7 @@ class rocations(commands.Cog):
                     if dt < 7200:
                         await ctx.send("まだpush出来ません。次回は<t:" + str(int(oldup + 7200)) + ":R>です")
                     else:
-                        await cur.execute("UPDATE `rocations` SET `uptime` = %s where `gid` = %s",(now,gid))
+                        await cur.execute("UPDATE `rocations` SET `uptime` = %s where `gid` = %s",(now,ctx.guild.id))
                         await ctx.send("pushed!掲示板の表示順位を上げました。次回は<t:" + str(int(now + 7200)) + ":R>です")
                     
     async def input(self,ctx,q):
