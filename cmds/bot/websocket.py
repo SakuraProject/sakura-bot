@@ -11,6 +11,7 @@ from discord.mentions import AllowedMentions
 from discord.message import MessageReference, PartialMessage
 from discord.ui import View
 from discord import Embed, File, Message
+import os
 
 class WSContext(Context):
 
