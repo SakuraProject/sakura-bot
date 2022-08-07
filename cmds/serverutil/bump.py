@@ -137,14 +137,15 @@ class bump(commands.Cog):
                     if float(row[1]) <= nti:
                         if onoff == "on":
                             channel = self.bot.get_channel(row[0])
-                            rol = channel.guild.get_role(int(res1[0][3]))
-                            ebd = discord.Embed(
-                                title=typ + "通知", color=self.bot.Color, description=self.dics[typ])
-                            if rol:
-                                await channel.send(content=rol.mention, embeds=[ebd])
-                            else:
-                                await channel.send(embeds=[ebd])
-                        await cur.execute("DELETE FROM `bump` where `gid`=%s and `type`=%s", (row[3], typ))
+                            if channel != None:
+                                rol = channel.guild.get_role(int(res1[0][3]))
+                                ebd = discord.Embed(
+                                    title=typ + "通知", color=self.bot.Color, description=self.dics[typ])
+                                if rol:
+                                    await channel.send(content=rol.mention, embeds=[ebd])
+                                else:
+                                    await channel.send(embeds=[ebd])
+                            await cur.execute("DELETE FROM `bump` where `gid`=%s and `type`=%s", (row[3], typ))
 
     async def save(self, message, type, nof):
         async with self.bot.pool.acquire() as conn:
