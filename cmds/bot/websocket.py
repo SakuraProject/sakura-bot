@@ -78,6 +78,7 @@ class websocket(commands.Cog):
                     name = cmd["cmd"]
                     res = await getattr(self, name)(cmd["args"])
                     cmd["args"] = res
+                    cmd["type"] = "res"
                     recv = dumps(cmd)
                     await self.sock.send(recv)
                 elif cmd["type"] == "res":
