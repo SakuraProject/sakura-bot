@@ -175,7 +175,11 @@ class websocket(commands.Cog):
             for c in comds:
                 cl.append(await self.command({"id":cm.name + " " + c.name}))
             dc["commands"] = cl
-        dc.name = args["id"]
+        dc["name"] = args["id"]
+        if cm.callback.__doc__ != None:
+            dc["doc"] = await self.bot.cogs["help"].parsedoc(cm.callback.__doc__)
+        args["res"] = dc
+        return args
         
 
 def setup(bot):
