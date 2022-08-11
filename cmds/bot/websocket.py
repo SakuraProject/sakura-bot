@@ -57,6 +57,7 @@ class WSContext(Context):
         sen["cmd"] = "send"
         args = dict()
         args["content"] = sc
+        
         sen["args"] = args
         sen["type"] = "res"
         await self.bot.cogs["websocket"].sock.send(dumps(sen))
