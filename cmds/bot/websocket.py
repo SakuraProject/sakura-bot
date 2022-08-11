@@ -11,6 +11,7 @@ from discord.mentions import AllowedMentions
 from discord.message import MessageReference, PartialMessage
 from discord.ui import View
 from discord import Embed, File, Message
+import os
 
 class WSContext(Context):
 
@@ -77,6 +78,7 @@ class websocket(commands.Cog):
                     name = cmd["cmd"]
                     res = await getattr(self, name)(cmd["args"])
                     cmd["args"] = res
+                    cmd["type"] = "res"
                     recv = dumps(cmd)
                     await self.sock.send(recv)
                 elif cmd["type"] == "res":
@@ -85,7 +87,6 @@ class websocket(commands.Cog):
                     self.res[cmd["cmd"]][cmd["args"]["id"]] = cmd["args"]
             except ConnectionClosed:
                 self.sock = await websockets.connect(self.uri)
-            await asyncio.sleep(1)
 
     async def shareguilds(self,args):
         share = [g for g in self.bot.guilds if g.get_member(int(args["id"]))!=None]
@@ -136,6 +137,52 @@ class websocket(commands.Cog):
         ctx = await self.bot.get_context(message,cls=WSContext)
         await self.bot.invoke(ctx)
         return args
+    
+    async def help_catlist(self,args):
+        options = []
+        for name in os.listdir("cmds"):
+            if not name.startswith((".", "_")):
+                try:
+                    exec("from cmds." + name + " import name as " + name)
+                    try:
+                        rname = eval(name)[args["l"]]
+                    except KeyError:
+                        rname = eval(name)["default"]
+                except ImportError:
+                    rname = name
+                data = dict()
+                data["rname"] = rname
+                data["name"] = name
+                options.append(data)
+        args["res"] = options
+        return args
+    
+    async def help_cmdlist(self,args):
+        bot = self.bot
+        cmds = list()
+        l = args["l"]
+        for c in [m for m in bot.cogs.values() if m.__module__.startswith("cmds."+args["id"])]:
+            for cm in c.get_commands():
+                cmds.append(await self.command({"id":cm.name}))
+        args["res"] = cmds
+        return args
+    
+    async def command(self,args):
+        cm = self.bot.get_command(args["id"])
+        dc = dict()
+        if type(cm).__name__ == "Group" or type(cm).__name__ == "HybridGroup":
+            comds = list(cm.commands)
+            cl = list()
+            for c in comds:
+                cl.append(await self.command({"id":cm.name + " " + c.name}))
+            dc["commands"] = cl
+        dc["name"] = args["id"]
+        if cm.callback.__doc__ != None:
+            dc["doc"] = await self.bot.cogs["help"].parsedoc(cm.callback.__doc__)
+        dc["type"] = type(cm).__name__
+        args["res"] = dc
+        return args
+        
 
 def setup(bot):
     return bot.add_cog(websocket(bot))
