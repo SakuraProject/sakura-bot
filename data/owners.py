@@ -7,5 +7,6 @@ ids =  [
         484655503675228171, 808300367535144980,
         809240120884330526, 739702692393517076
 ]
+
 async def setup(bot):
-  bot.owner_ids = ids
+    bot.owner_ids = ids
