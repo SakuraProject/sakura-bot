@@ -11,6 +11,7 @@ class Bot(commands.Bot):
     "SakuraBotのコアです。"
     session: ClientSession
     pool: Pool
+    owner_ids: list[int]
 
     Color = 0xffbdde
 

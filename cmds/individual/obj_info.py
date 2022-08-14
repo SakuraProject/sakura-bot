@@ -3,7 +3,7 @@
 from discord.ext import commands
 import discord
 
-from utils import Bot
+from utils import Bot, EmbedsView
 
 
 PERMISSIONS = {
@@ -35,26 +35,6 @@ PERMISSIONS = {
 }
 
 
-class EmbedSelect(discord.ui.Select):
-    def __init__(self, embeds: list[discord.Embed]):
-        self.embeds = embeds
-        options = [discord.SelectOption(
-            label=e.title or "...", description=e.description or "...", value=str(count)
-        ) for count, e in enumerate(embeds)]
-
-        super().__init__(placeholder='見たい項目を選んでください...', min_values=1, max_values=1, options=options)
-
-    async def callback(self, interaction: discord.Interaction):
-        await interaction.response.edit_message(embed=self.embeds[int(self.values[0])])
-
-
-class EmbedsView(discord.ui.View):
-    def __init__(self, embeds: list[discord.Embed]):
-        super().__init__()
-
-        self.add_item(EmbedSelect(embeds))
-
-
 class ObjectInfo(commands.Cog):
     "discordのオブジェクト情報表示コマンドのコグです。"
 
@@ -72,13 +52,39 @@ class ObjectInfo(commands.Cog):
         "hypesquad_brilliance": "<:discord_hypesquad_briliance_disc:991962274816331796>",
         "hypesquad_balance": "<:discord_hypesquad_balance_disc:991962200879157288>"
     }
-    BOT_EMOJI = "<:discord_Bot_disc:991962236706885734>"
+    BOT_EMOJI = "<:bot1:795159827318964284><:bot2:795160390400868402>"
     VERIFIED_BOT_EMOJI = "<:verified_bot:991963186234413139>"
 
-    @commands.command(aliases=("ui2", "lookup", "user", "ユーザー情報"))
-    async def userinfo2(
+    @commands.command(aliases=("ui", "lookup", "user", "ユーザー情報"))
+    async def userinfo(
         self, ctx: commands.Context, target: discord.Member | discord.User = commands.Author
     ):
+        """
+        NLang ja ユーザー情報を表示するコマンドです
+        ユーザー情報を表示するコマンドです
+        **使いかた：**
+        EVAL self.bot.command_prefix+'userinfo ユーザーid'
+        EVAL self.bot.command_prefix+'userinfo'
+        ELang ja
+        NLang default Sorry, this command only supports Japanese.
+        Sorry, this command only supports Japanese.
+        ELang default
+        """
+        embeds = [
+            self.create_ui_embed_1(target)
+        ]
+        if isinstance(target, discord.Member):
+            embeds.append(self.create_ui_embed_2(target))
+        if ctx.author.id in self.bot.owner_ids:
+            embeds.append(self.create_ui_embed_3(target))
+
+        if len(embeds) == 1:
+            return await ctx.send(embed=embeds[0])
+        await ctx.reply(embed=embeds[0], view=EmbedsView(embeds))
+
+    # User info Embed creator
+
+    def create_ui_embed_1(self, target: discord.User | discord.Member):
         badge = ""
         if target.public_flags.verified_bot:
             badge = self.VERIFIED_BOT_EMOJI
@@ -112,13 +118,50 @@ class ObjectInfo(commands.Cog):
                 name="サーバーへの参加日",
                 value=discord.utils.format_dt(target.joined_at) if target.joined_at else "不明"
             )
+        return embed
 
-        await ctx.reply(embed=embed)
+    def create_ui_embed_2(self, target: discord.Member) -> discord.Embed:
+        "権限一覧(メンバー専用)"
+        desc = "\n".join(
+            (":white_check_mark: " if getattr(target.guild_permissions, perm, False) else ":x:") + name
+            for perm, name in PERMISSIONS.items()
+        )
+        embed = discord.Embed(
+            title=f"{target}の権限",
+            description=desc
+        )
+        embed.set_thumbnail(url=target.display_avatar.url)
+
+        return embed
+
+    def create_ui_embed_3(self, target: discord.Member | discord.User) -> discord.Embed:
+        "管理者用: 共通サーバー一覧"
+        embed = discord.Embed(
+            title=f"{target}の共通サーバー一覧",
+            description="\n".join(
+                f"{guild.name} ({guild.id})" for guild in target.mutual_guilds
+            ) or "なし"
+        )
+        embed.set_thumbnail(url=target.display_avatar.url)
+
+        return embed
+
 
     @commands.command()
     async def serverinfo(
         self, ctx: commands.Context, target: discord.Guild = commands.CurrentGuild
     ):
+        """
+        NLang ja サーバー情報を表示するコマンドです
+        サーバー情報を表示するコマンドです
+        **使いかた：**
+        EVAL self.bot.command_prefix+'serverinfo ユーザーid'
+        EVAL self.bot.command_prefix+'serverinfo'
+        ELang ja
+        NLang default Sorry, this command only supports Japanese.
+        Sorry, this command only supports Japanese.
+        ELang default
+        """
         embed = discord.Embed(
             title=f"{target.name}の情報",
             description=f"ID: `{target.id}`",
