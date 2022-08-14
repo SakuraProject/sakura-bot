@@ -9,6 +9,8 @@ python-dotenv = "*"
 ujson = "*"
 pytimeparse = "*"
 aiomysql = "*"
+stripe = "*"
+orjson = "*"
 
 [dev-packages]
 flake8 = "*"

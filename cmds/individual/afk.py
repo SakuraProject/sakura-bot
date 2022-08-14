@@ -1,9 +1,8 @@
-from discord.utils import get
 import discord
 from discord.ext import commands
 
 
-class afk(commands.Cog):
+class Afk(commands.Cog):
     def __init__(self, bot):
         self.bot, self.before = bot, ""
 
@@ -22,9 +21,8 @@ class afk(commands.Cog):
     async def set(self, ctx, *, vl):
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
-                sql = "select * from afk where userid='" + \
-                    str(ctx.author.id) + "';"
-                await cur.execute(sql)
+                sql = "select * from afk where userid='%s';"
+                await cur.execute(sql, (ctx.author.id,))
                 result = await cur.fetchall()
                 await conn.commit()
                 if len(result) == 0:
@@ -34,7 +32,10 @@ class afk(commands.Cog):
                     await ctx.send("すでに設定されています")
 
     @commands.Cog.listener()
-    async def on_message(self, message):
+    async def on_message(self, message: discord.Message):
+        if not isinstance(message.channel, discord.TextChannel):
+            return
+
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
                 sql = "select * from afk where userid='" + \
@@ -54,7 +55,7 @@ class afk(commands.Cog):
                     cde = [mex for mex in message.mentions]
                     whs = await message.channel.webhooks()
                     wh = discord.utils.get(whs, name='sakurabot')
-                    if wh == None:
+                    if wh is None:
                         wh = await message.channel.create_webhook(name='sakurabot')
                     for maid in cde:
                         if maid.id in alist:
@@ -63,8 +64,8 @@ class afk(commands.Cog):
                             await cur.execute(sql)
                             mresult = await cur.fetchall()
                             vl = mresult[0][1]
-                            await wh.send(content=vl, username=maid.name+'-留守メッセージ', avatar_url=maid.display_avatar.url)
+                            await wh.send(vl, username=maid.name+'-留守メッセージ', avatar_url=maid.display_avatar.url)
 
 
 async def setup(bot):
-    await bot.add_cog(afk(bot))
+    await bot.add_cog(Afk(bot))

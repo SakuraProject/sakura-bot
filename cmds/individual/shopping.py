@@ -1,10 +1,11 @@
-import stripe
-from discord.ext import commands
-import urllib
-import discord
 import asyncio
 import os
-from ujson import loads, dumps
+import urllib.parse
+
+import discord
+import stripe
+from discord.ext import commands
+from orjson import dumps, loads
 
 secretkey = os.environ["YMARTKEY"]
 
@@ -102,7 +103,7 @@ class shopping(commands.Cog):
         async with self.bot.session.post("http://ystore.jp/api/postset.php", data=reqdata) as resp:
             rpt = await resp.text()
 
-    async def input(self, ctx, q):
+    async def input(self, ctx, q) -> discord.Message:
         def check(m):
             return m.author == ctx.author and m.channel == ctx.channel
         await ctx.send(q)
@@ -402,7 +403,7 @@ class CatList(discord.ui.Select):
         super().__init__(placeholder='', min_values=1, max_values=1, options=options)
 
     async def callback(self, interaction: discord.Interaction):
-        req["category"] = self.values[0]
+        self.req["category"] = self.values[0]
 
 
 class ImgList(discord.ui.Select):
