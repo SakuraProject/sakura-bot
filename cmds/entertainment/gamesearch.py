@@ -4,7 +4,7 @@ import discord
 from discord.ext import commands
 
 from urllib.parse import quote_plus
-from ujson import loads
+from orjson import loads
 
 
 class GameSearch(commands.Cog):

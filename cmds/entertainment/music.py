@@ -1,3 +1,4 @@
+from types import NoneType
 from niconico import NicoNico
 import requests
 import urllib.parse

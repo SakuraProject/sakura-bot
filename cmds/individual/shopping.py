@@ -365,7 +365,7 @@ class shopping(commands.Cog):
             )
             async with self.bot.session.get("https://ystore.jp/api/payd.php?secret="+urllib.parse.quote_plus(secretkey, encoding='utf-8')+"&disid="+str(ctx.author.id)+"&distag="+urllib.parse.quote_plus(ctx.author.name+'#'+ctx.author.discriminator)) as resp:
                 await ctx.author.send("決済成功しました")
-        except Exception as e:
+        except Exception:
             await ctx.author.send("このカードは使用出来ませんでした")
 
 

@@ -11,6 +11,9 @@ pytimeparse = "*"
 aiomysql = "*"
 stripe = "*"
 orjson = "*"
+tweepy = "*"
+niconico = "*"
+youtube-dl = "*"
 
 [dev-packages]
 flake8 = "*"
