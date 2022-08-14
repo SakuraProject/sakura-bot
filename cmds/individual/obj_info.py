@@ -162,6 +162,15 @@ class ObjectInfo(commands.Cog):
         Sorry, this command only supports Japanese.
         ELang default
         """
+        embeds = [self.create_si_embed_1(target)]
+
+        if len(embeds) == 1:
+            return await ctx.send(embed=embeds[0])
+        await ctx.send(embed=embeds[0], view=EmbedsView(embeds))
+
+    # Server info Embed creator
+
+    def create_si_embed_1(self, target: discord.Guild) -> discord.Embed:
         embed = discord.Embed(
             title=f"{target.name}の情報",
             description=f"ID: `{target.id}`",
@@ -171,11 +180,76 @@ class ObjectInfo(commands.Cog):
             name="サーバー作成日時",
             value=discord.utils.format_dt(target.created_at)
         )
+        if target.owner:
+            embed.add_field(name="オーナー", value=f"{target.owner} ({target.owner.id})")
         embed.add_field(
-            name="総チャンネル数 (カテゴリ数, ボイスチャンネル数, テキストチャンネル数)",
+            name="総チャンネル数 (カテゴリ数, テキストチャンネル数, ボイスチャンネル数, ステージチャンネル数)",
             value=f"`{len(target.channels)}` (`"
-                  f"{sum(isinstance(c, discord.CategoryChannel) for c in target.channels)}`, "
-                  f"`{len(target.voice_channels)}`, `{len(target.text_channels)}`)"
+                  f"{len(target.categories)}`, `{len(target.voice_channels)}`, "
+                  f"`{len(target.text_channels)}`, `{len(target.stage_channels)}`)"
+        )
+        embed.add_field(
+            name="総ユーザー数(通常ユーザー数, bot数)",
+            value=f"`{len(target.members)}` (`"
+                  f"{sum(not m.bot for m in target.members)}`, `{sum(m.bot for m in target.members)}`)"
+        )
+        return embed
+
+
+    @commands.command()
+    async def emojiinfo(self, ctx: commands.Context, target: discord.Emoji):
+        """
+        NLang ja 絵文字の情報を表示するコマンドです
+        絵文字の情報を表示するコマンドです
+        **使いかた：**
+        EVAL self.bot.command_prefix+'emojiinfo 絵文字id'
+        EVAL self.bot.command_prefix+'emojiinfo'
+        ELang ja
+        NLang default Sorry, this command only supports Japanese.
+        Sorry, this command only supports Japanese.
+        ELang default
+        """
+        embed = discord.Embed(
+            title=f"{target}の情報",
+            description=f"ID: `{target.id}`",
+            color=self.bot.Color
+        )
+        embed.set_image(url=target.url)
+        embed.add_field(
+            name="絵文字作成日時",
+            value=discord.utils.format_dt(target.created_at)
+        )
+        await ctx.send(embed=embed)
+
+    @commands.command()
+    async def inviteinfo(self, ctx: commands.Context, target: discord.Invite):
+        """
+        NLang ja 招待リンクの情報を表示するコマンドです
+        招待リンクの情報を表示するコマンドです
+        **使いかた：**
+        EVAL self.bot.command_prefix+'inviteinfo 招待リンクid'
+        EVAL self.bot.command_prefix+'inviteinfo'
+        ELang ja
+        NLang default Sorry, this command only supports Japanese.
+        Sorry, this command only supports Japanese.
+        ELang default
+        """
+        embed = discord.Embed(
+            title=f"{target}の情報",
+            description=f"ID: `{target.id}`",
+            color=self.bot.Color
+        )
+        embed.add_field(name="作成日時",
+            value=discord.utils.format_dt(target.created_at)
+                  if target.created_at else "なし")
+        embed.add_field(name="有効期限",
+            value=discord.utils.format_dt(target.expires_at)
+                  if target.expires_at else "不明")
+        embed.add_field(name="使用回数", value=target.uses)
+        embed.add_field(name="使用可能回数", value=target.max_uses)
+        embed.add_field(
+            name="招待リンクの使用可能回数が制限されているか",
+            value="はい" if target.max_uses is None else "いいえ"
         )
         await ctx.send(embed=embed)
 
