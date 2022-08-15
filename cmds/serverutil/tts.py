@@ -97,14 +97,14 @@ class tts(commands.Cog):
                         rpt = await resp.text()
                     async with self.bot.session.post("https://localhost:50021/synthesis",json=dumps(req.json())) as resp:
                         async with aiofiles.open(swav, "wb") as fp:
-                            fp.write(await resp.read())
+                            await fp.write(await resp.read())
                 elif self.voice[str(message.guild.id)].endswith(".tsv"):
                     sid = self.voice[str(message.guild.id)].replace(".tsv","")
                     req = dict()
                     req["talktext"] = sc
                     async with self.bot.session.post(f"http://{self.basicuser}:{self.basicpass}@{self.ttsserverurl}/SAVE2/{sid}",json=req) as resp:
                         async with aiofiles.open(swav, "wb") as fp:
-                            fp.write(await resp.read())
+                            await fp.write(await resp.read())
                 voice.play(discord.FFmpegPCMAudio(swav))
                 while voice.is_playing():
                     await asyncio.sleep(1)
