@@ -6,6 +6,7 @@ from ujson import loads, dumps
 from os import listdir
 import subprocess
 import asyncio
+import aiofiles
 if not os.path.exists("VITS"):
     cmd = "git clone https://github.com/zassou65535/VITS.git"
     subprocess.call(cmd.split())
@@ -83,6 +84,16 @@ class tts(commands.Cog):
                     sl = torch.tensor([0], dtype=torch.long).to(self.device)
                     o = g.text_to_speech(text_padded=p.unsqueeze(0), text_lengths=l, speaker_id=sl)[0].data.cpu()
                     torchaudio.save(swav, o, sample_rate=22050)
+                elif self.voice[str(message.guild.id)].endswith(".vvx"):
+                    sid = self.voice[str(message.guild.id)].replace(".vvx","")
+                    req = dict()
+                    req["text"] = sc
+                    req["speaker"] = sid
+                    async with self.bot.session.post("https://localhost:50021/audio_query",data=req) as resp:
+                        rpt = await resp.text()
+                    async with self.bot.session.post("https://localhost:50021/synthesis",json=dumps(req.json())) as resp:
+                        async with aiofiles.open(swav, "wb") as fp:
+                            fp.write(await resp.read())
                 voice.play(discord.FFmpegPCMAudio(swav))
                 while voice.is_playing():
                     await asyncio.sleep(1)
