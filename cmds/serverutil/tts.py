@@ -33,6 +33,10 @@ class tts(commands.Cog):
         self.voice = dict()
         self.dic = dict()
         self.odic = "data/tts/OpenJTalk/dic"
+        #additional tts settings
+        self.ttsserverurl = "" # server url on assistant seika
+        self.basicuser = "" #username
+        self.basicpass = "" #password
 
     async def cog_load(self):
         ctsql = "CREATE TABLE if not exists `tts` (`gid` BIGINT NOT NULL,`voice` VARCHAR(100) NOT NULL,`dic` JSON NULL) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin;"
@@ -92,6 +96,13 @@ class tts(commands.Cog):
                     async with self.bot.session.post("https://localhost:50021/audio_query",data=req) as resp:
                         rpt = await resp.text()
                     async with self.bot.session.post("https://localhost:50021/synthesis",json=dumps(req.json())) as resp:
+                        async with aiofiles.open(swav, "wb") as fp:
+                            fp.write(await resp.read())
+                elif self.voice[str(message.guild.id)].endswith(".tsv"):
+                    sid = self.voice[str(message.guild.id)].replace(".tsv","")
+                    req = dict()
+                    req["talktext"] = sc
+                    async with bot.session.post(f"http://{cog.basicuser}:{cog.basicpass}@{cog.ttsserverurl}/SAVE2/{sid}",json=dumps(req)) as resp:
                         async with aiofiles.open(swav, "wb") as fp:
                             fp.write(await resp.read())
                 voice.play(discord.FFmpegPCMAudio(swav))
@@ -167,6 +178,11 @@ class VoiceList(discord.ui.Select):
             with open("data/tts/voices/" + name + "/name.txt") as f:
                 vname = f.read()
             option.append(discord.SelectOption(label=vname,value=name))
+        if cog.ttsserverurl != "":
+            async with bot.session.get(f"http://{cog.basicuser}:{cog.basicpass}@{cog.ttsserverurl}/AVATOR2") as resp:
+                j = await resp.json()
+            for v in j:
+                option.append(discord.SelectOption(label=v["name"],value=str(v["cid"])+".tsv"))
         super().__init__(placeholder='', min_values=1, max_values=1, options=option)
 
     async def callback(self, interaction: discord.Interaction):
