@@ -93,7 +93,7 @@ class tts(commands.Cog):
                     req = dict()
                     req["text"] = sc
                     req["speaker"] = sid
-                    async with self.bot.session.post("http://localhost:50021/audio_query",data=req) as resp:
+                    async with self.bot.session.post("http://localhost:50021/audio_query",params=req) as resp:
                         rpt = await resp.text()
                     async with self.bot.session.post(f"http://localhost:50021/synthesis?speaker={sid}",json=await resp.json()) as resp:
                         async with aiofiles.open(swav, "wb") as fp:
