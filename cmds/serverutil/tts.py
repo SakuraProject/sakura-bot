@@ -141,8 +141,8 @@ class tts(commands.Cog):
                 lis.append(VoiceList(self.bot,self,option))
                 option = []
             option.append(discord.SelectOption(label=vname,value=name))
-        if cog.ttsserverurl != "":
-            async with bot.session.get(f"http://{cog.basicuser}:{cog.basicpass}@{cog.ttsserverurl}/AVATOR2") as resp:
+        if self.ttsserverurl != "":
+            async with self.bot.session.get(f"http://{self.basicuser}:{self.basicpass}@{self.ttsserverurl}/AVATOR2") as resp:
                 j = await resp.json()
             for v in j:
                 if len(option) == 20:
