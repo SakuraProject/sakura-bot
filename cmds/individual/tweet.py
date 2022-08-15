@@ -1,16 +1,15 @@
-from discord.utils import get
 import discord
 from discord.ext import commands
 from tweepy.asynchronous import AsyncStreamingClient
-from tweepy import API, OAuth1UserHandler, Client, StreamRule
-from tweepy.errors import NotFound, Forbidden, Unauthorized, TweepyException
+from tweepy import OAuth1UserHandler, Client, StreamRule
+from tweepy.errors import NotFound, Forbidden, TweepyException
 from tweepy.client import Response
 from math import inf
 import os
 from aiohttp import ClientSession, ClientTimeout
 
 
-class tweet(commands.Cog, AsyncStreamingClient):
+class Tweet(commands.Cog, AsyncStreamingClient):
     @property
     def session(self):
         if self._session.closed:
@@ -39,6 +38,7 @@ class tweet(commands.Cog, AsyncStreamingClient):
         self.max_retries = inf
         self.proxy = None
         self.return_type = Response
+        self.rid: Response = None  # type: ignore
         # super().__init__(consumer_key=os.environ["TWITTERAPIKEY"],consumer_secret=os.environ["TWITTERSECRET"],access_token=os.environ["TWITTERTOKEN"],access_token_secret=os.environ["TWITTERTOKENSEC"]) # API(handler)
 
     async def cog_load(self):
@@ -81,7 +81,7 @@ class tweet(commands.Cog, AsyncStreamingClient):
                     if rtext != "":
                         rtext = rtext + " OR "
                     rtext = rtext + "from:"+name
-                self.rid = await self.add_rules(StreamRule(rtext))
+                self.rid: Response = await self.add_rules(StreamRule(rtext))  # type: ignore
 
     async def setfilter(self):
         await self.setrule()
@@ -114,7 +114,7 @@ class tweet(commands.Cog, AsyncStreamingClient):
                     if ch != None:
                         try:
                             wh = await self.getwebhook(ch)
-                            await wh.send(content=tweet.text, username=twiname, avatar_url=image)
+                            await wh.send(tweet.text, username=twiname, avatar_url=image)
                         except Exception as e:
                             print(e)
                             continue
@@ -138,16 +138,16 @@ class tweet(commands.Cog, AsyncStreamingClient):
                     ch = self.bot.get_channel(int(row[0]))
                     if ch != None:
                         try:
-                            wh = self.getwebhook(ch)
-                            wh.send(content=status.text, username=status.user.screen_name,
-                                    avatar_url=status.user.default_profile_image)
+                            wh = await self.getwebhook(ch)
+                            await wh.send(status.text, username=status.user.screen_name,
+                                avatar_url=status.user.default_profile_image)
                         except:
                             continue
 
-    async def getwebhook(self, channel):
+    async def getwebhook(self, channel: discord.TextChannel) -> discord.Webhook:
         webhooks = await channel.webhooks()
         webhook = discord.utils.get(webhooks, name='sakurabot')
-        if webhook == None:
+        if webhook is None:
             webhook = await channel.create_webhook(name='sakurabot')
         return webhook
 
@@ -220,4 +220,4 @@ class tweet(commands.Cog, AsyncStreamingClient):
 
 
 async def setup(bot):
-    await bot.add_cog(tweet(bot))
+    await bot.add_cog(Tweet(bot))

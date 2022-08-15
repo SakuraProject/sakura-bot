@@ -58,9 +58,9 @@ class schedule(commands.Cog):
     )
     @app_commands.describe(start="予定開始時間", end="予定終了時間", day="日付", notice="DM通知するかどうか", title="タイトル")
     async def set_(self, ctx: commands.Context, start, end, day, notice: bool, *, title):
-        notice = "on" if notice else "off"
+        n = "on" if notice else "off"
         await ctx.typing()
-        await self.set_schedule(ctx.author.id, start, end, day, notice, title)
+        await self.set_schedule(ctx.author.id, start, end, day, n, title)
         await ctx.reply("Ok")
 
     @schedule.command(
@@ -99,7 +99,7 @@ class schedule(commands.Cog):
                                     await user.send("予定のお時間です\n予定:" + title)
                             else:
                                 # もしユーザーが見つからなかったのならそのデータを削除する。
-                                await self.delete(user_id)
+                                await self.delete_schedule(user_id, title)
                         if data['day'] + data['etime'] == now:
                             try:
                                 await self.delete_schedule(user_id, title)
@@ -109,7 +109,7 @@ class schedule(commands.Cog):
             datetime.now()
 
     async def delete_schedule(self, userid, data) -> None:
-        for title, d in self.cache[userid].items():
+        for title in self.cache[userid].keys():
             if title == data:
                 del self.cache[userid][title]
                 async with self.pool.acquire() as conn:
@@ -153,7 +153,7 @@ class schedule(commands.Cog):
         except KeyError:
             await ctx.reply("予定はありません")
 
-    async def set_schedule(self, userid, start, end, day, notice, title: str = None) -> None:
+    async def set_schedule(self, userid, start, end, day, notice, title: str | None = None) -> None:
         if title:
             try:
                 self.cache[userid][title] = dict()
