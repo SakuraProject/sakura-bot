@@ -93,9 +93,9 @@ class tts(commands.Cog):
                     req = dict()
                     req["text"] = sc
                     req["speaker"] = sid
-                    async with self.bot.session.post("https://localhost:50021/audio_query",data=req) as resp:
+                    async with self.bot.session.post("http://localhost:50021/audio_query",data=req) as resp:
                         rpt = await resp.text()
-                    async with self.bot.session.post(f"https://localhost:50021/synthesis?speaker={sid}",json=req.json()) as resp:
+                    async with self.bot.session.post(f"http://localhost:50021/synthesis?speaker={sid}",json=req.json()) as resp:
                         async with aiofiles.open(swav, "wb") as fp:
                             await fp.write(await resp.read())
                 elif self.voice[str(message.guild.id)].endswith(".tsv"):
