@@ -132,7 +132,24 @@ class tts(commands.Cog):
 
     @tts.command()
     async def voice(self, ctx):
-        await ctx.send("音声を選んでください",view=MainView([VoiceList(self.bot,self)]))
+        lis = []
+        option = []
+        for name in listdir("data/tts/voices"):
+            with open("data/tts/voices/" + name + "/name.txt") as f:
+                vname = f.read()
+            if len(option) == 20:
+                lis.append(VoiceList(self.bot,self,option))
+                option = []
+            option.append(discord.SelectOption(label=vname,value=name))
+        if cog.ttsserverurl != "":
+            async with bot.session.get(f"http://{cog.basicuser}:{cog.basicpass}@{cog.ttsserverurl}/AVATOR2") as resp:
+                j = await resp.json()
+            for v in j:
+                if len(option) == 20:
+                    lis.append(VoiceList(self.bot,self,option))
+                    option = []
+                option.append(discord.SelectOption(label=v["name"],value=str(v["cid"])+".tsv"))
+        await ctx.send("音声を選んでください",view=MainView(lis))
 
     @tts.command()
     async def disconnect(self, ctx):
@@ -170,19 +187,9 @@ class tts(commands.Cog):
                 await ctx.send("削除しました")
 
 class VoiceList(discord.ui.Select):
-    def __init__(self, bot,cog):
-        option = []
+    def __init__(self, bot,cog,option):
         self.bot = bot
         self.cog = cog
-        for name in listdir("data/tts/voices"):
-            with open("data/tts/voices/" + name + "/name.txt") as f:
-                vname = f.read()
-            option.append(discord.SelectOption(label=vname,value=name))
-        if cog.ttsserverurl != "":
-            async with bot.session.get(f"http://{cog.basicuser}:{cog.basicpass}@{cog.ttsserverurl}/AVATOR2") as resp:
-                j = await resp.json()
-            for v in j:
-                option.append(discord.SelectOption(label=v["name"],value=str(v["cid"])+".tsv"))
         super().__init__(placeholder='', min_values=1, max_values=1, options=option)
 
     async def callback(self, interaction: discord.Interaction):
