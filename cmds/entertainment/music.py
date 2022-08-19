@@ -12,6 +12,7 @@ import asyncio
 from discord import FFmpegPCMAudio
 import copy
 from time import time
+import audioop
 
 
 def yf_gettitle(id):
