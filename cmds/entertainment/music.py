@@ -621,7 +621,7 @@ class AudioMixer(discord.AudioSource):
                 self.s.remove(pcm)
             else:
                 data = audioop.add(data,pcmdata,2)
-        if data == bytes(3840):
+        if len(self.s) == 0:
             return bytes()
         else:
             return data
