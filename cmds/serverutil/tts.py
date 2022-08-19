@@ -17,6 +17,7 @@ import torch
 import random
 import pyopenjtalk
 import torchaudio
+from cmds.entertainment.music import AudioMixer
 
 class tts(commands.Cog):
     def __init__(self,bot):
@@ -105,7 +106,10 @@ class tts(commands.Cog):
                     async with self.bot.session.post(f"http://{self.basicuser}:{self.basicpass}@{self.ttsserverurl}/SAVE2/{sid}",json=req) as resp:
                         async with aiofiles.open(swav, "wb") as fp:
                             await fp.write(await resp.read())
-                voice.play(discord.FFmpegPCMAudio(swav))
+                if not voice.is_playing():
+                    voice.play(AudioMixer(discord.FFmpegPCMAudio(swav)))
+                else:
+                    voice.source.s.append(discord.FFmpegPCMAudio(swav))
                 while voice.is_playing():
                     await asyncio.sleep(1)
                 os.remove(swav)
