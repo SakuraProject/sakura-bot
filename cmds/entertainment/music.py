@@ -248,11 +248,19 @@ class music(commands.Cog):
             if self.lop[ctx.guild.id]:
                 self.lopq[ctx.guild.id].append(qp)
             self.queues[ctx.guild.id].append(qp)
-        if not voice.is_playing():
+        if voice.is_playing() and voice.source.music == True:
+            await ctx.send(qp.title+'をキューに追加しました')
+        else:
             self.start = time()
-            voice.play(FFmpegPCMAudio(
-                qp.source, **FFMPEG_OPTIONS), after=nextqueue)
+            if not voice.is_playing():
+                voice.play(AudioMixer(FFmpegPCMAudio(
+                    qp.source, **FFMPEG_OPTIONS)), after=nextqueue)
+            else:
+                pcm = FFmpegPCMAudio(qp.source, **FFMPEG_OPTIONS)
+                pcm.nextqueue = nextqueue
+                voice.source.s.append(pcm)
             voice.is_playing()
+            voice.source.music = True
             ebd = discord.Embed(title=qp.title + "を再生します",
                                 color=self.bot.Color)
             ebd.add_field(
@@ -263,8 +271,7 @@ class music(commands.Cog):
             view.add_item(AplButton(qp, self.bot))
             await ctx.send(embeds=[ebd], view=view)
             await self.addc(qp)
-        else:
-            await ctx.send(qp.title+'をキューに追加しました')
+
 
     async def addc(self, qp):
         async with self.bot.pool.acquire() as conn:
@@ -278,31 +285,41 @@ class music(commands.Cog):
                     await cur.execute("UPDATE `musicranking` SET `count` = %s,`vid` = %s where `vid` = %s;", (ct, qp.sid, qp.sid))
 
     async def asyncnextqueue(self, FFMPEG_OPTIONS, voice, ctx, nextqueue):
-        if 0 < len(self.queues[ctx.guild.id]):
-            if not voice.is_playing():
-                try:
-                    self.queues[ctx.guild.id][0].close()
-                    self.queues[ctx.guild.id].pop(0)
-                    qp = self.queues[ctx.guild.id][0]
-                    await qp.setdata()
-                    self.start = time()
-                    voice.play(FFmpegPCMAudio(
-                        qp.source, **FFMPEG_OPTIONS), after=nextqueue)
-                    voice.is_playing()
-                    await self.addc(qp)
-                except IndexError:
-                    if self.lop[ctx.guild.id]:
-                        self.queues[ctx.guild.id] = copy.copy(
-                            self.lopq[ctx.guild.id])
-                    else:
-                        return
-                    qp = self.queues[ctx.guild.id][0]
-                    await qp.setdata()
-                    self.start = time()
-                    voice.play(FFmpegPCMAudio(
-                        qp.source, **FFMPEG_OPTIONS), after=nextqueue)
-                    voice.is_playing()
-                    await self.addc(qp)
+        if 0 < len(self.queues[ctx.guild.id]):    
+            try:
+                self.queues[ctx.guild.id][0].close()
+                self.queues[ctx.guild.id].pop(0)
+                qp = self.queues[ctx.guild.id][0]
+                await qp.setdata()
+                self.start = time()
+                if not voice.is_playing():
+                    voice.play(AudioMixer(FFmpegPCMAudio(
+                        qp.source, **FFMPEG_OPTIONS)), after=nextqueue)
+                else:
+                    pcm = FFmpegPCMAudio(qp.source, **FFMPEG_OPTIONS)
+                    pcm.nextqueue = nextqueue
+                    voice.source.s.append(pcm)
+                voice.is_playing()
+                await self.addc(qp)
+            except IndexError:
+                if self.lop[ctx.guild.id]:
+                    self.queues[ctx.guild.id] = copy.copy(
+                        self.lopq[ctx.guild.id])
+                else:
+                    return
+                qp = self.queues[ctx.guild.id][0]
+                await qp.setdata()
+                self.start = time()
+                if not voice.is_playing():
+                    voice.play(AudioMixer(FFmpegPCMAudio(
+                        qp.source, **FFMPEG_OPTIONS)), after=nextqueue)
+                else:
+                    pcm = FFmpegPCMAudio(qp.source, **FFMPEG_OPTIONS)
+                    pcm.nextqueue = nextqueue
+                    voice.source.s.append(pcm)
+                voice.is_playing()
+                voice.source.music = True
+                await self.addc(qp)
 
     @commands.command()
     async def playlist(self, ctx, *, name):
@@ -354,11 +371,19 @@ class music(commands.Cog):
                     self.queues[ctx.guild.id].append(qp)
                 if not voice.is_playing():
                     qp = self.queues[ctx.guild.id][qpl]
-        if not voice.is_playing():
+        if voice.is_playing() and voice.source.music == True:
+            await ctx.send('プレイリストをキューに追加しました')
+        else:
             self.start = time()
-            voice.play(FFmpegPCMAudio(
-                qp.source, **FFMPEG_OPTIONS), after=nextqueue)
+            if not voice.is_playing():
+                voice.play(AudioMixer(FFmpegPCMAudio(
+                    qp.source, **FFMPEG_OPTIONS)), after=nextqueue)
+            else:
+                pcm = FFmpegPCMAudio(qp.source, **FFMPEG_OPTIONS)
+                pcm.nextqueue = nextqueue
+                voice.source.s.append(pcm)
             voice.is_playing()
+            voice.source.music = True
             ebd = discord.Embed(title=qp.title + "を再生します",
                                 color=self.bot.Color)
             ebd.add_field(
@@ -369,8 +394,6 @@ class music(commands.Cog):
             view.add_item(AplButton(qp, self.bot))
             await ctx.send(embeds=[ebd], view=view)
             await self.addc(qp)
-        else:
-            await ctx.send('プレイリストをキューに追加しました')
 
     @commands.command()
     async def pause(self, ctx):
@@ -378,6 +401,7 @@ class music(commands.Cog):
         self.stopt = time() - self.start
         if voice.is_playing():
             voice.pause()
+            voice.source.music = False
             await ctx.send('一時停止しました')
 
     @commands.command()
@@ -397,12 +421,13 @@ class music(commands.Cog):
         voice = get(self.bot.voice_clients, guild=ctx.guild)
 
         if voice.is_playing():
-            voice.stop()
             await ctx.send('キューを削除し一時停止しました')
             for qp in self.queues[ctx.guild.id]:
                 qp.close()
             self.queues[ctx.guild.id] = list()
             self.lopq[ctx.guild.id] = list()
+            voice.source.music.False
+            voice.stop()
 
     @commands.command()
     async def resume(self, ctx):
@@ -410,6 +435,7 @@ class music(commands.Cog):
         self.start = time() - self.stopt
         if not voice.is_playing():
             voice.resume()
+            voice.source.music = True
             await ctx.send('再開しました')
 
     @commands.command()
@@ -576,6 +602,25 @@ class AplButton(discord.ui.Button):
                     await cur.execute("INSERT INTO `musiclist` (`userid`,`vid`,`lname`) VALUES (%s,%s,%s);", (interaction.user.id, self.it.sid, message.content))
                     await interaction.channel.send('追加完了しました')
 
+class AudioMixer(discord.AudioSource):
+    def __init__(self,msource):
+        super().__init__()
+        self.s = []
+        self.s.append(msource)
+        self.music = False
+        self.tts = False
+    def read(self):
+        data = bytes(3840)
+        for pcm in self.s:
+            pcmdata = pcm.read()
+            if not pcmdata:
+                if getattr(pcm,"nextqueue",None) != None:
+                    getattr(pcm,"nextqueue")()
+                pcm.cleanup()
+                self.s.remove(pcm)
+            else:
+                data = audioop.add(data,pcmdata,2)
+        return data
 
 async def setup(bot):
     await bot.add_cog(music(bot))
