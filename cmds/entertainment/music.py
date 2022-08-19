@@ -426,7 +426,7 @@ class music(commands.Cog):
                 qp.close()
             self.queues[ctx.guild.id] = list()
             self.lopq[ctx.guild.id] = list()
-            voice.source.music.False
+            voice.source.music = False
             voice.stop()
 
     @commands.command()
