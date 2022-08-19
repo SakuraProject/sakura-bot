@@ -259,6 +259,7 @@ class music(commands.Cog):
             else:
                 pcm = FFmpegPCMAudio(qp.source, **FFMPEG_OPTIONS)
                 pcm.nextqueue = nextqueue
+                pcm.cog = self
                 voice.source.s.append(pcm)
             voice.is_playing()
             voice.source.music = True
@@ -299,6 +300,7 @@ class music(commands.Cog):
                 else:
                     pcm = FFmpegPCMAudio(qp.source, **FFMPEG_OPTIONS)
                     pcm.nextqueue = nextqueue
+                    pcm.cog = self
                     voice.source.s.append(pcm)
                 voice.is_playing()
                 await self.addc(qp)
@@ -317,6 +319,7 @@ class music(commands.Cog):
                 else:
                     pcm = FFmpegPCMAudio(qp.source, **FFMPEG_OPTIONS)
                     pcm.nextqueue = nextqueue
+                    pcm.cog = self
                     voice.source.s.append(pcm)
                 voice.is_playing()
                 voice.source.music = True
@@ -382,6 +385,7 @@ class music(commands.Cog):
             else:
                 pcm = FFmpegPCMAudio(qp.source, **FFMPEG_OPTIONS)
                 pcm.nextqueue = nextqueue
+                pcm.cog = self
                 voice.source.s.append(pcm)
             voice.is_playing()
             voice.source.music = True
@@ -616,7 +620,7 @@ class AudioMixer(discord.AudioSource):
             pcmdata = pcm.read()
             if not pcmdata:
                 if getattr(pcm,"nextqueue",None) != None:
-                    getattr(pcm,"nextqueue")()
+                    getattr(pcm,"nextqueue")(pcm.cog)
                 pcm.cleanup()
                 self.s.remove(pcm)
             else:
