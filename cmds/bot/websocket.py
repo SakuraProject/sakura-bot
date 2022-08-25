@@ -88,6 +88,32 @@ class websocket(commands.Cog):
                     self.res[cmd["cmd"]][cmd["args"]["id"]] = cmd["args"]
             except ConnectionClosed:
                 self.sock = await websockets.connect(self.uri)
+                
+    @commands.group()
+    @commands.is_owner()
+    async def backend(self,ctx):
+        if not ctx.invoked_subcommand:
+            await ctx.reply("使用方法が違います")
+            
+                
+    @backend.command()
+    @commands.is_owner()
+    async def run(self,ctx,* , code):
+        self.res.setdefault("jsk",dict())
+        self.res["jsk"][ctx.author.id] = None
+        req = dict()
+        req["cmd"] = "jsk"
+        req["type"] = "cmd"
+        arg = dict()
+        arg["id"] = ctx.author.id
+        arg["code"] = code
+        req["args"] = arg
+        await self.sock.send(dumps(req))
+        await asyncio.sleep(1)
+        while self.res["jsk"][ctx.author.id] == None:
+            await asyncio.sleep(1)
+        await ctx.send(self.res["jsk"][ctx.author.id]["res"])
+        
 
     async def shareguilds(self,args):
         share = [g for g in self.bot.guilds if g.get_member(int(args["id"]))!=None]
