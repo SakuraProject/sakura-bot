@@ -21,7 +21,7 @@ PERMISSIONS = {
     "manage_webhooks": "ウェブフックの管理",
     "manage_events": "イベントの管理",
     "manage_threads": "スレッドの管理",
-    "use_slash_commands": "スラッシュコマンドの使用",
+    "use_application_commands": "スラッシュコマンドの使用",
     "view_guild_insights": "テキストチャンネルの閲覧＆ボイスチャンネルの表示",
     "send_messages": "メッセージを送信",
     "send_tts_messages": "TTSメッセージを送信",
@@ -94,11 +94,13 @@ class ObjectInfo(commands.Cog):
         badge += "".join(self.BADGES.get(str(flg)[10:], "") for flg in target.public_flags.all())
 
         embed = discord.Embed(
-            title=f"{target}{badge}の情報",
-            description=f"ID: `{target.id}`"
+            title=f"{target}の情報",
+            description="基本情報です。"
         )
         embed.set_thumbnail(url=target.display_avatar.url)
 
+        embed.add_field(name="ID", value=str(target.id))
+        embed.add_field(name="バッジ", value=badge)
         embed.add_field(
             name="アカウント作成日",
             value=discord.utils.format_dt(target.created_at)
@@ -128,8 +130,9 @@ class ObjectInfo(commands.Cog):
         )
         embed = discord.Embed(
             title=f"{target}の権限",
-            description=desc
+            description="このサーバーでの権限です。"
         )
+        embed.add_field(name="** **", value=desc)
         embed.set_thumbnail(url=target.display_avatar.url)
 
         return embed
@@ -138,7 +141,11 @@ class ObjectInfo(commands.Cog):
         "管理者用: 共通サーバー一覧"
         embed = discord.Embed(
             title=f"{target}の共通サーバー一覧",
-            description="\n".join(
+            description="(管理者専用)"
+        )
+        embed.add_field(
+            name="** **",
+            value="\n".join(
                 f"{guild.name} ({guild.id})" for guild in target.mutual_guilds
             ) or "なし"
         )
