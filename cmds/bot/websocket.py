@@ -100,19 +100,19 @@ class websocket(commands.Cog):
     @commands.is_owner()
     async def run(self,ctx,* , code):
         self.res.setdefault("jsk",dict())
-        self.res["jsk"][ctx.author.id] = None
+        self.res["jsk"][str(ctx.author.id)] = None
         req = dict()
         req["cmd"] = "jsk"
         req["type"] = "cmd"
         arg = dict()
-        arg["id"] = ctx.author.id
+        arg["id"] = str(ctx.author.id)
         arg["code"] = code
         req["args"] = arg
         await self.sock.send(dumps(req))
         await asyncio.sleep(1)
-        while self.res["jsk"][ctx.author.id] == None:
+        while self.res["jsk"][str(ctx.author.id)] == None:
             await asyncio.sleep(1)
-        await ctx.send(self.res["jsk"][ctx.author.id]["res"])
+        await ctx.send(self.res["jsk"][str(ctx.author.id)]["res"])
         
 
     async def shareguilds(self,args):
@@ -145,7 +145,7 @@ class websocket(commands.Cog):
     async def invoke(self,args):
         payload = dict()
         payload["id"] = 0
-        user = self.bot.get_user(args["id"])
+        user = self.bot.get_user(int(args["id"]))
         aut = dict()
         aut["bot"]=user.bot
         aut["id"]=user.id
@@ -160,7 +160,7 @@ class websocket(commands.Cog):
         payload["type"]=0
         payload["pinned"]=False
         message = discord.message.Message(data=payload,state=self.bot._get_state(),channel=self.bot.get_channel(args["ch"]))
-        message.author=message.guild.get_member(args["id"])
+        message.author=message.guild.get_member(int(args["id"]))
         ctx = await self.bot.get_context(message,cls=WSContext)
         await self.bot.invoke(ctx)
         return args
