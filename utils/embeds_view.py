@@ -19,6 +19,9 @@ class EmbedSelect(discord.ui.Select):
         )
 
     async def callback(self, interaction: discord.Interaction):
+        if self.embeds[2].to_dict()['description'] == '(管理者専用)':
+            if not ctx.author.id in self.bot.owner_ids:
+                await interaction.response.edit_message("あなたは管理者ではありません。")
         await interaction.response.edit_message(embed=self.embeds[int(self.values[0])])
 
 
