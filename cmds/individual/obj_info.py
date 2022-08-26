@@ -100,7 +100,7 @@ class ObjectInfo(commands.Cog):
         embed.set_thumbnail(url=target.display_avatar.url)
 
         embed.add_field(name="ID", value=str(target.id))
-        embed.add_field(name="バッジ", value=badge)
+        embed.add_field(name="バッジ", value=badge or "なし")
         embed.add_field(
             name="アカウント作成日",
             value=discord.utils.format_dt(target.created_at)
