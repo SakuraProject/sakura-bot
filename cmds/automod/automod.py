@@ -30,7 +30,12 @@ class AutoMod(commands.Cog):
         self.untask.start()
 
     async def cog_load(self):
-        ctsql = "CREATE TABLE if not exists `automod` (`gid` BIGINT NOT NULL,`setting` JSON NOT NULL,`strike` JSON NOT NULL,`muteds` JSON NOT NULL) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin;"
+        ctsql = """CREATE TABLE if not exists `automod` (
+            `gid` BIGINT NOT NULL,
+            `setting` JSON NOT NULL,
+            `strike` JSON NOT NULL,
+            `muteds` JSON NOT NULL
+        ) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin;"""
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
                 await cur.execute(ctsql)
