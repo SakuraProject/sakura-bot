@@ -56,7 +56,7 @@ class ErrorQuery(commands.Cog):
         if isinstance(error, commands.NoPrivateMessage):
             embed = self.embedding("このコマンドはDMでは使用できません。")
         if isinstance(error, commands.CommandNotFound):
-            embed = self.embedding(f"コマンド`{ctx.command.name}`が見つかりませんでした。")
+            embed = self.embedding("そのコマンドが見つかりませんでした。")
         if isinstance(error, commands.DisabledCommand):
             embed = self.embedding("このコマンドは現在無効化されています。")
         if isinstance(error, commands.TooManyArguments):
