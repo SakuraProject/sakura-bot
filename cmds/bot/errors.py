@@ -23,7 +23,7 @@ class ErrorQuery(commands.Cog):
     def __init__(self, bot: Bot) -> None:
         self.bot = bot
 
-    def embedding(self, description="なんらかのエラーが発生しました", title="エラー"):
+    def embedding(self, description: str = "なんらかのエラーが発生しました", title: str = "エラー"):
         return discord.Embed(title=title, description=description, color=0xff0000)
 
     @commands.Cog.listener()
@@ -124,13 +124,11 @@ class ErrorQuery(commands.Cog):
             embed = self.embedding("コマンドの実行に対してBotに必要なロールを一つも持っていません。")
         if isinstance(error, commands.NSFWChannelRequired):
             embed = self.embedding(f"このコマンドはNSFWチャンネル専用です。")
-        if isinstance(error, commands.CommandInvokeError) and not embed:
+        if not embed:
             embed = self.embedding(
                 f"なんらかのエラーが発生しました。\n`{error.original}`\n"
                 "このエラーは開発者側の問題である可能性が高いです。サポートサーバーにて報告いただけると嬉しいです。"
             )
-        if not embed:
-            embed = self.embedding()
             channel = self.bot.get_channel(1012623774014783598)
             error_message = "".join(
                 TracebackException.from_exception(error).format()
