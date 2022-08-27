@@ -487,7 +487,7 @@ class AutoMod(commands.Cog):
         self.sendcont.setdefault(str(msg.guild.id), dict())
         self.sendcont[str(msg.guild.id)].setdefault(str(msg.author.id), '')
 
-        if time.time() - self.sendtime[str(msg.guild.id)][str(msg.author.id)] <= .0:
+        if time.time() - self.sendtime[str(msg.guild.id)][str(msg.author.id)] <= 2.0:
             self.sendtime[str(msg.guild.id)][str(msg.author.id)] = time.time()
             self.sendmsgs[str(msg.guild.id)][str(msg.author.id)].append(msg)
             if not str(msg.guild.id) in self.settings:
