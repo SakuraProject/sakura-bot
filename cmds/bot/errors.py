@@ -3,6 +3,8 @@
 import discord
 from discord.ext import commands
 
+from traceback import TracebackException, print_exc
+
 from utils import Bot
 
 
@@ -42,7 +44,7 @@ class ErrorQuery(commands.Cog):
         if isinstance(error, commands.BadUnionArgument):
             embed = self.embedding(
                 f"引数{error.param.name}が以下のすべての型に適合しませんでした。"
-                f"\n{', '.join(error.converters)}"
+                f"\n{', '.join(str(t) for t in error.converters)}"
             )
         if isinstance(error, commands.BadLiteralArgument):
             embed = self.embedding(
@@ -130,6 +132,14 @@ class ErrorQuery(commands.Cog):
         if not embed:
             embed = self.embedding()
             channel = self.bot.get_channel(1012623774014783598)
+            error_message = "".join(
+                TracebackException.from_exception(error).format()
+            )
+            await channel.send(f"```py\n{error_message}\n```")
+            embed.add_field(
+                name="エラー詳細",
+                value=f"```py\n{error_message if len(error_message) < 990 else error_message[:990]}\n```"
+            )
         await ctx.reply(embed=embed)
 
 

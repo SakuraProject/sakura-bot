@@ -14,7 +14,7 @@ from utils import Bot
 
 load_dotenv()
 
-bot = Bot(command_prefix='sk!', intents=discord.Intents.all(), help_command=None, 
+bot = Bot(command_prefix='st!', intents=discord.Intents.all(), help_command=None, 
     allowed_mentions=discord.AllowedMentions.none())
 
 
