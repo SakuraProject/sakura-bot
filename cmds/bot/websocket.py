@@ -132,6 +132,11 @@ class websocket(commands.Cog):
         guild["id"] = g.id
         guild["name"] = g.name
         guild["member_count"] = g.member_count
+        guild["icon"] = dict()
+        if g.icon != None:
+            guild["icon"]["url"] = g.icon.url
+        else:
+            guild["icon"]["url"] = None
         guild["text_channels"] = [(await self.channel({"id":ch.id})) for ch in g.text_channels]
         return guild
 
