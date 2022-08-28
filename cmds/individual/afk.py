@@ -18,7 +18,7 @@ class Afk(commands.Cog):
             await ctx.reply("使用方法が違います。")
 
     @afk.command()
-    async def set(self, ctx, *, vl):
+    async def set(self, ctx, *, reason):
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
                 sql = "select * from afk where userid='%s';"
@@ -26,7 +26,7 @@ class Afk(commands.Cog):
                 result = await cur.fetchall()
                 await conn.commit()
                 if len(result) == 0:
-                    await cur.execute("INSERT INTO afk (userid, vl) VALUES (%s,%s)", (str(ctx.author.id), vl))
+                    await cur.execute("INSERT INTO afk (userid, vl) VALUES (%s,%s)", (str(ctx.author.id), reason))
                     await ctx.send("設定しました")
                 else:
                     await ctx.send("すでに設定されています")
