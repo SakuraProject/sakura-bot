@@ -132,6 +132,11 @@ class websocket(commands.Cog):
         guild["id"] = g.id
         guild["name"] = g.name
         guild["member_count"] = g.member_count
+        guild["icon"] = dict()
+        if g.icon != None:
+            guild["icon"]["url"] = g.icon.url
+        else:
+            guild["icon"]["url"] = None
         guild["text_channels"] = [(await self.channel({"id":ch.id})) for ch in g.text_channels]
         return guild
 
@@ -204,11 +209,21 @@ class websocket(commands.Cog):
                 cl.append(await self.command({"id":cm.name + " " + c.name}))
             dc["commands"] = cl
         dc["name"] = args["id"]
+        clp = list()
+        for ckey in cm.clean_params.keys():
+            clp.append(await self.convert_param(cm.clean_params[ckey]))
+        dc["clean_params"] = clp
         if cm.callback.__doc__ != None:
             dc["doc"] = await self.bot.cogs["help"].parsedoc(cm.callback.__doc__)
         dc["type"] = type(cm).__name__
         args["res"] = dc
         return args
+        
+    async def convert_param(self, p):
+        res = dict()
+        res["name"] = p.name
+        res["required"] = p.required
+        return res
         
 
 def setup(bot):

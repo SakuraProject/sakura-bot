@@ -164,6 +164,8 @@ class AutoMod(commands.Cog):
 
     @commands.Cog.listener()
     async def on_member_join(self, member):
+        self.settings.setdefault(str(member.guild.id), dict())
+        self.settings[str(member.guild.id)].setdefault('antiraid', 'off')
         if self.settings[str(member.guild.id)]['antiraid'] == 'on':
             if self.raidcheck(member):
                 if self.settings[str(member.guild.id)]['raidaction'] == 'ban':
