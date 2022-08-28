@@ -123,13 +123,14 @@ class ErrorQuery(commands.Cog):
         if isinstance(error, commands.BotMissingAnyRole):
             embed = self.embedding("コマンドの実行に対してBotに必要なロールを一つも持っていません。")
         if isinstance(error, commands.NSFWChannelRequired):
-            embed = self.embedding(f"このコマンドはNSFWチャンネル専用です。")
-        if not embed:
+            embed = self.embedding("このコマンドはNSFWチャンネル専用です。")
+        if isinstance(error, commands.CommandInvokeError):
             embed = self.embedding(
                 f"なんらかのエラーが発生しました。\n`{error.original}`\n"
                 "このエラーは開発者側の問題である可能性が高いです。サポートサーバーにて報告いただけると嬉しいです。"
             )
             channel = self.bot.get_channel(1012623774014783598)
+            assert isinstance(channel, discord.TextChannel)
             error_message = "".join(
                 TracebackException.from_exception(error).format()
             )

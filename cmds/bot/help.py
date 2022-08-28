@@ -34,14 +34,14 @@ class help(commands.Cog):
     async def hpl(self, cmd=None, subcmd=None):
         l = "ja"
         sed = "これはBotのヘルプです。下の選択メニューからカテゴリを選ぶことによりコマンドを選択できます。これを見てもよくわからない方はサポートサーバーまでお問い合わせください"
-        if cmd != None:
-            if subcmd == None:
+        if cmd is not None:
+            if subcmd is None:
                 comd = self.bot.get_command(cmd)
                 if type(comd).__name__ == "Group" or type(comd).__name__ == "HybridGroup":
                     comds = list(comd.commands)
                     sed = ""
                     for gcm in comds:
-                        if gcm.callback.__doc__ != None:
+                        if gcm.callback.__doc__ is not None:
                             doc = await self.parsedoc(gcm.callback.__doc__)
                             try:
                                 sed = sed + self.bot.command_prefix + comd.name + \

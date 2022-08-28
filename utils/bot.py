@@ -1,5 +1,7 @@
 # Sakura Utils - Bot
 
+from typing import Any
+
 from discord.ext import commands
 from aiohttp import ClientSession
 from aiomysql import Pool
@@ -15,3 +17,14 @@ class Bot(commands.Bot):
 
     Color = 0xffbdde
 
+    async def execute_sql(
+        self, sql: str, injects: tuple[Any, ...] | None = None, return_type: str = ""
+    ):
+        "SQL文を実行します。"
+        async with self.pool.acquire() as conn:
+            async with conn.cursor as cursor:
+                await cursor.execute(sql, injects)
+                if return_type == "fetchall":
+                    return await cursor.fetchall()
+                elif return_type == "fetchone":
+                    return await cursor.fetchone()
