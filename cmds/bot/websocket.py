@@ -164,8 +164,12 @@ class websocket(commands.Cog):
         payload["edited_timestamp"]=None
         payload["type"]=0
         payload["pinned"]=False
-        message = discord.message.Message(data=payload,state=self.bot._get_state(),channel=self.bot.get_channel(args["ch"]))
-        message.author=message.guild.get_member(int(args["id"]))
+        message = discord.message.Message(data=payload,state=self.bot._get_state(),channel=self.bot.get_channel(int(args["ch"])))
+        g = self.bot.get_channel(int(args["ch"])).guild
+        if g is not None:
+            message.author=g.get_member(int(args["id"]))
+        else:
+            message.author = user
         ctx = await self.bot.get_context(message,cls=WSContext)
         await self.bot.invoke(ctx)
         return args
