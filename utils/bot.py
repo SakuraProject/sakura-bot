@@ -22,7 +22,7 @@ class Bot(commands.Bot):
     ):
         "SQL文を実行します。"
         async with self.pool.acquire() as conn:
-            async with conn.cursor as cursor:
+            async with conn.cursor() as cursor:
                 await cursor.execute(sql, injects)
                 if return_type == "fetchall":
                     return await cursor.fetchall()
