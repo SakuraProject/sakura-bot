@@ -57,7 +57,7 @@ class WSContext(Context):
         sen["cmd"] = "send"
         args = dict()
         args["content"] = sc
-        args["id"] = self.author.id
+        args["id"] = str(self.author.id)
         sen["args"] = args
         sen["type"] = "res"
         await self.bot.cogs["websocket"].sock.send(dumps(sen))
@@ -164,6 +164,8 @@ class websocket(commands.Cog):
         payload["edited_timestamp"]=None
         payload["type"]=0
         payload["pinned"]=False
+        payload["mentions"]=[]
+        payload["mention_roles"]=[]
         message = discord.message.Message(data=payload,state=self.bot._get_state(),channel=self.bot.get_channel(int(args["ch"])))
         g = self.bot.get_channel(int(args["ch"])).guild
         if g is not None:
