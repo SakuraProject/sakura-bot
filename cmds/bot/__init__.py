@@ -1,5 +1,5 @@
 from os import listdir
-import traceback
+import logging
 
 
 async def setup(bot):
@@ -8,6 +8,6 @@ async def setup(bot):
             try:
                 await bot.load_extension("cmds.bot."+name.replace(".py", ""))
             except Exception as e:
-                print("[Log][err]" + str(e))
+                logging.exception(f"Error on bot.{name}")
             else:
                 print("[Log][load]" + name)
