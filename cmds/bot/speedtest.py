@@ -1,7 +1,8 @@
 import discord
 from discord.ext import commands
 from speedtest import Speedtest
-
+import asyncio
+import time
 
 class speedtest(commands.Cog):
     def __init__(self, bot):
@@ -30,6 +31,29 @@ class speedtest(commands.Cog):
                             str(dl/1024/1024) + "Mbps\n**アップロード**:\n" + str(up/1024/1024) + "Mbps")
         await msg.edit(content="", embeds=[ebd])
 
+    @commands.command()
+    async def ping(self, ctx):
+        """
+        NLang ja botのpingを取得します
+        botのpingを取得します
+        **使いかた：**
+        EVAL self.bot.command_prefix+'ping'
+        ELang ja
+        NLang default get latency for bot
+        get latency for bot
+        **How to use：**
+        EVAL self.bot.command_prefix+'ping'
+        ELang default
+        """
+        p1 = self.bot.latency * 1000
+        t = time.time()
+        f = await _bot.cogs["websocket"].sock.ping()
+        while not f.done():
+            await asyncio.sleep(1/1000)
+        p2 = int((time.time() - t) * 1000)
+        ebd = discord.Embed(title="speedtest", description="**Discordとの接続速度**:\n" +
+                            str(p1) + "ms\n**バックエンドとの通信速度**:\n" + str(p2) + "ms")
+        await ctx.send( embeds=[ebd])
 
 async def setup(bot):
     await bot.add_cog(speedtest(bot))
