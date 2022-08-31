@@ -51,7 +51,7 @@ class speedtest(commands.Cog):
         while not f.done():
             await asyncio.sleep(1/1000)
         p2 = int((time.time() - t) * 1000)
-        ebd = discord.Embed(title="speedtest", description="**Discordとの接続速度**:\n" +
+        ebd = discord.Embed(title="ping", description="**Discordとの接続速度**:\n" +
                             str(p1) + "ms\n**バックエンドとの通信速度**:\n" + str(p2) + "ms")
         await ctx.send( embeds=[ebd])
 
