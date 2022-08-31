@@ -47,7 +47,7 @@ class speedtest(commands.Cog):
         """
         p1 = self.bot.latency * 1000
         t = time.time()
-        f = await bot.cogs["websocket"].sock.ping()
+        f = await self.bot.cogs["websocket"].sock.ping()
         while not f.done():
             await asyncio.sleep(1/1000)
         p2 = int((time.time() - t) * 1000)
