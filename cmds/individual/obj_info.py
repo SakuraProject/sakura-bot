@@ -170,6 +170,9 @@ class ObjectInfo(commands.Cog):
         ELang default
         """
         embeds = [self.create_si_embed_1(target)]
+        if target == ctx.guild:
+            embeds.append(self.create_si_embed_2(target))
+            embeds.append(self.create_si_embed_3(target))
 
         if len(embeds) == 1:
             return await ctx.send(embed=embeds[0])
@@ -178,6 +181,7 @@ class ObjectInfo(commands.Cog):
     # Server info Embed creator
 
     def create_si_embed_1(self, target: discord.Guild) -> discord.Embed:
+        "基本情報"
         embed = discord.Embed(
             title=f"{target.name}の情報",
             description=f"ID: `{target.id}`",
@@ -190,15 +194,40 @@ class ObjectInfo(commands.Cog):
         if target.owner:
             embed.add_field(name="オーナー", value=f"{target.owner} ({target.owner.id})")
         embed.add_field(
-            name="総チャンネル数 (カテゴリ数, テキストチャンネル数, ボイスチャンネル数, ステージチャンネル数)",
+            name="チャンネル数 (カテゴリ, テキスト, ボイス, ステージ)",
             value=f"`{len(target.channels)}` (`"
                   f"{len(target.categories)}`, `{len(target.voice_channels)}`, "
                   f"`{len(target.text_channels)}`, `{len(target.stage_channels)}`)"
         )
         embed.add_field(
-            name="総ユーザー数(通常ユーザー数, bot数)",
-            value=f"`{len(target.members)}` (`"
-                  f"{sum(not m.bot for m in target.members)}`, `{sum(m.bot for m in target.members)}`)"
+            name="ユーザー数(通常ユーザー, bot)",
+            value=f"`{len(target.members)}` (`{sum(not m.bot for m in target.members)}"
+                  f"`, `{sum(m.bot for m in target.members)}`)"
+        )
+        return embed
+
+    def create_si_embed_2(self, target: discord.Guild) -> discord.Embed:
+        "ロール一覧(そのサーバー限定)"
+        embed = discord.Embed(title="ロール一覧", description="このサーバーのロール一覧です。")
+        embed.add_field(
+            name="** **", value="\n".join(
+                f"{r.mention}({r.id}): {len(r.members)}人" for r in target.roles
+            )[:990]
+        )
+        return embed
+
+    def create_si_embed_3(self, target: discord.Guild) -> discord.Embed:
+        "古参ランキング(そのサーバー限定)"
+        embed = discord.Embed(
+            title="古参メンバーランキング",
+            description="このサーバーにいるメンバーを古い順に並べ替えたものです。"
+        )
+        embed.add_field(
+            name="** **", value="\n".join(
+                f"{m.mention}: {discord.utils.format_dt(m.joined_at)}"
+                f"({(discord.utils.utcnow() - m.joined_at).days}日前)"
+                for m in target.members
+            )
         )
         return embed
 

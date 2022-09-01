@@ -26,6 +26,12 @@ class EmbedSelect(discord.ui.Select):
         )
 
     async def callback(self, interaction: discord.Interaction):
+        assert interaction.message is not None
+        assert interaction.message.interaction is not None
+        if interaction.message.interaction.user != interaction.user:
+            return await interaction.response.send_message(
+                'あなたはこの操作をすることができません。', ephemeral=True
+            )
         await interaction.response.edit_message(embed=self.embeds[int(self.values[0])])
 
 
@@ -39,7 +45,7 @@ class EmbedsView(discord.ui.View):
         self.add_item(EmbedSelect(embeds, extras))
 
     async def send(self, ctx: commands.Context):
-        if len(embeds) == 1:
-            await ctx.send(embed=embeds[0])
+        if len(self.embeds) == 1:
+            await ctx.send(embed=self.embeds[0])
         else:
-            await ctx.send(embed=embeds[0], view=self)
+            await ctx.send(embed=self.embeds[0], view=self)
