@@ -122,9 +122,6 @@ class mail(commands.Cog):
                 if dtmt is not None:
                     m.lt = dtmt
             except Exception as e:
-                import traceback
-                traceback.print_exc()
-                print(dte)
                 continue
     async def getwebhook(self, channel: discord.TextChannel) -> discord.Webhook:
         webhooks = await channel.webhooks()
