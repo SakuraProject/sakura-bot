@@ -1,6 +1,8 @@
 # Sakura Utils - Bot
 
-from typing import Any
+from typing import Any, Callable
+
+from inspect import iscoroutinefunction
 
 from discord.ext import commands
 from aiohttp import ClientSession
@@ -18,13 +20,19 @@ class Bot(commands.Bot):
     Color = 0xffbdde
 
     async def execute_sql(
-        self, sql: str, injects: tuple[Any, ...] | None = None, return_type: str = ""
+        self, sql: str | Callable,
+        _injects: tuple[Any, ...] | None = None, _return_type: str = "",
+        **kwargs
     ):
         "SQL文を実行します。"
         async with self.pool.acquire() as conn:
             async with conn.cursor() as cursor:
-                await cursor.execute(sql, injects)
-                if return_type == "fetchall":
+                if iscoroutinefunction(sql):
+                    return await sql(cursor, **kwargs)
+                elif callable(sql):
+                    raise ValueError("sql parameter must be async function.")
+                await cursor.execute(sql, _injects)
+                if _return_type == "fetchall":
                     return await cursor.fetchall()
-                elif return_type == "fetchone":
+                elif _return_type == "fetchone":
                     return await cursor.fetchone()
