@@ -5,13 +5,13 @@ class purge(commands.Cog):
     def __init__(self,bot):
         self.bot = bot
     @commands.command()
-    async def purge(self,ctx,length=0.member : discord.User = None):
+    async def purge(self,ctx,length=0.member: discord.User = None):
         if length ==0:
             mlis = list()
             inn = False
             async for m in ctx.channel.history(limit=100000):
                 r = [getattr(e.emoji,"name",e.emoji) for e in m.reactions]
-                if "wastebasket" in r or "???" in r:
+                if "wastebasket" in r or "🗑️" in r:
                     mlis.append(m)
                     if inn:
                         break
