@@ -219,16 +219,15 @@ class giveaway(commands.Cog):
             else:
                 break
         id = idt
-        self.gavs[id] = dict()
-        self.gavs[id]['end'] = int(datetime.datetime.now().timestamp())+times
-        self.gavs[id]['win'] = win
-        self.gavs[id]['cid'] = dict()
-        self.gavs[id]['mid'] = dict()
-        self.gavs[id]['cid']['0'] = channel.id
-        self.gavs[id]['mid']['0'] = my_message.id
-        self.gavs[id]['prize'] = prize
-        self.gavs[id]['author'] = ctx.author.name
-        await ctx.author.send('Giveaway連携コードは'+str(id)+'です。ほかのサーバーでも同時開催したいときに使ってね')
+        self.gavs[id] = {
+            "end": int(datetime.datetime.now().timestamp())+times,
+            "win": win,
+            "cid": {"0": channel.id},
+            "mid": {"0": my_message.id},
+            "prize": prize,
+            "author": ctx.author.name
+        }
+        await ctx.author.send(f'Giveaway連携コードは{id}です。ほかのサーバーでも同時開催したいときに使ってね')
         await self.save(id)
 
 

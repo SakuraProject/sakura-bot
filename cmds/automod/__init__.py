@@ -8,6 +8,6 @@ async def setup(bot):
             try:
                 await bot.load_extension("cmds.automod."+name.replace(".py", ""))
             except:
-                logging.exception(f"Error on automod.{name}")
+                logging.exception("Error on automod.%s", name)
             else:
                 print("[Log][load]" + name)

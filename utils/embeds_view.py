@@ -1,5 +1,7 @@
 # Sakura Utility - Embeds View
 
+from collections.abc import Sequence
+
 from discord.ext import commands
 import discord
 
@@ -38,7 +40,10 @@ class EmbedSelect(discord.ui.Select):
 class EmbedsView(discord.ui.View):
     "Embedsビュー。初期化時にembedのリストを渡す。"
 
-    def __init__(self, embeds: list[discord.Embed], extras: dict | None = None):
+    def __init__(
+        self, embeds: Sequence[discord.Embed],
+        extras: dict[str, str] | None = None
+    ):
         super().__init__()
         self.embeds = embeds
 

@@ -170,13 +170,16 @@ class ObjectInfo(commands.Cog):
         ELang default
         """
         embeds = [self.create_si_embed_1(target)]
+        descriptions = {"基本情報": "サーバーの基本情報です。"}
         if target == ctx.guild:
             embeds.append(self.create_si_embed_2(target))
+            descriptions["ロール一覧"] = "サーバーにあるロールの一覧です。"
             embeds.append(self.create_si_embed_3(target))
+            descriptions["古参メンバーランキング"] = "このサーバーに最も古くからいるメンバーから順番に表示します。"
 
         if len(embeds) == 1:
             return await ctx.send(embed=embeds[0])
-        await ctx.send(embed=embeds[0], view=EmbedsView(embeds))
+        await ctx.send(embed=embeds[0], view=EmbedsView(embeds, descriptions))
 
     # Server info Embed creator
 
@@ -187,12 +190,16 @@ class ObjectInfo(commands.Cog):
             description=f"ID: `{target.id}`",
             color=self.bot.Color
         )
+        if target.icon:
+            embed.set_thumbnail(url=target.icon.url)
+
         embed.add_field(
             name="サーバー作成日時",
             value=discord.utils.format_dt(target.created_at)
         )
         if target.owner:
             embed.add_field(name="オーナー", value=f"{target.owner} ({target.owner.id})")
+
         embed.add_field(
             name="チャンネル数 (カテゴリ, テキスト, ボイス, ステージ)",
             value=f"`{len(target.channels)}` (`"
@@ -208,26 +215,27 @@ class ObjectInfo(commands.Cog):
 
     def create_si_embed_2(self, target: discord.Guild) -> discord.Embed:
         "ロール一覧(そのサーバー限定)"
-        embed = discord.Embed(title="ロール一覧", description="このサーバーのロール一覧です。")
-        embed.add_field(
-            name="** **", value="\n".join(
-                f"{r.mention}({r.id}): {len(r.members)}人" for r in target.roles
-            )[:990]
+        desc = "\n".join(
+            f"{r.name if r.name == 'everyone' else r.mention}"
+            f"({r.id}): {len(r.members)}人"
+            for r in sorted(target.roles, key=lambda r: r.position)
+        )
+        embed = discord.Embed(
+            title="ロール一覧",
+            description=desc[:4090] + "\n..." if len(desc) > 4095 else desc
         )
         return embed
 
     def create_si_embed_3(self, target: discord.Guild) -> discord.Embed:
         "古参ランキング(そのサーバー限定)"
+        desc = "\n".join(
+            f"{m.mention}: {discord.utils.format_dt(m.joined_at)}"
+            f"({(discord.utils.utcnow() - m.joined_at).days}日前)"
+            for m in sorted(target.members, key=lambda m: m.joined_at)
+        )
         embed = discord.Embed(
             title="古参メンバーランキング",
-            description="このサーバーにいるメンバーを古い順に並べ替えたものです。"
-        )
-        embed.add_field(
-            name="** **", value="\n".join(
-                f"{m.mention}: {discord.utils.format_dt(m.joined_at)}"
-                f"({(discord.utils.utcnow() - m.joined_at).days}日前)"
-                for m in target.members
-            )
+            description=desc[:4090] + "\n..." if len(desc) > 4095 else desc
         )
         return embed
 

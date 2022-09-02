@@ -21,7 +21,7 @@ class Bot(commands.Bot):
 
     async def execute_sql(
         self, sql: str | Callable,
-        _injects: tuple[Any, ...] | None = None, _return_type: str = "",
+        _injects: tuple | None = None, _return_type: str = "",
         **kwargs
     ):
         "SQL文を実行します。"
