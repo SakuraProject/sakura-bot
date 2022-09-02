@@ -26,7 +26,7 @@ class purge(commands.Cog):
                  else:
                      return m.id in [ml.id for ml in mlis]
             dmsg = await ctx.channel.purge(limit=100000,check=check)
-            await await ctx.send(str(len(dmsg)) + "メッセージを削除しました")
+            await ctx.send(str(len(dmsg)) + "メッセージを削除しました")
         else:
             def check(m):
                  if member is not None:
@@ -34,6 +34,6 @@ class purge(commands.Cog):
                  else:
                      return True
             dmsg = await ctx.channel.purge(limit=length,check=check)
-            await await ctx.send(str(len(dmsg)) + "メッセージを削除しました")
+            await ctx.send(str(len(dmsg)) + "メッセージを削除しました")
 async def setup(bot):
     await bot.add_cog(purge(bot))
