@@ -3,7 +3,7 @@
 import discord
 from discord.ext import commands
 
-from traceback import TracebackException, print_exc
+from traceback import TracebackException
 
 from utils import Bot
 
@@ -134,6 +134,7 @@ class ErrorQuery(commands.Cog):
             error_message = "".join(
                 TracebackException.from_exception(error).format()
             )
+            print("\033[31m" + error_message + "\033[0m")
             await channel.send(f"```py\n{error_message}\n```")
             embed.add_field(
                 name="エラー詳細",

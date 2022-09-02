@@ -7,7 +7,7 @@ async def setup(bot):
         if not name.startswith(("_", ".")):
             try:
                 await bot.load_extension("cmds.bot."+name.replace(".py", ""))
-            except Exception as e:
-                logging.exception(f"Error on bot.{name}")
+            except:
+                logging.exception("Error on bot.%s", name)
             else:
                 print("[Log][load]" + name)
