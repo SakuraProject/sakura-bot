@@ -35,3 +35,5 @@ class purge(commands.Cog):
                      return True
             dmsg = await ctx.channel.purge(limit=length,check=check)
             await await ctx.send(str(len(dmsg)) + "メッセージを削除しました")
+async def setup(bot)
+    await bot.add_cog(purge(bot))
