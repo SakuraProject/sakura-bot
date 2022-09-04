@@ -22,16 +22,16 @@ class AutoMod(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-#        self.settings = dict()
-#        self.punishments = dict()
-#        self.muteds = dict()
-#        self.m = dict()
-#        self.time_ = dict()
-#        self.sendtime = dict()
-#        self.sendcont = dict()
-#        self.sendmsgs = dict()
-#        self.sendcount = dict()
-#        self.untask.start()
+        self.settings = dict()
+        self.punishments = dict()
+        self.muteds = dict()
+        self.m = dict()
+        self.time_ = dict()
+        self.sendtime = dict()
+        self.sendcont = dict()
+        self.sendmsgs = dict()
+        self.sendcount = dict()
+        self.untask.start()
 
     async def cog_load(self):
         ctsql = """CREATE TABLE if not exists AutoMod (
@@ -40,20 +40,18 @@ class AutoMod(commands.Cog):
             Strike JSON NOT NULL,
             Muted JSON NOT NULL
         ) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin;"""
+
         async def sqling(cursor):
             await cursor.execute(ctsql)
             await cursor.execute("SELECT * FROM AutoMod")
             return await cursor.fetchall()
+
         res = await self.bot.execute_sql(sqling)
-        async with self.bot.pool.acquire() as conn:
-            async with conn.cursor() as cur:
-                await cur.execute(ctsql)
-                await cur.execute("SELECT * FROM `automod`")
-                res = await cur.fetchall()
-                for row in res:
-                    self.settings[str(row[0])] = loads(row[1])
-                    self.punishments[str(row[0])] = loads(row[2])
-                    self.muteds[str(row[0])] = loads(row[3])
+
+        for row in res:
+            self.settings[str(row[0])] = loads(row[1])
+            self.punishments[str(row[0])] = loads(row[2])
+            self.muteds[str(row[0])] = loads(row[3])
 
     async def check_permissions(
         self, type_: Literal["admin", "manage-guild"], ctx: commands.Context
@@ -114,9 +112,9 @@ class AutoMod(commands.Cog):
     @commands.command()
     async def muterolesetup(self, ctx, role: discord.Role = None):
         if not str(ctx.guild.id) in self.settings:
-            self.settings[str(ctx.guild.id)] = dict()
+            self.settings[str(ctx.guild.id)] = {"adminrole": []}
         if not "adminrole" in self.settings[str(ctx.guild.id)]:
-            self.settings[str(ctx.guild.id)]["adminrole"] = list()
+            self.settings[str(ctx.guild.id)]["adminrole"] = []
 
         await self.check_permissions("admin", ctx)
 
@@ -136,8 +134,6 @@ class AutoMod(commands.Cog):
             overwrites = tc.overwrites
             overwrites[role] = overwrite
             await tc.edit(overwrites=overwrites)
-        if not str(ctx.guild.id) in self.settings:
-            self.settings[str(ctx.guild.id)] = dict()
         self.settings[str(ctx.guild.id)]["muterole"] = role.id
         await self.save(ctx.guild.id)
         await ctx.send("Ok")

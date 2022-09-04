@@ -218,7 +218,7 @@ class ObjectInfo(commands.Cog):
         desc = "\n".join(
             f"{r.name if r.name == 'everyone' else r.mention}"
             f"({r.id}): {len(r.members)}人"
-            for r in sorted(target.roles, key=lambda r: r.position)
+            for r in sorted(target.roles, key=lambda r: r.position, reverse=True)
         )
         embed = discord.Embed(
             title="ロール一覧",
