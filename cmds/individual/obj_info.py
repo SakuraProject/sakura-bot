@@ -154,7 +154,7 @@ class ObjectInfo(commands.Cog):
         return embed
 
 
-    @commands.command()
+    @commands.command(aliases=("si", "server", "サーバー情報"))
     async def serverinfo(
         self, ctx: commands.Context, target: discord.Guild = commands.CurrentGuild
     ):
