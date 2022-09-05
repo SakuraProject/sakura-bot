@@ -12,17 +12,20 @@ from ujson import loads, dumps
 import time
 import re
 
+from core import Bot
+
+from .types import Setting
+
 
 def arrayinarray(list1, list2) -> bool:
     "list1の項目がlist2の中に一つでも含まれているかをチェックします。"
     return any(item in list2 for item in list1)
 
-
 class AutoMod(commands.Cog):
 
-    def __init__(self, bot):
+    def __init__(self, bot: Bot):
         self.bot = bot
-        self.settings = dict()
+        self.settings: dict[str, Setting] = dict()
         self.punishments = dict()
         self.muteds = dict()
         self.m = dict()
@@ -52,6 +55,12 @@ class AutoMod(commands.Cog):
             self.settings[str(row[0])] = loads(row[1])
             self.punishments[str(row[0])] = loads(row[2])
             self.muteds[str(row[0])] = loads(row[3])
+
+    @commands.group()
+    async def automod(self, ctx: commands.Context):
+        if ctx.invoked_subcommand:
+            return
+        await ctx.send("使い方が違います。")
 
     async def check_permissions(
         self, type_: Literal["admin", "manage-guild"], ctx: commands.Context
@@ -94,20 +103,6 @@ class AutoMod(commands.Cog):
                             await member.remove_roles(g.get_role(self.settings[str(gid)]["muterole"]))
                     except:
                         pass
-
-    @commands.command()
-    @commands.has_permissions(ban_members=True)
-    async def timeout(self, ctx, member: discord.Member, *, sec):
-        sec = timeparse(sec)
-        tdl = timedelta(seconds=sec)
-        await member.timeout(tdl, reason="timeout command")
-        await ctx.send("Ok")
-
-    @commands.command()
-    @commands.has_permissions(ban_members=True)
-    async def untimeout(self, ctx, member: discord.Member):
-        await member.timeout(None, reason="untimeout command")
-        await ctx.send("Ok")
 
     @commands.command()
     async def muterolesetup(self, ctx, role: discord.Role = None):
@@ -290,7 +285,7 @@ class AutoMod(commands.Cog):
             await ctx.send("設定完了しました")
             await self.save(ctx.guild.id)
 
-    def ig(self, msg):
+    def ig(self, msg) -> bool:
         if not str(msg.guild.id) in self.settings:
             self.settings[str(msg.guild.id)] = dict()
         if not "ch" in self.settings[str(msg.guild.id)]:
@@ -383,26 +378,6 @@ class AutoMod(commands.Cog):
     @commands.has_permissions(ban_members=True)
     async def check(self, ctx, id: int):
         await ctx.send(str(id)+"has"+str(self.punishments[str(ctx.guild.id)][str(id)])+"strikes")
-
-    @commands.command()
-    @commands.has_permissions(ban_members=True)
-    async def unban(self, ctx, id: int):
-        member = await self.bot.fetch_user(id)
-        await ctx.guild.unban(member)
-        await ctx.send("banを解除しました")
-
-    @commands.command()
-    @commands.has_permissions(kick_members=True)
-    async def kick(self, ctx, member: discord.Member):
-        await member.kick()
-        await ctx.send("kickしました")
-
-    @commands.command()
-    @commands.has_permissions(ban_members=True)
-    async def ban(self, ctx, id: int):
-        member = await self.bot.fetch_user(id)
-        await ctx.guild.ban(member)
-        await ctx.send("banしました")
 
     @commands.command()
     async def mute(self, ctx, member: discord.Member):
@@ -730,5 +705,5 @@ class AutoMod(commands.Cog):
                 await conn.commit()
 
 
-async def setup(bot):
+async def setup(bot: Bot):
     await bot.add_cog(AutoMod(bot))

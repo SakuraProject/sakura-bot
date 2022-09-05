@@ -2,13 +2,19 @@
 
 from typing import TypeAlias, TypedDict, Literal
 
-class _Setting(TypedDict, total=False):
-    adminrole: list[str]
-    muterole: int
-    antiraid: Literal["on", "off"]
-    raidaction: Literal["ban", "kick", "mute", "timeout"]
-    raidactiontime: int | float | None
-    ngword: list[str]
+Actions: TypeAlias = Literal["ban", "kick", "mute", "timeout", "none"]
 
+class Setting(TypedDict, total=False):
+    "設定関連の型。"
 
-Settings: TypeAlias = dict[str, _Setting]
+    adminrole: list[str]  # 管理者ロール
+    modrole: list[str]  # モデレーターロール
+    muterole: int  # ミュートされた人用ロール
+
+    antiraid: Literal["on", "off"]  # レイド対策ONOFF
+    raidaction: Actions  # レイドが起こった時のアクション
+    raidactiontime: int | float | None  # レイドアクションまでの時間
+
+    ngword: list[str]  # NGワード一覧
+
+    action: dict[int, Actions | str]  # ストライクポイントによるアクション
