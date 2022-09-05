@@ -114,6 +114,8 @@ class mail(commands.Cog):
                             charset = dtm.get_content_charset()
                             if charset is not None:
                                 payload = payload.decode(charset, "ignore")
+                        if len(payload)>1024:
+                            payload = payload[:1024]
                         embed = discord.Embed(title="SakuraBotメール通知",description="新着メールです")
                         embed.add_field(name="送り主", value=fro)
                         embed.add_field(name="タイトル", value=subject)
