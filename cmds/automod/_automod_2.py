@@ -56,7 +56,17 @@ class AutoMod(commands.Cog):
             self.punishments[str(row[0])] = loads(row[2])
             self.muteds[str(row[0])] = loads(row[3])
 
-    @commands.group()
+    def data_check(self, guild_id: int) -> None:
+        if str(guild_id) not in self.settings:
+            self.settings[str(guild_id)] = {
+                "adminrole": [],
+                "modrole": [],
+                "muterole": -1,
+                "antiraid": "off",
+                "raidaction": "none"
+            }
+
+    @commands.hybrid_group()
     async def automod(self, ctx: commands.Context):
         if ctx.invoked_subcommand:
             return
@@ -104,7 +114,7 @@ class AutoMod(commands.Cog):
                     except:
                         pass
 
-    @commands.command()
+    @automod.command()
     async def muterolesetup(self, ctx, role: discord.Role = None):
         if not str(ctx.guild.id) in self.settings:
             self.settings[str(ctx.guild.id)] = {"adminrole": []}
@@ -191,7 +201,7 @@ class AutoMod(commands.Cog):
                     for memb in self.m[str(member.guild.id)]:
                         await memb.timeout(timedelta(seconds=int(self.settings[str(member.guild.id)]['raidactiontime'])), reason="sakura anti raid")
 
-    @commands.group()
+    @automod.group()
     async def ngword(self, ctx):
         if not ctx.invoked_subcommand:
             await ctx.reply("使用方法が違います")
@@ -228,7 +238,7 @@ class AutoMod(commands.Cog):
         else:
             await ctx.send("設定されていません")
 
-    @commands.command()
+    @automod.command()
     async def antiraid(self, ctx, joincount: int, action='kick', time=None):
         if not str(ctx.guild.id) in self.settings:
             self.settings[str(ctx.guild.id)] = dict()
@@ -261,7 +271,7 @@ class AutoMod(commands.Cog):
             await ctx.send("設定をoffにしました")
         await self.save(ctx.guild.id)
 
-    @commands.command()
+    @automod.command()
     async def ignore(self, ctx, id: int = 0):
         if not str(ctx.guild.id) in self.settings:
             self.settings[str(ctx.guild.id)] = dict()
@@ -285,7 +295,7 @@ class AutoMod(commands.Cog):
             await ctx.send("設定完了しました")
             await self.save(ctx.guild.id)
 
-    def ig(self, msg) -> bool:
+    def ig(self, msg: discord.Message) -> bool:
         if not str(msg.guild.id) in self.settings:
             self.settings[str(msg.guild.id)] = dict()
         if not "ch" in self.settings[str(msg.guild.id)]:
@@ -303,7 +313,7 @@ class AutoMod(commands.Cog):
             return False
         return False
 
-    @commands.command()
+    @automod.command()
     async def antitokens(self, ctx, onoff):
         if not str(ctx.guild.id) in self.settings:
             self.settings[str(ctx.guild.id)] = dict()
@@ -319,7 +329,7 @@ class AutoMod(commands.Cog):
             await self.save(ctx.guild.id)
             await ctx.send('antitokenモードをoffにしました')
 
-    @commands.command()
+    @automod.command()
     async def punishment(self, ctx, strike, modaction, sec=None):
         if sec != None:
             sec = timeparse(sec)
@@ -355,7 +365,7 @@ class AutoMod(commands.Cog):
         await self.save(ctx.guild.id)
         await ctx.send(str(stri)+'に'+str(modaction)+'を設定しました')
 
-    @commands.command()
+    @automod.command()
     async def antispam(self, ctx, spamcount: int):
         if not str(ctx.guild.id) in self.settings:
             self.settings[str(ctx.guild.id)] = dict()
@@ -366,7 +376,7 @@ class AutoMod(commands.Cog):
         await self.save(ctx.guild.id)
         await ctx.send(str(spamcount)+'回連投で1Strike付与します')
 
-    @commands.command()
+    @automod.command()
     @commands.has_permissions(ban_members=True)
     async def pardon(self, ctx, id: int, strikes=1):
         self.punishments[str(ctx.guild.id)][str(
@@ -374,7 +384,7 @@ class AutoMod(commands.Cog):
         await ctx.send("pardoned "+str(strikes)+"strikes on"+str(id))
         await self.save(ctx.guild.id)
 
-    @commands.command()
+    @automod.command()
     @commands.has_permissions(ban_members=True)
     async def check(self, ctx, id: int):
         await ctx.send(str(id)+"has"+str(self.punishments[str(ctx.guild.id)][str(id)])+"strikes")
@@ -407,14 +417,13 @@ class AutoMod(commands.Cog):
     async def on_message(self, msg):
         if msg.author.id == self.bot.user.id:
             return
-        if msg.guild.get_member(msg.author.id) != None:
-            msg.author = msg.guild.get_member(msg.author.id)
-        try:
-            if self.settings[str(msg.guild.id)]['tokens'] == 'on':
+        if msg.guild is None:
+            return
+        assert isinstance(msg.author, discord.Member)
+        if self.settings[str(msg.guild.id)]['tokens'] == 'on':
                 tkreg = r'[\w-]{24}\.[\w-]{6}\.[\w-]{27}'
                 if re.search(tkreg, msg.content) != None:
                     userid = msg.author.id
-                    guildid = msg.guild.id
                     if not str(msg.guild.id) in self.punishments:
                         self.punishments[str(msg.guild.id)] = dict()
                     if not str(userid) in self.punishments[str(msg.guild.id)]:
@@ -451,8 +460,6 @@ class AutoMod(commands.Cog):
                     except KeyError:
                         pass
                     await self.save(msg.guild.id)
-        except KeyError:
-            pass
         if self.ig(msg):
             return
 
@@ -564,9 +571,9 @@ class AutoMod(commands.Cog):
                 except KeyError:
                     str('keyerror')
 
-    @commands.command()
+    @automod.command()
     @commands.has_permissions(manage_guild=True)
-    async def settings(self, ctx):
+    async def settings(self, ctx: commands.Context):
         guildid = str(ctx.guild.id)
         embed = discord.Embed(title='Settings', color=self.bot.Color)
         puni = ''
@@ -615,7 +622,7 @@ class AutoMod(commands.Cog):
             title='NG Words', color=self.bot.Color, description=nwo)
         await ctx.send(embeds=[embed, ngembed], allowed_mentions=alm)
 
-    @commands.command()
+    @automod.command()
     async def addadminrole(self, ctx, role: discord.Role):
         if not str(ctx.guild.id) in self.settings:
             self.settings[str(ctx.guild.id)] = dict()
@@ -632,7 +639,7 @@ class AutoMod(commands.Cog):
             await self.save(ctx.guild.id)
             await ctx.send('追加完了しました')
 
-    @commands.command()
+    @automod.command()
     async def addmodrole(self, ctx, role: discord.Role):
         if not str(ctx.guild.id) in self.settings:
             self.settings[str(ctx.guild.id)] = dict()
@@ -650,7 +657,7 @@ class AutoMod(commands.Cog):
             await self.save(ctx.guild.id)
             await ctx.send('追加完了しました')
 
-    @commands.command()
+    @automod.command()
     async def removeadminrole(self, ctx, role: discord.Role):
         if not str(ctx.guild.id) in self.settings:
             self.settings[str(ctx.guild.id)] = dict()
@@ -666,7 +673,7 @@ class AutoMod(commands.Cog):
         else:
             await ctx.send('このロールは追加されていません')
 
-    @commands.command()
+    @automod.command()
     async def removemodrole(self, ctx, role: discord.Role):
         if not str(ctx.guild.id) in self.settings:
             self.settings[str(ctx.guild.id)] = dict()
