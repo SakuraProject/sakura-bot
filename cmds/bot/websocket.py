@@ -129,7 +129,7 @@ class websocket(commands.Cog):
     async def guild(self,args):
         g = self.bot.get_guild(args["id"])
         guild = dict()
-        guild["id"] = g.id
+        guild["id"] = str(g.id)
         guild["name"] = g.name
         guild["member_count"] = g.member_count
         guild["icon"] = dict()
@@ -143,7 +143,7 @@ class websocket(commands.Cog):
     async def channel(self,args):
         g = self.bot.get_channel(args["id"])
         ch = dict()
-        ch["id"] = g.id
+        ch["id"] = str(g.id)
         ch["name"] = g.name
         return ch
 
@@ -231,6 +231,22 @@ class websocket(commands.Cog):
         res["required"] = p.required
         return res
         
+    async def commands(self, args):
+        ccl = list()
+        for c in self.bot.commands:
+            if type(c).__name__ == "Group" or type(c).__name__ == "HybridGroup":
+                comds = list(c.commands)
+                for cm in comds:
+                    if type(cm).__name__ == "Group" or type(cm).__name__ == "HybridGroup":
+                        comds1 = list(cm.commands)
+                        for ccm in comds1:
+                            ccl.append(await self.command({"id":c.name + " " + cm.name + " " + ccm.name}))
+                    else:
+                        ccl.append(await self.command({"id":c.name + " " + cm.name}))
+            else:
+                ccl.append(await self.command({"id":c.name}))
+        args["commands"] = ccl
+        return args
 
 def setup(bot):
     return bot.add_cog(websocket(bot))

@@ -89,20 +89,6 @@ class AutoMod(commands.Cog):
                         pass
 
     @commands.command()
-    @commands.has_permissions(ban_members=True)
-    async def timeout(self, ctx, member: discord.Member, *, sec):
-        sec = timeparse(sec)
-        tdl = timedelta(seconds=sec)
-        await member.timeout(tdl, reason="timeout command")
-        await ctx.send("Ok")
-
-    @commands.command()
-    @commands.has_permissions(ban_members=True)
-    async def untimeout(self, ctx, member: discord.Member):
-        await member.timeout(None, reason="untimeout command")
-        await ctx.send("Ok")
-
-    @commands.command()
     async def muterolesetup(self, ctx, role: discord.Role = None):
         if not str(ctx.guild.id) in self.settings:
             self.settings[str(ctx.guild.id)] = dict()
@@ -378,26 +364,6 @@ class AutoMod(commands.Cog):
     @commands.has_permissions(ban_members=True)
     async def check(self, ctx, id: int):
         await ctx.send(str(id)+"has"+str(self.punishments[str(ctx.guild.id)][str(id)])+"strikes")
-
-    @commands.command()
-    @commands.has_permissions(ban_members=True)
-    async def unban(self, ctx, id: int):
-        member = await self.bot.fetch_user(id)
-        await ctx.guild.unban(member)
-        await ctx.send("banを解除しました")
-
-    @commands.command()
-    @commands.has_permissions(kick_members=True)
-    async def kick(self, ctx, member: discord.Member):
-        await member.kick()
-        await ctx.send("kickしました")
-
-    @commands.command()
-    @commands.has_permissions(ban_members=True)
-    async def ban(self, ctx, id: int):
-        member = await self.bot.fetch_user(id)
-        await ctx.guild.ban(member)
-        await ctx.send("banしました")
 
     @commands.command()
     async def mute(self, ctx, member: discord.Member):
