@@ -16,9 +16,19 @@ class Setting(TypedDict, total=False):
     raidaction: Actions  # レイドが起こった時のアクション
     raidactiontime: int | float | None  # レイドアクションまでの時間
 
-    ch: list[int]  # 例外チャンネル一覧
-    role: list[int]  # 例外ロール一覧
+    ignore_channel: list[int]  # 例外チャンネル一覧
+    ignore_role: list[int]  # 例外ロール一覧
 
     ngword: list[str]  # NGワード一覧
 
+    duplct: int  # ストライクポイント付与のためのspam回数
     action: dict[str, Actions | str]  # ストライクポイントによるアクション
+
+
+class MutedUser(TypedDict, total=False):
+    "ミュート・BANされたユーザーのデータ。"
+    type: Literal["ban", "mute"]
+    time: int
+
+
+Muteds: TypeAlias = dict[str, dict[str, MutedUser]]
