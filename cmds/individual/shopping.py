@@ -176,7 +176,7 @@ class shopping(commands.Cog):
             ebdin = 1
             catebds = []
             for cat in catarr:
-                if ebdin == 41:
+                if len(ctls + "No." + str(i) + cat["name"] + "\n") > 4000:
                     ebdin = 1
                     evd = discord.Embed(
                         title="カテゴリ一覧", description=ctls, color=self.bot.Color)
@@ -246,7 +246,7 @@ class shopping(commands.Cog):
             ebdin = 1
             catebds = []
             for cat in catarr:
-                if ebdin == 41:
+                if len(ctls + "No." + str(i) + cat["name"] + "\n") > 4000:
                     ebdin = 1
                     evd = discord.Embed(
                         title="カテゴリ一覧", description=ctls, color=self.bot.Color)
