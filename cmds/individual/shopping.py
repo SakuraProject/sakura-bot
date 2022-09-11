@@ -165,7 +165,7 @@ class shopping(commands.Cog):
                 async with self.bot.session.post("http://ystore.jp/api/copyimg.php", data=req1) as resp1:
                     rpt = await resp1.text()
                     imgj.append(rpt)
-            req["imgs"] = dumps(imgj)
+            req["imgs"] = dumps(imgj).decode()
             req["price"] = (await self.input(ctx, "金額を数字で入力してください")).content
             req["lotof"] = (await self.input(ctx, "在庫を数字で入力してください")).content
             async with self.bot.session.get("https://ystore.jp/api/cats.php") as resp:
@@ -235,7 +235,7 @@ class shopping(commands.Cog):
                 async with self.bot.session.post("http://ystore.jp/api/copyimg.php", data=req1) as resp1:
                     rpt = await resp1.text()
                     imgj.append(rpt)
-            req["imgs"] = dumps(imgj)
+            req["imgs"] = dumps(imgj).decode()
             req["price"] = (await self.input(ctx, "金額を数字で入力してください")).content
             req["lotof"] = (await self.input(ctx, "在庫を数字で入力してください")).content
             async with self.bot.session.get("https://ystore.jp/api/cats.php") as resp:
