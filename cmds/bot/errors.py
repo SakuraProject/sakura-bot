@@ -123,7 +123,7 @@ class ErrorQuery(commands.Cog):
                 f"なんらかのエラーが発生しました。\n`{error.original}`\n"
                 "このエラーは開発者側の問題である可能性が高いです。サポートサーバーにて報告いただけると嬉しいです。"
             )
-            channel = self.bot.get_channel(814830540133498920)
+            channel = self.bot.get_channel(1012623774014783598)
 
             assert isinstance(channel, discord.TextChannel)
             error_message = "".join(
@@ -142,7 +142,7 @@ class ErrorQuery(commands.Cog):
 
             embed.add_field(
                 name="エラー詳細",
-                value=f"```py\n{error_message if len(error_message) < 990 else error_message[:990]}\n```"
+                value=f"```py\n{error_message if len(error_message) < 990 else error_message[:990] + '...'}\n```"
             )
 
         await ctx.reply(embed=embed)

@@ -8,13 +8,13 @@ from discord.ext import commands, tasks
 import discord
 from pytimeparse.timeparse import timeparse
 from datetime import timedelta
-from ujson import loads, dumps
+from ujson import loads
 import time
 import re
 
 from utils import Bot
 
-from ._types import Setting
+from ._types import Setting, LockedSetting
 
 
 def arrayinarray(list1, list2) -> bool:
@@ -25,7 +25,7 @@ class AutoMod(commands.Cog):
 
     def __init__(self, bot: Bot):
         self.bot = bot
-        self.settings: dict[str, Setting] = dict()
+        self.settings: dict[str, LockedSetting] = {}
         self.punishments = dict()
         self.muteds = dict()
         self.m = dict()
@@ -58,6 +58,7 @@ class AutoMod(commands.Cog):
             return await cursor.fetchall()
 
         res = await self.bot.execute_sql(sqling)
+        assert isinstance(res, tuple)
 
         for row in res:
             self.settings[str(row[0])] = loads(row[1])
@@ -65,24 +66,26 @@ class AutoMod(commands.Cog):
             self.muteds[str(row[0])] = loads(row[3])
 
     def data_check(self, guild_id: int) -> None:
-        defaults = {
+        defaults = LockedSetting(**{
             "adminrole": [],
             "modrole": [],
             "muterole": -1,
             "antiraid": False,
             "raidaction": "none",
             "raidactiontime": 0,
+            "raidcount": 0,
             "ignore_channel": [],
             "ignore_role": [],
             "ngword": [],
             "duplct": 0,
             "action": []
-        }
+        })
         if str(guild_id) not in self.settings:
             self.settings[str(guild_id)] = defaults
-        for k, v in defaults.items():
-            if k not in self.settings[str(guild_id)]:
-                self.settings[str(guild_id)][k] = v
+        for key, value in defaults.items():
+            if key not in self.settings[str(guild_id)]:
+                self.settings[str(guild_id)][key] = value
+        self.settings[str(guild_id)] = LockedSetting(**self.settings[str(guild_id)])  # type: ignore
 
     @commands.hybrid_group()
     async def automod(self, ctx: commands.Context):
@@ -94,12 +97,14 @@ class AutoMod(commands.Cog):
         self, type_: Literal["admin", "manage-guild"], ctx: commands.Context
     ) -> None:
         "ctx.authorが特定のtypeの権限を持っているか確認します。持っていなければエラーを送出します。"
+        assert ctx.guild is not None
+        assert isinstance(ctx.author, discord.Member)
         self.data_check(ctx.guild.id)
         if type_ == "admin" and not (
             ctx.author.guild_permissions.administrator
             or arrayinarray(
                 [r.id for r in ctx.author.roles],
-                self.settings[str(ctx.guild.id)]['adminrole']
+                self.settings[str(ctx.guild.id)].get('adminrole', [])
             )
         ):
             return self.raise_missing_parms(ctx, ["administrator"])
@@ -107,10 +112,10 @@ class AutoMod(commands.Cog):
             ctx.author.guild_permissions.manage_guild
             or arrayinarray(
                 [r.id for r in ctx.author.roles],
-                self.settings[str(ctx.guild.id)]['adminrole']
+                self.settings[str(ctx.guild.id)].get('adminrole', [])
             ) or arrayinarray(
                 [r.id for r in ctx.author.roles],
-                self.settings[str(ctx.guild.id)]['modrole']
+                self.settings[str(ctx.guild.id)].get('modrole', [])
             )
         ):
             return self.raise_missing_parms(ctx, ["manage_guild"])
@@ -121,6 +126,8 @@ class AutoMod(commands.Cog):
         now = int(time.time())
         for gid in self.muteds:
             g = self.bot.get_guild(int(gid))
+            if not g:
+                continue
             for uid in self.muteds[gid].keys():
                 if int(self.muteds[gid][uid]["time"]) < now:
                     try:
@@ -135,8 +142,7 @@ class AutoMod(commands.Cog):
 
     @automod.command()
     @commands.bot_has_guild_permissions(edit_channels=True)
-
-    async def muterolesetup(self, ctx, role: discord.Role = None):
+    async def muterolesetup(self, ctx, role: discord.Role | None = None):
         await self.check_permissions("admin", ctx)
 
         if role is None:
@@ -191,10 +197,13 @@ class AutoMod(commands.Cog):
     @commands.Cog.listener()
     async def on_member_join(self, member):
         self.data_check(member.guild.id)
-        if not self.settings[str(member.guild.id)]['antiraid']:
+        if not self.settings[str(member.guild.id)].get('antiraid', []):
+            return
+        if not self.settings[str(member.guild.id)].get('raidaction', ""):
             return
         if not self.raidcheck(member):
             return
+        assert isinstance(self.settings[str(member.guild.id)], LockedSetting)
 
         if self.settings[str(member.guild.id)]['raidaction'] == 'ban':
             for memb in self.m[str(member.guild.id)]:
@@ -278,28 +287,30 @@ class AutoMod(commands.Cog):
     @automod.command()
     async def ignore(self, ctx, id: int = 0):
         await self.check_permissions("admin", ctx)
+        assert isinstance(self.settings[str(ctx.guild.id)], LockedSetting)
+
         if id == 0:
             id = ctx.channel.id
         ch = ctx.guild.get_channel(id)
         role = ctx.guild.get_role(id)
         if ch != None:
-            self.settings[str(ctx.guild.id)]["ch"].append(id)
+            self.settings[str(ctx.guild.id)]["ignore_channel"].append(id)
             await ctx.send("設定完了しました")
             await self.save(ctx.guild.id)
         elif role != None:
-            self.settings[str(ctx.guild.id)]["role"].append(id)
+            self.settings[str(ctx.guild.id)]["ignore_role"].append(id)
             await ctx.send("設定完了しました")
             await self.save(ctx.guild.id)
 
     def ig(self, msg: discord.Message) -> bool:
         self.data_check(msg.guild.id)
 
-        if msg.channel.id in self.settings[str(msg.guild.id)]["ch"]:
+        if msg.channel.id in self.settings[str(msg.guild.id)]["ignore_channel"]:
             return True
         try:
             for y in msg.author.roles:
                 rid = y.id
-                if rid in self.settings[str(msg.guild.id)]["role"]:
+                if rid in self.settings[str(msg.guild.id)]["ignore_role"]:
                     return True
         except:
             return False
@@ -446,8 +457,6 @@ class AutoMod(commands.Cog):
         if time.time() - self.sendtime[str(msg.guild.id)][str(msg.author.id)] <= 2.0:
             self.sendtime[str(msg.guild.id)][str(msg.author.id)] = time.time()
             self.sendmsgs[str(msg.guild.id)][str(msg.author.id)].append(msg)
-            if not str(msg.guild.id) in self.settings:
-                self.settings[str(msg.guild.id)] = dict()
             if not 'duplct' in self.settings[str(msg.guild.id)]:
                 self.settings[str(msg.guild.id)]['duplct'] = 5
             if len(self.sendmsgs[str(msg.guild.id)][str(msg.author.id)]) >= int(self.settings[str(msg.guild.id)]['duplct']):
@@ -538,9 +547,9 @@ class AutoMod(commands.Cog):
                 except KeyError:
                     str('keyerror')
 
-    @automod.command()
+    @automod.command("settings")
     @commands.has_permissions(manage_guild=True)
-    async def settings(self, ctx: commands.Context):
+    async def _settings(self, ctx: commands.Context):
         guildid = str(ctx.guild.id)
         embed = discord.Embed(title='Settings', color=self.bot.Color)
         puni = ''
