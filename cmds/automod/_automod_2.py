@@ -4,6 +4,8 @@
 
 from typing import Literal
 
+from copy import deepcopy
+
 from discord.ext import commands, tasks
 import discord
 from pytimeparse.timeparse import timeparse
@@ -14,7 +16,7 @@ import re
 
 from utils import Bot
 
-from ._types import Setting, LockedSetting
+from ._types import Setting, Actions, MutedUser
 
 
 def arrayinarray(list1, list2) -> bool:
@@ -25,15 +27,15 @@ class AutoMod(commands.Cog):
 
     def __init__(self, bot: Bot):
         self.bot = bot
-        self.settings: dict[str, LockedSetting] = {}
-        self.punishments = dict()
-        self.muteds = dict()
-        self.m = dict()
-        self.time_ = dict()
-        self.sendtime = dict()
-        self.sendcont = dict()
-        self.sendmsgs = dict()
-        self.sendcount = dict()
+        self.settings: dict[str, Setting] = {}
+        self.punishments: dict[str, dict[str, int]] = {}  # skrike数
+        self.muteds: dict[str, dict[str, MutedUser]] = {}  # ミュート情報
+        self.m: dict[str, list[discord.Member]] = {}  # raid関連
+        self.time_ = {}  # raid関連
+        self.sendtime = dict()  # spam対策関連
+        self.sendcont = dict()  # spam対策関連
+        self.sendmsgs = dict()  # spam対策関連
+        self.sendcount: dict[str, dict[str, str]] = dict()  # spam対策関連
         self.untask.start()
 
     async def cog_load(self):
@@ -61,12 +63,10 @@ class AutoMod(commands.Cog):
         assert isinstance(res, tuple)
 
         for row in res:
-            self.settings[str(row[0])] = loads(row[1])
-            self.punishments[str(row[0])] = loads(row[2])
-            self.muteds[str(row[0])] = loads(row[3])
+            self.settings[str(row[0])] = loads(row[1:])
 
-    def data_check(self, guild_id: int) -> None:
-        defaults = LockedSetting(**{
+    def data_check(self, guild_id: int, author_id: int = 0) -> None:
+        defaults = Setting(**{
             "adminrole": [],
             "modrole": [],
             "muterole": -1,
@@ -85,9 +85,23 @@ class AutoMod(commands.Cog):
         for key, value in defaults.items():
             if key not in self.settings[str(guild_id)]:
                 self.settings[str(guild_id)][key] = value
-        self.settings[str(guild_id)] = LockedSetting(**self.settings[str(guild_id)])  # type: ignore
+        self.settings[str(guild_id)] = Setting(**self.settings[str(guild_id)])  # type: ignore
+
+        # デフォルトの設定
+        for item in (
+            self.sendmsgs, self.sendtime,
+            self.sendcont, self.sendcount, self.punishments
+        ):
+            item.setdefault(str(guild_id), {})
+        if author_id:
+            self.sendmsgs[str(guild_id)].setdefault(str(author_id), [])
+            self.sendtime[str(guild_id)].setdefault(str(author_id), time.time())
+            self.sendcont[str(guild_id)].setdefault(str(author_id), '')
+            self.sendcount[str(guild_id)].setdefault(str(author_id), '')
+            self.punishments[str(guild_id)].setdefault(str(author_id), 0)
 
     @commands.hybrid_group()
+    @commands.guild_only()
     async def automod(self, ctx: commands.Context):
         if ctx.invoked_subcommand:
             return
@@ -100,25 +114,26 @@ class AutoMod(commands.Cog):
         assert ctx.guild is not None
         assert isinstance(ctx.author, discord.Member)
         self.data_check(ctx.guild.id)
+
         if type_ == "admin" and not (
             ctx.author.guild_permissions.administrator
             or arrayinarray(
                 [r.id for r in ctx.author.roles],
-                self.settings[str(ctx.guild.id)].get('adminrole', [])
+                self.settings[str(ctx.guild.id)]['adminrole']
             )
         ):
-            return self.raise_missing_parms(ctx, ["administrator"])
+            raise commands.MissingPermissions(["administrator"])
         if type == "manage-guild" and not (
             ctx.author.guild_permissions.manage_guild
             or arrayinarray(
                 [r.id for r in ctx.author.roles],
-                self.settings[str(ctx.guild.id)].get('adminrole', [])
+                self.settings[str(ctx.guild.id)]['adminrole']
             ) or arrayinarray(
                 [r.id for r in ctx.author.roles],
-                self.settings[str(ctx.guild.id)].get('modrole', [])
+                self.settings[str(ctx.guild.id)]['modrole']
             )
         ):
-            return self.raise_missing_parms(ctx, ["manage_guild"])
+            raise commands.MissingPermissions(["manage_guild"])
 
     @tasks.loop(seconds=10)
     async def untask(self):
@@ -127,106 +142,124 @@ class AutoMod(commands.Cog):
         for gid in self.muteds:
             g = self.bot.get_guild(int(gid))
             if not g:
+                del self.muteds[gid]
                 continue
             for uid in self.muteds[gid].keys():
-                if int(self.muteds[gid][uid]["time"]) < now:
+                if int(self.muteds[gid][uid].get("time", 0)) < now:
                     try:
                         if self.muteds[gid][uid]["type"] == "ban":
                             member = discord.Object(int(uid))
                             await g.unban(member)
                         elif self.muteds[gid][uid]["type"] == "mute":
                             member = g.get_member(int(uid))
-                            await member.remove_roles(g.get_role(self.settings[str(gid)]["muterole"]))
+                            if not member:
+                                del self.muteds[gid][uid]
+                                continue
+                            await member.remove_roles(discord.Object(self.settings[str(gid)]["muterole"]))
                     except:
                         pass
 
     @automod.command()
     @commands.bot_has_guild_permissions(edit_channels=True)
-    async def muterolesetup(self, ctx, role: discord.Role | None = None):
+    async def muterolesetup(self, ctx: commands.Context, role: discord.Role | None = None):
         await self.check_permissions("admin", ctx)
+        assert ctx.guild
 
         if role is None:
-            role = await ctx.guild.create_role(name="sakura Muted", color=self.bot.Color)
+            role = discord.utils.get(ctx.guild.roles, name="sakura Muted")
+            if role is None:
+                role = await ctx.guild.create_role(
+                    name="sakura Muted", color=self.bot.Color
+                )
+        exceptions = []
+
         for channel in ctx.guild.text_channels:
             overwrite = channel.overwrites_for(role)
             overwrite.update(**{"send_messages": False, "add_reactions": False,
                              "create_public_threads": False, "send_messages_in_threads": False})
             overwrites = channel.overwrites
             overwrites[role] = overwrite
-            await channel.edit(overwrites=overwrites)
+            try:
+                await channel.edit(overwrites=overwrites)
+            except discord.Forbidden:
+                exceptions.append(channel.mention)
+
         for tc in ctx.guild.voice_channels:
             overwrite = tc.overwrites_for(role)
             overwrite.update(
                 **{"send_messages": False, "add_reactions": False, "connect": False, "speak": False})
             overwrites = tc.overwrites
             overwrites[role] = overwrite
-            await tc.edit(overwrites=overwrites)
+            try:
+                await tc.edit(overwrites=overwrites)
+            except discord.Forbidden:
+                exceptions.append(tc.mention)
+
         self.settings[str(ctx.guild.id)]["muterole"] = role.id
         await self.save(ctx.guild.id)
         await ctx.send("Ok")
 
     @commands.Cog.listener()
-    async def on_guild_channel_create(self, channel):
+    async def on_guild_channel_create(
+        self, channel: discord.TextChannel | discord.VoiceChannel
+        | discord.ForumChannel | discord.CategoryChannel | discord.StageChannel
+    ):
+        role = channel.guild.get_role(
+            int(self.settings[str(channel.guild.id)]["muterole"]))
+        if not role:
+            return
+
+        overwrite = channel.overwrites_for(role)
+        overwrite.update(**{"send_messages": False, "add_reactions": False, "create_public_threads": False,
+                            "send_messages_in_threads": False, "connect": False, "speak": False})
+        overwrites = channel.overwrites
+        overwrites[role] = overwrite
         try:
-            role = channel.guild.get_role(
-                int(self.settings[str(channel.guild.id)]["muterole"]))
-            overwrite = channel.overwrites_for(role)
-            overwrite.update(**{"send_messages": False, "add_reactions": False, "create_public_threads": False,
-                             "send_messages_in_threads": False, "connect": False, "speak": False})
-            overwrites = channel.overwrites
-            overwrites[role] = overwrite
             await channel.edit(overwrites=overwrites)
         except discord.Forbidden:
             pass
 
     def raidcheck(self, member):
-        if not str(member.guild.id) in self.m:
-            self.m[str(member.guild.id)] = list()
-        if not str(member.guild.id) in self.time_:
+        if str(member.guild.id) not in self.m:
+            self.m[str(member.guild.id)] = []
+        if str(member.guild.id) not in self.time_:
             self.time_[str(member.guild.id)] = time.time()
         self.m[str(member.guild.id)].append(member)
         if time.time() - self.time_[str(member.guild.id)] >= 15.0:
             self.time_[str(member.guild.id)] = time.time()
             if time.time() - self.time_[str(member.guild.id)] >= 60.0:
-                self.m[str(member.guild.id)] = list()
-        elif len(self.m[str(member.guild.id)]) >= int(self.settings[str(member.guild.id)]['raidcount']) and time.time() - self.time_[str(member.guild.id)] <= 15.0:
+                self.m[str(member.guild.id)] = []
+        elif (
+            len(self.m[str(member.guild.id)]) >= int(
+                self.settings[str(member.guild.id)]['raidcount']
+            ) and time.time() - self.time_[str(member.guild.id)] <= 15.0
+        ):
             return True
         else:
             return False
 
     @commands.Cog.listener()
     async def on_member_join(self, member):
-        self.data_check(member.guild.id)
-        if not self.settings[str(member.guild.id)].get('antiraid', []):
-            return
-        if not self.settings[str(member.guild.id)].get('raidaction', ""):
-            return
-        if not self.raidcheck(member):
-            return
-        assert isinstance(self.settings[str(member.guild.id)], LockedSetting)
+        "antiraid用のイベント。"
+        self.data_check(member.guild.id, member.id)
 
-        if self.settings[str(member.guild.id)]['raidaction'] == 'ban':
-            for memb in self.m[str(member.guild.id)]:
-                await memb.ban(reason="sakura anti raid")
-        if self.settings[str(member.guild.id)]['raidaction'] == 'kick':
-            for memb in self.m[str(member.guild.id)]:
-                await memb.kick(reason="sakura anti raid")
-        if self.settings[str(member.guild.id)]['raidaction'] == 'mute':
-            for memb in self.m[str(member.guild.id)]:
-                await memb.add_roles(int(member.guild.get_role(self.settings[str(member.guild.id)]["muterole"])), reason="sakura anti raid")
-                if not str(member.guild.id) in self.muteds:
-                    self.muteds[str(member.guild.id)] = dict()
-                if self.settings[str(member.guild.id)]['raidactiontime'] != None:
-                    self.muteds[str(member.guild.id)
-                                ][str(memb.id)] = dict()
-                    self.muteds[str(member.guild.id)][str(memb.id)]["time"] = int(
-                        time.time()) + int(self.settings[str(member.guild.id)]['raidactiontime'])
-                    self.muteds[str(member.guild.id)][str(
-                        memb.id)]["type"] = "mute"
-            await self.save(member.guild.id)
-        if self.settings[str(member.guild.id)]['raidaction'] == 'timeout':
-            for memb in self.m[str(member.guild.id)]:
-                await memb.timeout(timedelta(seconds=int(self.settings[str(member.guild.id)]['raidactiontime'])), reason="sakura anti raid")
+        if (
+            not (g_setting := deepcopy(self.settings[str(member.guild.id)]))['antiraid']
+            or g_setting['raidaction'] == "none"
+            or self.raidcheck(member)
+        ):
+            return
+
+        # do_punishで実行するために少し改造
+        g_setting["action"][str(15 ** 12)] = g_setting["raidaction"]
+        if g_setting["raidactiontime"] != "none":
+            g_setting["action"][str(15 ** 12)] += f",{g_setting['raidactiontime']}"
+        before = self.punishments[str(member.guild.id)].get(str(member.id), 0)
+        self.punishments[str(member.guild.id)][str(member.id)] = 15 ** 12
+
+        await self.do_punish(g_setting, member)
+
+        self.punishments[str(member.guild.id)][str(member.id)] = before
 
     @automod.group()
     async def ngword(self, ctx):
@@ -234,7 +267,8 @@ class AutoMod(commands.Cog):
             await ctx.reply("使用方法が違います")
 
     @ngword.command()
-    async def set(self, ctx, *, word):
+    async def set(self, ctx: commands.Context, *, word):
+        assert ctx.guild
         await self.check_permissions("admin", ctx)
 
         if word in self.settings[str(ctx.guild.id)]["ngword"]:
@@ -245,413 +279,317 @@ class AutoMod(commands.Cog):
             await self.save(ctx.guild.id)
 
     @ngword.command()
-    async def remove(self, ctx, *, word):
+    async def remove(self, ctx: commands.Context, *, word: str):
         await self.check_permissions("admin", ctx)
+        assert ctx.guild
+
         if word in self.settings[str(ctx.guild.id)]["ngword"]:
-            self.settings[str(ctx.guild.id)]["ngword"].pop(word)
-            await ctx.send("削除しました")
+            self.settings[str(ctx.guild.id)]["ngword"].remove(word)
+            await ctx.send("削除しました。")
             await self.save(ctx.guild.id)
         else:
-            await ctx.send("設定されていません")
+            await ctx.send("その言葉は設定されていません。")
 
     @automod.command()
-    async def antiraid(self, ctx, joincount: int, action='kick', time=None):
+    async def antiraid(
+        self, ctx: commands.Context, joincount: int,
+        action: Actions = 'kick', time: str = ""
+    ):
+        assert ctx.guild
         await self.check_permissions("admin", ctx)
 
-        if time != None:
-            time = timeparse(time)
-        if action == 'kick':
-            self.settings[str(ctx.guild.id)].update(
-                {"antiraid": "on", "raidcount": joincount, "raidaction": action})
-            await ctx.send("設定をonにしました")
+        self.settings[str(ctx.guild.id)]["raidactiontime"] = timeparse(time) or 0
 
-        if action == 'ban':
-            self.settings[str(ctx.guild.id)].update(
-                {"antiraid": "on", "raidcount": joincount, "raidaction": action, 'raidactiontime': time})
+        self.settings[str(ctx.guild.id)]["antiraid"] = "off" if action == "none" else "on"
+        self.settings[str(ctx.guild.id)]["raidcount"] = joincount
+        self.settings[str(ctx.guild.id)]["raidaction"] = action
+        if action != "none":
             await ctx.send("設定をonにしました")
-
-        if action == 'mute':
-            self.settings[str(ctx.guild.id)].update(
-                {"antiraid": "on", "raidcount": joincount, "raidaction": action, 'raidactiontime': time})
-            await ctx.send("設定をonにしました")
-        if action == 'timeout':
-            self.settings[str(ctx.guild.id)].update(
-                {"antiraid": "on", "raidcount": joincount, "raidaction": action, 'raidactiontime': time})
-            await ctx.send("設定をonにしました")
-        if action == 'none':
-            self.settings[str(ctx.guild.id)].update(
-                {"antiraid": "off", "raidcount": joincount, "raidaction": action})
+        else:
             await ctx.send("設定をoffにしました")
         await self.save(ctx.guild.id)
 
     @automod.command()
-    async def ignore(self, ctx, id: int = 0):
+    async def ignore(
+        self, ctx: commands.Context, mode: Literal["channel", "role"],
+        target: discord.TextChannel | discord.Role = commands.CurrentChannel
+    ):
         await self.check_permissions("admin", ctx)
-        assert isinstance(self.settings[str(ctx.guild.id)], LockedSetting)
+        assert ctx.guild
 
-        if id == 0:
-            id = ctx.channel.id
-        ch = ctx.guild.get_channel(id)
-        role = ctx.guild.get_role(id)
-        if ch != None:
-            self.settings[str(ctx.guild.id)]["ignore_channel"].append(id)
-            await ctx.send("設定完了しました")
-            await self.save(ctx.guild.id)
-        elif role != None:
-            self.settings[str(ctx.guild.id)]["ignore_role"].append(id)
-            await ctx.send("設定完了しました")
-            await self.save(ctx.guild.id)
+        if mode == "channel":
+            self.settings[str(ctx.guild.id)]["ignore_channel"].append(target.id)
+        else:
+            self.settings[str(ctx.guild.id)]["ignore_role"].append(target.id)
+
+        await ctx.send("設定完了しました")
+        await self.save(ctx.guild.id)
 
     def ig(self, msg: discord.Message) -> bool:
+        assert msg.guild and isinstance(msg.author, discord.Member)
         self.data_check(msg.guild.id)
 
         if msg.channel.id in self.settings[str(msg.guild.id)]["ignore_channel"]:
             return True
-        try:
-            for y in msg.author.roles:
-                rid = y.id
-                if rid in self.settings[str(msg.guild.id)]["ignore_role"]:
-                    return True
-        except:
-            return False
-        return False
+        return arrayinarray(
+            [r.id for r in msg.author.roles],
+            self.settings[str(msg.guild.id)]["ignore_role"]
+        )
 
     @automod.command()
-    async def antitokens(self, ctx, onoff):
+    async def antitokens(self, ctx: commands.Context, onoff: bool):
         await self.check_permissions("admin", ctx)
+        assert ctx.guild
 
-        if onoff == 'on':
-            self.settings[str(ctx.guild.id)]['tokens'] = 'on'
-            await self.save(ctx.guild.id)
-            await ctx.send('antitokenモードをonにしました')
-        if onoff == 'off':
-            self.settings[str(ctx.guild.id)]['tokens'] = 'off'
-            await self.save(ctx.guild.id)
-            await ctx.send('antitokenモードをoffにしました')
-
-    @automod.command()
-    async def punishment(self, ctx, strike, modaction, sec=None):
-        if sec != None:
-            sec = timeparse(sec)
-        await self.check_permissions("manage-guild", ctx)
-
-        stri = int(strike)
-        if modaction == 'ban' and sec != None:
-            self.settings[str(ctx.guild.id)]['action'][str(
-                stri)] = 'ban,'+str(int(sec))
-        elif modaction == 'ban':
-            self.settings[str(ctx.guild.id)]['action'][str(stri)] = 'ban'
-        if modaction == 'mute' and sec != None:
-            self.settings[str(ctx.guild.id)]['action'][str(
-                stri)] = 'mute,'+str(int(sec))
-        elif modaction == 'mute':
-            self.settings[str(ctx.guild.id)]['action'][str(stri)] = 'mute'
-        if modaction == 'kick':
-            self.settings[str(ctx.guild.id)]['action'][str(stri)] = 'kick'
-        if modaction == 'timeout' and sec != None:
-            self.settings[str(ctx.guild.id)]['action'][str(
-                stri)] = 'timeout,'+str(int(sec))
-        if modaction == 'none':
-            self.settings[str(ctx.guild.id)]['action'][str(stri)] = 'none'
+        is_onoff = "on" if onoff else "off"
+        self.settings[str(ctx.guild.id)]['tokens'] = is_onoff
         await self.save(ctx.guild.id)
-        await ctx.send(str(stri)+'に'+str(modaction)+'を設定しました')
+        await ctx.send(f'antitokenモードを{is_onoff}にしました')
 
     @automod.command()
-    async def antispam(self, ctx, spamcount: int):
+    async def punishment(
+        self, ctx: commands.Context,
+        strike: int, modaction: Actions, sec=None
+    ):
+        if modaction == "none" and sec:
+            return await ctx.send("設定解除の場合に時間を指定することは出来ません！")
+        if modaction == "kick" and sec:
+            return await ctx.send("キックの場合に時間を指定することは出来ません！")
+        if modaction == "timeout" and not sec:
+            return await ctx.send("タイムアウトの場合は時間を指定しなければいけません！")
+        await self.check_permissions("manage-guild", ctx)
+        assert ctx.guild
+
+        sec2 = timeparse(sec)
+
+        self.settings[str(ctx.guild.id)]["action"][str(strike)] = modaction
+        if sec2 is not None:
+            self.settings[str(ctx.guild.id)]["action"][str(strike)] += f",{sec2}"
+
+        await self.save(ctx.guild.id)
+        await ctx.send(f"{strike}ストライクで{modaction}をするように設定しました。")
+
+    @automod.command()
+    async def antispam(self, ctx: commands.Context, spamcount: int):
         await self.check_permissions("admin", ctx)
+        assert ctx.guild
 
         self.settings[str(ctx.guild.id)]['duplct'] = spamcount
         await self.save(ctx.guild.id)
-        await ctx.send(str(spamcount)+'回連投で1Strike付与します')
+        await ctx.send(f"{spamcount}回連投で1Strike付与します")
 
     @automod.command()
     @commands.has_permissions(ban_members=True)
-    async def pardon(self, ctx, id: int, strikes=1):
-        self.punishments[str(ctx.guild.id)][str(
-            id)] = self.punishments[str(ctx.guild.id)][str(id)]-strikes
-        await ctx.send("pardoned "+str(strikes)+"strikes on"+str(id))
+    async def pardon(
+        self, ctx: commands.Context,
+        target: discord.Member | discord.User | discord.Object, strikes=1
+    ):
+        await self.check_permissions("manage-guild", ctx)
+        assert ctx.guild
+
+        if not target.id in self.punishments[str(ctx.guild.id)]:
+            return await ctx.send("ユーザーは処罰されたことがありません。")
+        self.punishments[str(ctx.guild.id)][str(target.id)] -= strikes
+        await ctx.send(f"pardoned {strikes}strikes on <@{target.id}>")
         await self.save(ctx.guild.id)
 
     @automod.command()
-    @commands.has_permissions(ban_members=True)
-    async def check(self, ctx, id: int):
-        await ctx.send(str(id)+"has"+str(self.punishments[str(ctx.guild.id)][str(id)])+"strikes")
+    async def check(
+        self, ctx: commands.Context,
+        user: discord.Member | discord.User | discord.Object
+    ):
+        assert ctx.guild
+        self.data_check(ctx.guild.id)
+
+        g_punish = self.punishments[str(ctx.guild.id)]
+        await ctx.send(
+            f"<@{user.id}>は{g_punish.get(str(user.id), 0)}strikeです。"
+        )
 
     @commands.command()
-    async def mute(self, ctx, member: discord.Member):
+    @commands.guild_only()
+    async def mute(self, ctx: commands.Context, member: discord.Member):
         await self.check_permissions("manage-guild", ctx)
 
-        await member.add_roles(ctx.guild.get_role(self.settings[str(member.guild.id)]["muterole"]))
-        await ctx.send(f"{member.mention}をmuteしました。")
+        await member.add_roles(
+            discord.Object(self.settings[str(member.guild.id)]["muterole"])
+        )
+        await ctx.send(f"{member.mention}をミュートしました。")
 
     @commands.command()
-    async def unmute(self, ctx, member: discord.Member):
+    @commands.guild_only()
+    async def unmute(self, ctx: commands.Context, member: discord.Member):
         await self.check_permissions("manage-guild", ctx)
 
-        await member.remove_roles(ctx.guild.get_role(self.settings[str(member.guild.id)]["muterole"]))
-        await ctx.send(f"{member.mention}をunmuteしました。")
+        await member.remove_roles(
+            discord.Object(self.settings[str(member.guild.id)]["muterole"])
+        )
+        await ctx.send(f"{member.mention}をミュート解除しました。")
+
+    async def do_punish(
+        self, g_setting: Setting, author: discord.Member,
+        channel: discord.abc.MessageableChannel | None = None
+    ):
+        "刑罰を実行します。"
+        punish = self.punishments[str(author.guild.id)][str(author.id)]
+        try:
+            if g_setting['action'][str(punish)].startswith('ban'):
+                if g_setting['action'][str(punish)].startswith('ban,'):
+                    self.muteds[str(author.guild.id)][str(author.id)] = MutedUser(
+                        time=int(time.time()) + int(g_setting['action'][str(punish)][4:]),
+                        type="ban"
+                    )
+                await author.ban(reason="sakura automod")
+            if g_setting['action'][str(punish)] == 'kick':
+                await author.kick(reason="sakura automod")
+            if g_setting['action'][str(punish)].startswith('mute'):
+                if g_setting['action'][str(punish)].startswith('mute,'):
+                    self.muteds[str(author.guild.id)][str(author.id)] = MutedUser(
+                        time=int(time.time()) + int(g_setting["action"][str(punish)][5:]),
+                        type="mute"
+                    )
+                await author.add_roles(discord.Object(g_setting["muterole"]))
+            if g_setting['action'][str(punish)].startswith('timeout'):
+                await author.timeout(
+                    timedelta(seconds=int(g_setting['action'][str(punish)][8:])),
+                    reason="sakura automod"
+                )
+        except discord.HTTPException:
+            try:
+                if not author.guild.owner:
+                    return
+                await (channel or author.guild.owner).send(
+                    "⚠️ユーザーの処罰に失敗しました。権限を確認してください。"
+                )
+            except discord.Forbidden:
+                pass
 
     @commands.Cog.listener()
-    async def on_message(self, msg):
-        if msg.author.id == self.bot.user.id:
-            return
-        if msg.guild is None:
+    async def on_message(self, msg: discord.Message):
+        if msg.guild is None or msg.author == msg.guild.me:
             return
         assert isinstance(msg.author, discord.Member)
-        if self.settings[str(msg.guild.id)]['tokens'] == 'on':
-            tkreg = r'[\w-]{24}\.[\w-]{6}\.[\w-]{27}'
-            if re.search(tkreg, msg.content) != None:
-                userid = msg.author.id
-                if not str(msg.guild.id) in self.punishments:
-                    self.punishments[str(msg.guild.id)] = dict()
-                if not str(userid) in self.punishments[str(msg.guild.id)]:
-                    self.punishments[str(msg.guild.id)][str(userid)] = 0
-                self.punishments[str(msg.guild.id)][str(
-                    userid)] = self.punishments[str(msg.guild.id)][str(userid)]+1
-                punish = self.punishments[str(msg.guild.id)][str(userid)]
-                await msg.delete()
+        self.data_check(msg.guild.id, msg.author.id)
+
+        g_setting = self.settings[str(msg.guild.id)]
+
+        if g_setting['tokens'] == 'on':
+            # トークン保護
+            if re.search(r'[\w-]{24}\.[\w-]{6}\.[\w-]{27}', msg.content):
+                self.punishments[str(msg.guild.id)][str(msg.author.id)] += 1
                 await msg.channel.send("tokenの送信はこのサーバーで禁止されています")
-                userid = msg.author.id
                 try:
-                    if self.settings[str(msg.guild.id)]['action'][str(punish)].startswith('ban'):
-                        if self.settings[str(msg.guild.id)]['action'][str(punish)].startswith('ban,'):
-                            self.muteds[str(msg.guild.id)
-                                        ][str(userid)] = dict()
-                            self.muteds[str(msg.guild.id)][str(userid)]["time"] = int(time.time(
-                            )) + int(self.settings[str(msg.guild.id)]['action'][str(punish)].replace('ban,', ''))
-                            self.muteds[str(msg.guild.id)][str(
-                                userid)]["type"] = "ban"
-                        await msg.author.ban()
-                    if self.settings[str(msg.guild.id)]['action'][str(punish)] == 'kick':
-                        await msg.author.kick()
-                    if self.settings[str(msg.guild.id)]['action'][str(punish)].startswith('mute'):
-                        if self.settings[str(msg.guild.id)]['action'][str(punish)].startswith('mute,'):
-                            self.muteds[str(msg.guild.id)
-                                        ][str(userid)] = dict()
-                            self.muteds[str(msg.guild.id)][str(userid)]["time"] = int(time.time(
-                            )) + int(self.settings[str(msg.guild.id)]['action'][str(punish)].replace('mute,', ''))
-                            self.muteds[str(msg.guild.id)][str(
-                                userid)]["type"] = "mute"
-                        await msg.author.add_roles(msg.guild.get_role(self.settings[str(msg.guild.id)]["muterole"]))
-                    if self.settings[str(msg.guild.id)]['action'][str(punish)].startswith('timeout'):
-                        await msg.author.timeout(timedelta(seconds=int(self.settings[str(msg.guild.id)]['action'][str(punish)].replace('timeout,', ''))), reason="sakura automod")
-                except KeyError:
-                    pass
+                    await msg.delete()
+                except discord.Forbidden:
+                    await msg.channel.send(
+                        "⚠️メッセージの削除に失敗しました。権限を確認してください。"
+                    )
+                await self.do_punish(g_setting, msg.author, msg.channel)
+
                 await self.save(msg.guild.id)
+
         if self.ig(msg):
             return
 
-        # デフォルトの設定
-        self.sendcount.setdefault(str(msg.guild.id), dict())
-        self.sendcount[str(msg.guild.id)].setdefault(str(msg.author.id), '')
-
-        self.sendmsgs.setdefault(str(msg.guild.id), dict())
-        self.sendmsgs[str(msg.guild.id)].setdefault(str(msg.author.id), list())
-
-        self.sendtime.setdefault(str(msg.guild.id), dict())
-        self.sendtime[str(msg.guild.id)].setdefault(str(msg.author.id), time.time())
-        
-        self.sendcont.setdefault(str(msg.guild.id), dict())
-        self.sendcont[str(msg.guild.id)].setdefault(str(msg.author.id), '')
-
         if time.time() - self.sendtime[str(msg.guild.id)][str(msg.author.id)] <= 2.0:
+            # Spam対策
             self.sendtime[str(msg.guild.id)][str(msg.author.id)] = time.time()
             self.sendmsgs[str(msg.guild.id)][str(msg.author.id)].append(msg)
-            if not 'duplct' in self.settings[str(msg.guild.id)]:
-                self.settings[str(msg.guild.id)]['duplct'] = 5
-            if len(self.sendmsgs[str(msg.guild.id)][str(msg.author.id)]) >= int(self.settings[str(msg.guild.id)]['duplct']):
-                userid = msg.author.id
-                if not str(msg.guild.id) in self.punishments:
-                    self.punishments[str(msg.guild.id)] = dict()
-                if not str(userid) in self.punishments[str(msg.guild.id)]:
-                    self.punishments[str(msg.guild.id)][str(userid)] = 0
-                self.punishments[str(msg.guild.id)][str(
-                    userid)] = self.punishments[str(msg.guild.id)][str(userid)]+1
-                punish = self.punishments[str(msg.guild.id)][str(userid)]
+            if len(self.sendmsgs[str(msg.guild.id)][str(msg.author.id)]) >= int(g_setting['duplct']):
+                self.punishments[str(msg.guild.id)][str(msg.author.id)] += 1
                 await msg.channel.send('Spamは禁止されています')
                 await self.save(msg.guild.id)
-                for dmsg in self.sendmsgs[str(msg.guild.id)][str(msg.author.id)]:
-                    try:
-                        await dmsg.delete()
-                    except:
-                        str("メッセージが見つかりません")
                 try:
-                    memb = msg.author
-                    if self.settings[str(msg.guild.id)]['action'][str(punish)].startswith('ban'):
-                        if self.settings[str(msg.guild.id)]['action'][str(punish)].startswith('ban,'):
-                            self.muteds[str(memb.guild.id)
-                                        ][str(memb.id)] = dict()
-                            self.muteds[str(memb.guild.id)][str(memb.id)]["time"] = int(time.time(
-                            )) + int(self.settings[str(msg.guild.id)]['action'][str(punish)].replace('ban,', ''))
-                            self.muteds[str(memb.guild.id)][str(
-                                memb.id)]["type"] = "ban"
-                        await msg.author.ban()
-                    if self.settings[str(msg.guild.id)]['action'][str(punish)] == 'kick':
-                        await msg.author.kick()
-                    if self.settings[str(msg.guild.id)]['action'][str(punish)].startswith('mute'):
-                        if self.settings[str(msg.guild.id)]['action'][str(punish)].startswith('mute,'):
-                            self.muteds[str(memb.guild.id)
-                                        ][str(memb.id)] = dict()
-                            self.muteds[str(memb.guild.id)][str(memb.id)]["time"] = int(time.time(
-                            )) + int(self.settings[str(msg.guild.id)]['action'][str(punish)].replace('mute,', ''))
-                            self.muteds[str(memb.guild.id)][str(
-                                memb.id)]["type"] = "mute"
-                        await msg.author.add_roles(msg.guild.get_role(self.settings[str(memb.guild.id)]["muterole"]))
-                    if self.settings[str(msg.guild.id)]['action'][str(punish)].startswith('timeout'):
-                        await msg.author.timeout(timedelta(seconds=int(self.settings[str(msg.guild.id)]['action'][str(punish)].replace('timeout,', ''))), reason="sakura automod")
-                except KeyError:
-                    str('keyerror')
+                    await msg.channel.purge(self.sendmsgs[str(msg.guild.id)][str(msg.author.id)])
+                except discord.Forbidden:
+                    await msg.channel.send("⚠️削除に失敗しました。権限を確認してください。")
+                await self.do_punish(g_setting, msg.author, msg.channel)
         else:
             self.sendtime[str(msg.guild.id)][str(msg.author.id)] = time.time()
             self.sendmsgs[str(msg.guild.id)][str(msg.author.id)] = [msg]
             self.sendcont[str(msg.guild.id)][str(msg.author.id)] = msg.content
-        if not "ngword" in self.settings[str(msg.guild.id)]:
-            self.settings[str(msg.guild.id)]["ngword"] = list()
-        for nw in self.settings[str(msg.guild.id)]["ngword"]:
+
+        for nw in g_setting["ngword"]:
+            # NGワード
             if msg.content.find(nw) != -1:
-                userid = msg.author.id
-                if not str(msg.guild.id) in self.punishments:
-                    self.punishments[str(msg.guild.id)] = dict()
-                if not str(userid) in self.punishments[str(msg.guild.id)]:
-                    self.punishments[str(msg.guild.id)][str(userid)] = 0
-                self.punishments[str(msg.guild.id)][str(
-                    userid)] = self.punishments[str(msg.guild.id)][str(userid)]+1
-                punish = self.punishments[str(msg.guild.id)][str(userid)]
+                self.punishments[str(msg.guild.id)][str(msg.author.id)] += 1
                 await msg.channel.send('禁止ワードが含まれています')
                 await self.save(msg.guild.id)
                 await msg.delete()
-                try:
-                    memb = msg.author
-                    if self.settings[str(msg.guild.id)]['action'][str(punish)].startswith('ban'):
-                        if self.settings[str(msg.guild.id)]['action'][str(punish)].startswith('ban,'):
-                            self.muteds[str(memb.guild.id)
-                                        ][str(memb.id)] = dict()
-                            self.muteds[str(memb.guild.id)][str(memb.id)]["time"] = int(time.time(
-                            )) + int(self.settings[str(msg.guild.id)]['action'][str(punish)].replace('ban,', ''))
-                            self.muteds[str(memb.guild.id)][str(
-                                memb.id)]["type"] = "ban"
-                        await msg.author.ban()
-                    if self.settings[str(msg.guild.id)]['action'][str(punish)] == 'kick':
-                        await msg.author.kick()
-                    if self.settings[str(msg.guild.id)]['action'][str(punish)].startswith('mute'):
-                        if self.settings[str(msg.guild.id)]['action'][str(punish)].startswith('mute,'):
-                            self.muteds[str(memb.guild.id)
-                                        ][str(memb.id)] = dict()
-                            self.muteds[str(memb.guild.id)][str(memb.id)]["time"] = int(time.time(
-                            )) + int(self.settings[str(msg.guild.id)]['action'][str(punish)].replace('mute,', ''))
-                            self.muteds[str(memb.guild.id)][str(
-                                memb.id)]["type"] = "mute"
-                        await msg.author.add_roles(msg.guild.get_role(self.settings[str(memb.guild.id)]["muterole"]))
-                    if self.settings[str(msg.guild.id)]['action'][str(punish)].startswith('timeout'):
-                        await msg.author.timeout(timedelta(seconds=int(self.settings[str(msg.guild.id)]['action'][str(punish)].replace('timeout,', ''))), reason="sakura automod")
-                except KeyError:
-                    str('keyerror')
+                await self.do_punish(g_setting, msg.author, msg.channel)
 
     @automod.command("settings")
     @commands.has_permissions(manage_guild=True)
     async def _settings(self, ctx: commands.Context):
-        guildid = str(ctx.guild.id)
+        assert ctx.guild
+        self.data_check(ctx.guild.id)
+
+        g_setting = self.settings[str(ctx.guild.id)]
         embed = discord.Embed(title='Settings', color=self.bot.Color)
         puni = ''
-        try:
-            for k in self.settings[guildid]['action'].keys():
-                puni = puni+str(k)+':'+self.settings[guildid]['action'][k]+'\n'
-        except KeyError:
-            puni = 'No Punishment'
+        for k in g_setting['action'].keys():
+            puni = puni+str(k)+':'+g_setting['action'][k]+'\n'
         ign = ''
         igchi = 0
-        try:
-            for igk in self.settings[str(guildid)]['ch']:
-                igchi = igchi+1
-                ign = ign+'<#'+str(igk)+'> is ignored\n'
-        except KeyError:
-            str('keyerror settings 0')
-        try:
-            for igkr in self.settings[str(guildid)]['role']:
-                ign = ign+'<@&'+str(igkr)+'> is ignored\n'
-                igchi = igchi+1
-        except KeyError:
-            str('keyerror settings 1')
+        for igk in g_setting['ignore_channel']:
+            igchi = igchi+1
+            ign = ign+'<#'+str(igk)+'> is ignored\n'
+        for igkr in g_setting['ignore_role']:
+            ign = ign+'<@&'+str(igkr)+'> is ignored\n'
+            igchi = igchi+1
         if igchi == 0:
             ign = 'No ignored'
-        automod = ''
-        try:
-            automod = 'anti token:'+self.settings[str(guildid)]['tokens']+'\n'
-        except KeyError:
-            automod = 'anti token:off\n'
-        try:
-            automod = automod+'antiraid:'+self.settings[str(guildid)]['antiraid']+'、'+str(self.settings[str(
-                guildid)]['raidcount'])+'人連続参加で動作、action:'+self.settings[str(guildid)]['raidaction']
-        except KeyError:
-            automod = automod+'antiraid:off'
+        automod = 'anti token:' + g_setting['tokens'] + '\n'
+        automod += (f"antiraid: {g_setting['antiraid']}、"
+            f"{g_setting['raidcount']}人連続参加で動作、action: {g_setting['raidaction']}")
         embed.add_field(name='punishments', value=puni)
         embed.add_field(name='ignore', value=ign)
-        embed.add_field(name='automod settings', value=automod)
-        alm = discord.AllowedMentions.none()
-        nwo = ""
-        try:
-            for nw in self.settings[str(ctx.guild.id)]["ngword"]:
-                nwo = nwo + nw + "\n"
-        except KeyError:
-            str("no ng word")
+        embed.add_field(name='anti-token・anti-raid', value=automod)
+
         ngembed = discord.Embed(
-            title='NG Words', color=self.bot.Color, description=nwo)
-        await ctx.send(embeds=[embed, ngembed], allowed_mentions=alm)
+            title='NG Words', color=self.bot.Color,
+            description="\n".join(
+                nw for nw in self.settings[str(ctx.guild.id)]["ngword"]
+            )
+        )
+        await ctx.send(embeds=[embed, ngembed])
 
     @automod.command()
-    async def addadminrole(self, ctx, role: discord.Role):
+    async def role(
+        self, ctx, type_: Literal["admin", "mod"],
+        mode: Literal["add","remove"], role: discord.Role
+    ):
         await self.check_permissions("admin", ctx)
 
-        if role.id in self.settings[str(ctx.guild.id)]['adminrole']:
-            await ctx.send('このロールはすでに追加されています')
+        if str(role.id) in self.settings[str(ctx.guild.id)][f'{type_}role']:
+            if mode == "add":
+                await ctx.send('このロールはすでに追加されています。')
+            else:
+                self.settings[str(ctx.guild.id)][f'{type_}role'].remove(str(role.id))
+                await self.save(ctx.guild.id)
+                await ctx.send('削除完了しました。')
         else:
-            self.settings[str(ctx.guild.id)]['adminrole'].append(role.id)
-            await self.save(ctx.guild.id)
-            await ctx.send('追加完了しました')
+            if mode == "remove":
+                await ctx.send('このロールは存在しません。')
+            else:
+                self.settings[str(ctx.guild.id)][f'{type_}role'].append(str(role.id))
+                await self.save(ctx.guild.id)
+                await ctx.send('追加完了しました。')
 
     @automod.command()
     async def addmodrole(self, ctx, role: discord.Role):
         await self.check_permissions("admin", ctx)
-        if role.id in self.settings[str(ctx.guild.id)]['modrole']:
+        if str(role.id) in self.settings[str(ctx.guild.id)]['modrole']:
             await ctx.send('このロールはすでに追加されています')
         else:
-            self.settings[str(ctx.guild.id)]['modrole'].append(role.id)
+            self.settings[str(ctx.guild.id)]['modrole'].append(str(role.id))
             await self.save(ctx.guild.id)
             await ctx.send('追加完了しました')
 
-    @automod.command()
-    async def removeadminrole(self, ctx, role: discord.Role):
-        await self.check_permissions("admin", ctx)
-        if role.id in self.settings[str(ctx.guild.id)]['adminrole']:
-            self.settings[str(ctx.guild.id)]['adminrole'].remove(role.id)
-            await self.save(ctx.guild.id)
-            await ctx.send('削除完了しました')
-        else:
-            await ctx.send('このロールは追加されていません')
+    async def save(self, guild_id):
+        self.data_check(guild_id)
 
-    @automod.command()
-    async def removemodrole(self, ctx, role: discord.Role):
-        await self.check_permissions("admin", ctx)
-
-        if role.id in self.settings[str(ctx.guild.id)]['modrole']:
-            self.settings[str(ctx.guild.id)]['modrole'].remove(role.id)
-            await self.save(ctx.guild.id)
-            await ctx.send('削除完了しました')
-        else:
-            await ctx.send('このロールは追加されていません')
-
-    def raise_missing_parms(self, ctx: commands.Context, permissions: list) -> None:
-        "権限が足りないことを表すエラーを創出します。"
-        raise commands.MissingPermissions(ctx, permissions)
-
-    async def save(self, gid):
-        self.data_check(gid)
-
-        if str(gid) not in self.muteds:
-            self.muteds[str(gid)] = dict()
-        if str(gid) not in self.punishments:
-            self.punishments[str(gid)] = dict()
-        se = self.settings[str(gid)]
+        se = self.settings[str(guild_id)]
         await self.bot.execute_sql(
             """INSERT INTO AutoModSetting (
                 GuildId, AdminRole, ModRole, MuteRole, AntiRaid,
@@ -668,10 +606,10 @@ class AutoMod(commands.Cog):
                 IgnoreRole = VALUES(IgnoreRole), NGWord = VALUES(NGWord),
                 Duplict = VALUES(Duplict), Action = VALUES(Action)
             """, (
-                gid, se["adminrole"], se["modrole"], se["muterole"],
+                guild_id, se["adminrole"], se["modrole"], se["muterole"],
                 se["antiraid"], se["raidaction"], se["raidactiontime"],
                 se["ignore_channel"], se["ignore_role"], se["ngword"],
-                se["duplict"], se["action"]
+                se["duplct"], se["action"]
             )
         )
 
