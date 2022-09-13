@@ -500,7 +500,15 @@ class AutoMod(commands.Cog):
                 await msg.channel.send('Spamは禁止されています')
                 await self.save(msg.guild.id)
                 try:
-                    await msg.channel.purge(self.sendmsgs[str(msg.guild.id)][str(msg.author.id)])
+                    if isinstance(msg.channel, discord.TextChannel):
+                        await msg.channel.purge(
+                            check=lambda m: (
+                                m in self.sendmsgs[str(getattr(msg.guild, "id"))][str(msg.author.id)]
+                            )
+                        )
+                    else:
+                        for m in self.sendmsgs[str(msg.guild.id)][str(msg.author.id)]:
+                            await m.delete()
                 except discord.Forbidden:
                     await msg.channel.send("⚠️削除に失敗しました。権限を確認してください。")
                 await self.do_punish(g_setting, msg.author, msg.channel)
