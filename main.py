@@ -6,7 +6,7 @@ import discord
 
 from aiohttp import ClientSession
 from dotenv import load_dotenv
-from ujson import dumps
+from orjson import loads
 import aiomysql
 
 from utils import Bot
@@ -21,7 +21,7 @@ bot = Bot(command_prefix='sk!', intents=discord.Intents.all(), help_command=None
 @bot.listen()
 async def on_ready():
     print(f"[Log]Hello {bot.user}")
-    bot.session = ClientSession(loop=bot.loop, json_serialize=dumps)
+    bot.session = ClientSession(loop=bot.loop, json_serialize=loads)
     await bot.load_extension("data.owners")
     await bot.load_extension("jishaku")
     print("[Log]Connecting MySQL")

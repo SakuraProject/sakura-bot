@@ -1,12 +1,16 @@
-import discord
-from discord.ext import commands
+import importlib
 import os
 
+import discord
+from discord.ext import commands
 
-class help(commands.Cog):
-    def __init__(self, bot):
+from utils import Bot
+
+
+class Help(commands.Cog):
+    def __init__(self, bot: Bot):
         self.bot, self.before = bot, ""
-        self.helps = dict()
+        self.helps = {}
 
     @commands.command(
         aliases=["ヘルプ"]
@@ -26,35 +30,37 @@ class help(commands.Cog):
         EVAL self.bot.command_prefix+'help command name'
         ELang default
         """
-        hl = await self.hpl(cmd, subcmd)
+        embed = await self.create_help(cmd, subcmd)
         view = discord.ui.View()
         view.add_item(CatList(self))
-        await ctx.send(embeds=[hl["ebd"]], view=view)
+        await ctx.send(embed=embed, view=view)
 
-    async def hpl(self, cmd=None, subcmd=None):
+    async def create_help(self, cmd=None, subcmd=None) -> discord.Embed:
         l = "ja"
         sed = "これはBotのヘルプです。下の選択メニューからカテゴリを選ぶことによりコマンドを選択できます。これを見てもよくわからない方はサポートサーバーまでお問い合わせください"
+        prefix = self.bot.command_prefix if isinstance(self.bot.command_prefix, str) else "/"
         if cmd is not None:
             if subcmd is None:
                 comd = self.bot.get_command(cmd)
-                if type(comd).__name__ == "Group" or type(comd).__name__ == "HybridGroup":
+                assert comd
+                if isinstance(comd, commands.Group | commands.HybridGroup):
                     comds = list(comd.commands)
                     sed = ""
                     for gcm in comds:
                         if gcm.callback.__doc__ is not None:
                             doc = await self.parsedoc(gcm.callback.__doc__)
                             try:
-                                sed = sed + self.bot.command_prefix + comd.name + \
+                                sed = sed + prefix + comd.name + \
                                     " " + gcm.name + " : " + \
                                     doc["sd"][l] + "\n"
                             except KeyError:
-                                sed = sed + self.bot.command_prefix + comd.name + \
+                                sed = sed + prefix + comd.name + \
                                     " " + gcm.name + " : " + \
                                     doc["sd"]["default"] + "\n"
                         else:
-                            sed = sed + self.bot.command_prefix + comd.name + " " + gcm.name + " : \n"
-                if type(comd).__name__ == "Command":
-                    if comd.callback.__doc__ != None:
+                            sed = sed + prefix + comd.name + " " + gcm.name + " : \n"
+                elif isinstance(comd, commands.Command | commands.HybridCommand):
+                    if comd.callback.__doc__ is not None:
                         doc = await self.parsedoc(comd.callback.__doc__)
                         try:
                             sed = doc["desc"][l]
@@ -64,8 +70,9 @@ class help(commands.Cog):
                         sed = "このコマンドの詳細はサポートサーバーでお問い合わせください"
             else:
                 comd = self.bot.get_command(cmd + " " + subcmd)
+                assert comd
                 if type(comd).__name__ == "Command" or type(comd).__name__ == "HybridCommand":
-                    if comd.callback.__doc__ != None:
+                    if comd.callback.__doc__ is not None:
                         doc = await self.parsedoc(comd.callback.__doc__)
                         try:
                             sed = doc["desc"][l]
@@ -73,10 +80,7 @@ class help(commands.Cog):
                             sed = doc["desc"]["default"]
                     else:
                         sed = "このコマンドの詳細はサポートサーバーでお問い合わせください"
-        ebd = discord.Embed(color=self.bot.Color, description=sed)
-        redic = dict()
-        redic["ebd"] = ebd
-        return redic
+        return discord.Embed(color=self.bot.Color, description=sed)
 
     async def parsedoc(self, doc):
         spl = doc.splitlines()
@@ -117,6 +121,7 @@ class CatList(discord.ui.Select):
         for name in os.listdir("cmds"):
             if not name.startswith((".", "_")):
                 try:
+                    name = importlib.import_module(f"cmds.{name}")
                     exec("from cmds." + name + " import name as " + name)
                     try:
                         rname = eval(name)[l]
@@ -188,5 +193,5 @@ class CmdList(discord.ui.Select):
             await interaction.response.edit_message(embeds=[ebd], view=view)
 
 
-async def setup(bot):
-    await bot.add_cog(help(bot))
+async def setup(bot: Bot):
+    await bot.add_cog(Help(bot))
