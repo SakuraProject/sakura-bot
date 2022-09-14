@@ -86,20 +86,14 @@ class AutoMod(commands.Cog):
             self.punishments[str(row[0])][str(row[1])] = row[2]
 
     def data_check(self, guild_id: int, author_id: int = 0) -> None:
-        defaults = Setting(**{
-            "adminrole": [],
-            "modrole": [],
-            "muterole": -1,
-            "antiraid": False,
-            "raidaction": "none",
-            "raidactiontime": 0,
-            "raidcount": 0,
-            "ignore_channel": [],
-            "ignore_role": [],
-            "ngword": [],
-            "duplct": 0,
-            "action": []
-        })
+        defaults = Setting(
+            adminrole=[], modrole=[],
+            muterole=0, antiraid="off",
+            raidaction="none", raidactiontime=0,
+            raidcount=0, ignore_channel=[],
+            ignore_role=[], ngword=[],
+            duplct=0, action={}, tokens="on"
+        )
         if str(guild_id) not in self.settings:
             self.settings[str(guild_id)] = defaults
         for key, value in defaults.items():
@@ -452,6 +446,8 @@ class AutoMod(commands.Cog):
     ):
         "刑罰を実行します。"
         punish = self.punishments[str(author.guild.id)][str(author.id)]
+        if str(punish) not in g_setting["action"]:
+            return
         try:
             if g_setting['action'][str(punish)].startswith('ban'):
                 if g_setting['action'][str(punish)].startswith('ban,'):
@@ -463,12 +459,13 @@ class AutoMod(commands.Cog):
             if g_setting['action'][str(punish)] == 'kick':
                 await author.kick(reason="sakura automod")
             if g_setting['action'][str(punish)].startswith('mute'):
-                if g_setting['action'][str(punish)].startswith('mute,'):
-                    self.muteds[str(author.guild.id)][str(author.id)] = MutedUser(
-                        time=int(time.time()) + int(g_setting["action"][str(punish)][5:]),
-                        type="mute"
-                    )
-                await author.add_roles(discord.Object(g_setting["muterole"]))
+                if g_setting["muterole"]:
+                    await author.add_roles(discord.Object(g_setting["muterole"]))
+                    if g_setting['action'][str(punish)].startswith('mute,'):
+                        self.muteds[str(author.guild.id)][str(author.id)] = MutedUser(
+                            time=int(time.time()) + int(g_setting["action"][str(punish)][5:]),
+                            type="mute"
+                        )
             if g_setting['action'][str(punish)].startswith('timeout'):
                 await author.timeout(
                     timedelta(seconds=int(g_setting['action'][str(punish)][8:])),
@@ -615,9 +612,9 @@ class AutoMod(commands.Cog):
             """INSERT INTO AutoModSetting (
                 GuildId, AdminRole, ModRole, MuteRole, AntiRaid,
                 RaidAction, RaidActionTime, IgnoreChannel,
-                IgnoreRole, NGWord, Duplict, Action
+                IgnoreRole, NGWord, Duplict, Action, Tokens
             ) VALUES (
-                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
             ) ON DUPLICATE KEY UPDATE
                 AdminRole = VALUES(AdminRole), ModRole = VALUES(ModRole),
                 MuteRole = VALUES(MuteRole), AntiRaid = VALUES(AntiRaid),
@@ -626,12 +623,13 @@ class AutoMod(commands.Cog):
                 IgnoreChannel = VALUES(IgnoreChannel),
                 IgnoreRole = VALUES(IgnoreRole), NGWord = VALUES(NGWord),
                 Duplict = VALUES(Duplict), Action = VALUES(Action)
+                Tokens = VALUES(Tokens)
             """, (
                 guild_id, dumps(se["adminrole"]), dumps(se["modrole"]),
                 se["muterole"], se["antiraid"], se["raidaction"],
                 se["raidactiontime"], dumps(se["ignore_channel"]),
                 dumps(se["ignore_role"]), dumps(se["ngword"]),
-                dumps(se["duplct"]), se["action"]
+                dumps(se["duplct"]), se["action"], se["tokens"]
             )
         )
 
