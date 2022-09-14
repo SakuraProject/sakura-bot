@@ -174,7 +174,7 @@ class AutoMod(commands.Cog):
                         pass
 
     @automod.command()
-    @commands.bot_has_guild_permissions(edit_channels=True)
+    @commands.bot_has_guild_permissions(manage_channels=True)
     async def muterolesetup(self, ctx: commands.Context, role: discord.Role | None = None):
         await self.check_permissions("admin", ctx)
         assert ctx.guild
