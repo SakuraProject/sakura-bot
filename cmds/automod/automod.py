@@ -10,7 +10,7 @@ from discord.ext import commands, tasks
 import discord
 from pytimeparse.timeparse import timeparse
 from datetime import timedelta
-from ujson import loads
+from orjson import loads, dumps
 import time
 import re
 
@@ -32,10 +32,10 @@ class AutoMod(commands.Cog):
         self.muteds: dict[str, dict[str, MutedUser]] = {}  # ミュート情報
         self.m: dict[str, list[discord.Member]] = {}  # raid関連
         self.time_ = {}  # raid関連
-        self.sendtime = dict()  # spam対策関連
-        self.sendcont = dict()  # spam対策関連
-        self.sendmsgs = dict()  # spam対策関連
-        self.sendcount: dict[str, dict[str, str]] = dict()  # spam対策関連
+        self.sendtime: dict[str, dict[str, float]] = {}  # spam対策関連
+        self.sendcont: dict[str, dict[str, str]] = {}  # spam対策関連
+        self.sendmsgs: dict[str, dict[str, list[discord.Message]]] = {}  # spam対策関連
+        self.sendcount: dict[str, dict[str, str]] = {}  # spam対策関連
         self.untask.start()
 
     async def cog_load(self):
@@ -44,26 +44,46 @@ class AutoMod(commands.Cog):
             AdminRole JSON,
             ModRole JSON,
             MuteRole BIGINT,
-            AntiRaid BOOLEAN,
-            RaidAction ENUM('ban', 'kick', 'mute', 'timeout', 'none'),
+            AntiRaid VARCHAR(5),
+            RaidAction VARCHAR(15),
             RaidActionTime MEDIUMINT UNSIGNED,
             IgnoreChannel JSON,
             IgnoreRole JSON,
             NGWord JSON,
             Duplct TINYINT UNSIGNED,
-            Action JSON
+            Action JSON,
+            Tokens VARCHAR(5)
         ) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin;"""
+        sql_stmt2 = """CREATE TABLE IF NOT EXISTS AutoModPunishments (
+            GuildId BIGINT NOT NULL,
+            MemberId BIGINT NOT NULL,
+            Strike INT,
+            PRIMARY KEY(GuildId, MemberId)
+        );"""
 
         async def sqling(cursor):
             await cursor.execute(sql_stmt)
-            await cursor.execute("SELECT * FROM AutoMod")
-            return await cursor.fetchall()
+            await cursor.execute("SELECT * FROM AutoModSetting")
+            r1 = await cursor.fetchall()
+            await cursor.execute(sql_stmt2)
+            await cursor.execute("SELECT * FROM AutoModPunishments")
+            return (r1, await cursor.fetchall())
 
         res = await self.bot.execute_sql(sqling)
-        assert isinstance(res, tuple)
+        assert isinstance(res, tuple) and isinstance(res[0], tuple)
 
-        for row in res:
-            self.settings[str(row[0])] = loads(row[1:])
+        for row in res[0]:
+            self.settings[str(row[0])] = Setting(
+                adminrole=loads(row[1]), modrole=loads(row[2]),
+                muterole=row[3], antiraid=row[4], raidaction=row[5],
+                raidactiontime=row[6], raidcount=row[7],
+                ignore_channel=loads(row[8]), ignore_role=loads(row[9]),
+                ngword=loads(row[10]), duplct=row[11], action=loads(row[12]),
+                tokens=row[13]
+            )
+        for row in res[1]:
+            self.punishments.setdefault(str(row[0]), {})
+            self.punishments[str(row[0])][str(row[1])] = row[2]
 
     def data_check(self, guild_id: int, author_id: int = 0) -> None:
         defaults = Setting(**{
@@ -92,7 +112,7 @@ class AutoMod(commands.Cog):
             self.sendmsgs, self.sendtime,
             self.sendcont, self.sendcount, self.punishments
         ):
-            item.setdefault(str(guild_id), {})
+            item.setdefault(str(guild_id), {})  # type: ignore
         if author_id:
             self.sendmsgs[str(guild_id)].setdefault(str(author_id), [])
             self.sendtime[str(guild_id)].setdefault(str(author_id), time.time())
@@ -468,15 +488,19 @@ class AutoMod(commands.Cog):
     async def on_message(self, msg: discord.Message):
         if msg.guild is None or msg.author == msg.guild.me:
             return
-        assert isinstance(msg.author, discord.Member)
-        self.data_check(msg.guild.id, msg.author.id)
 
-        g_setting = self.settings[str(msg.guild.id)]
+        assert isinstance(msg.author, discord.Member)
+        gid, uid = msg.guild.id, msg.author.id
+
+        self.data_check(gid, uid)
+
+        s_gid, s_uid = str(gid), str(uid)
+        g_setting = self.settings[s_gid]
 
         if g_setting['tokens'] == 'on':
             # トークン保護
             if re.search(r'[\w-]{24}\.[\w-]{6}\.[\w-]{27}', msg.content):
-                self.punishments[str(msg.guild.id)][str(msg.author.id)] += 1
+                self.punishments[s_gid][s_uid] += 1
                 await msg.channel.send("tokenの送信はこのサーバーで禁止されています")
                 try:
                     await msg.delete()
@@ -486,43 +510,41 @@ class AutoMod(commands.Cog):
                     )
                 await self.do_punish(g_setting, msg.author, msg.channel)
 
-                await self.save(msg.guild.id)
+                await self.save(gid)
 
         if self.ig(msg):
             return
 
-        if time.time() - self.sendtime[str(msg.guild.id)][str(msg.author.id)] <= 2.0:
+        if time.time() - self.sendtime[s_gid][s_uid] <= 2.0:
             # Spam対策
-            self.sendtime[str(msg.guild.id)][str(msg.author.id)] = time.time()
-            self.sendmsgs[str(msg.guild.id)][str(msg.author.id)].append(msg)
-            if len(self.sendmsgs[str(msg.guild.id)][str(msg.author.id)]) >= int(g_setting['duplct']):
-                self.punishments[str(msg.guild.id)][str(msg.author.id)] += 1
+            self.sendtime[s_gid][s_uid] = time.time()
+            self.sendmsgs[s_gid][s_uid].append(msg)
+            if len(self.sendmsgs[s_gid][s_uid]) >= int(g_setting['duplct']):
+                self.punishments[s_gid][s_uid] += 1
                 await msg.channel.send('Spamは禁止されています')
-                await self.save(msg.guild.id)
+                await self.save(gid)
                 try:
                     if isinstance(msg.channel, discord.TextChannel):
                         await msg.channel.purge(
-                            check=lambda m: (
-                                m in self.sendmsgs[str(getattr(msg.guild, "id"))][str(msg.author.id)]
-                            )
+                            check=lambda m: m in self.sendmsgs[s_gid][s_uid]
                         )
                     else:
-                        for m in self.sendmsgs[str(msg.guild.id)][str(msg.author.id)]:
+                        for m in self.sendmsgs[s_gid][s_uid]:
                             await m.delete()
                 except discord.Forbidden:
                     await msg.channel.send("⚠️削除に失敗しました。権限を確認してください。")
                 await self.do_punish(g_setting, msg.author, msg.channel)
         else:
-            self.sendtime[str(msg.guild.id)][str(msg.author.id)] = time.time()
-            self.sendmsgs[str(msg.guild.id)][str(msg.author.id)] = [msg]
-            self.sendcont[str(msg.guild.id)][str(msg.author.id)] = msg.content
+            self.sendtime[s_gid][s_uid] = time.time()
+            self.sendmsgs[s_gid][s_uid] = [msg]
+            self.sendcont[s_gid][s_uid] = msg.content
 
         for nw in g_setting["ngword"]:
             # NGワード
             if msg.content.find(nw) != -1:
-                self.punishments[str(msg.guild.id)][str(msg.author.id)] += 1
+                self.punishments[s_gid][s_uid] += 1
                 await msg.channel.send('禁止ワードが含まれています')
-                await self.save(msg.guild.id)
+                await self.save(gid)
                 await msg.delete()
                 await self.do_punish(g_setting, msg.author, msg.channel)
 
@@ -564,10 +586,11 @@ class AutoMod(commands.Cog):
 
     @automod.command()
     async def role(
-        self, ctx, type_: Literal["admin", "mod"],
+        self, ctx: commands.Context, type_: Literal["admin", "mod"],
         mode: Literal["add","remove"], role: discord.Role
     ):
         await self.check_permissions("admin", ctx)
+        assert ctx.guild
 
         if str(role.id) in self.settings[str(ctx.guild.id)][f'{type_}role']:
             if mode == "add":
@@ -583,16 +606,6 @@ class AutoMod(commands.Cog):
                 self.settings[str(ctx.guild.id)][f'{type_}role'].append(str(role.id))
                 await self.save(ctx.guild.id)
                 await ctx.send('追加完了しました。')
-
-    @automod.command()
-    async def addmodrole(self, ctx, role: discord.Role):
-        await self.check_permissions("admin", ctx)
-        if str(role.id) in self.settings[str(ctx.guild.id)]['modrole']:
-            await ctx.send('このロールはすでに追加されています')
-        else:
-            self.settings[str(ctx.guild.id)]['modrole'].append(str(role.id))
-            await self.save(ctx.guild.id)
-            await ctx.send('追加完了しました')
 
     async def save(self, guild_id):
         self.data_check(guild_id)
@@ -614,10 +627,11 @@ class AutoMod(commands.Cog):
                 IgnoreRole = VALUES(IgnoreRole), NGWord = VALUES(NGWord),
                 Duplict = VALUES(Duplict), Action = VALUES(Action)
             """, (
-                guild_id, se["adminrole"], se["modrole"], se["muterole"],
-                se["antiraid"], se["raidaction"], se["raidactiontime"],
-                se["ignore_channel"], se["ignore_role"], se["ngword"],
-                se["duplct"], se["action"]
+                guild_id, dumps(se["adminrole"]), dumps(se["modrole"]),
+                se["muterole"], se["antiraid"], se["raidaction"],
+                se["raidactiontime"], dumps(se["ignore_channel"]),
+                dumps(se["ignore_role"]), dumps(se["ngword"]),
+                dumps(se["duplct"]), se["action"]
             )
         )
 
