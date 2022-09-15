@@ -14,7 +14,7 @@ from orjson import loads, dumps
 import time
 import re
 
-from utils import Bot
+from utils import Bot, TryConverter
 
 from ._types import Setting, Actions, MutedUser
 
@@ -22,6 +22,7 @@ from ._types import Setting, Actions, MutedUser
 def arrayinarray(list1, list2) -> bool:
     "list1の項目がlist2の中に一つでも含まれているかをチェックします。"
     return any(item in list2 for item in list1)
+
 
 class AutoMod(commands.Cog):
 
@@ -253,7 +254,7 @@ class AutoMod(commands.Cog):
             return False
 
     @commands.Cog.listener()
-    async def on_member_join(self, member):
+    async def on_member_join(self, member: discord.Member):
         "antiraid用のイベント。"
         self.data_check(member.guild.id, member.id)
 
@@ -326,7 +327,7 @@ class AutoMod(commands.Cog):
     @automod.command()
     async def ignore(
         self, ctx: commands.Context, mode: Literal["channel", "role"],
-        target: discord.TextChannel | discord.Role = commands.CurrentChannel
+        target: TryConverter[discord.TextChannel, discord.Role] = commands.CurrentChannel
     ):
         await self.check_permissions("admin", ctx)
         assert ctx.guild
@@ -396,7 +397,8 @@ class AutoMod(commands.Cog):
     @commands.has_permissions(ban_members=True)
     async def pardon(
         self, ctx: commands.Context,
-        target: discord.Member | discord.User | discord.Object, strikes=1
+        target: TryConverter[discord.Member, discord.User, discord.Object],
+        strikes=1
     ):
         await self.check_permissions("manage-guild", ctx)
         assert ctx.guild
@@ -410,7 +412,7 @@ class AutoMod(commands.Cog):
     @automod.command()
     async def check(
         self, ctx: commands.Context,
-        user: discord.Member | discord.User | discord.Object
+        user: TryConverter[discord.Member, discord.User, discord.Object]
     ):
         assert ctx.guild
         self.data_check(ctx.guild.id)
@@ -584,7 +586,7 @@ class AutoMod(commands.Cog):
     @automod.command()
     async def role(
         self, ctx: commands.Context, type_: Literal["admin", "mod"],
-        mode: Literal["add","remove"], role: discord.Role
+        mode: Literal["add","remove"], role: TryConverter[discord.Role, discord.Object]
     ):
         await self.check_permissions("admin", ctx)
         assert ctx.guild
