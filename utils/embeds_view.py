@@ -12,7 +12,7 @@ __all__ = ("EmbedSelect", "EmbedsView")
 class EmbedSelect(discord.ui.Select):
     "embed選択用のセレクトメニュー。"
 
-    def __init__(self, embeds: list[discord.Embed], extras: dict | None = None):
+    def __init__(self, embeds: Sequence[discord.Embed], extras: dict | None = None):
         self.embeds = embeds
         if extras is None:
             options = [discord.SelectOption(
