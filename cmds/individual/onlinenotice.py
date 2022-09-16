@@ -63,7 +63,7 @@ class OnlineNotice(commands.Cog):
         if (notice_user.id not in self.cache
                 or ctx.author.id not in self.cache[notice_user.id]):
             return await ctx.send("そのユーザーは登録されていません。")
-        
+
         self.cache[notice_user.id].remove(ctx.author.id)
         await self.bot.execute_sql(
             "UPDATE OnlineNotice SET Authors = %s WHERE UserId = %s;",
