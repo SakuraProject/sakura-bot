@@ -44,10 +44,10 @@ else:
 
             for param in params:
                 p = commands.converter.CONVERTER_MAPPING.get(param, param)
-                if isinstance(param, commands.Converter):
+                if isinstance(p, commands.Converter):
                     new_params.append(p)
                 else:
-                    if not isinstance(param, commands.Greedy | commands.Range):
+                    if not isinstance(p, commands.Greedy | commands.Range):
                         raise TypeError(f"parameter {param!r} isn't a converter.")
                     else:
                         new_params.append(p)
