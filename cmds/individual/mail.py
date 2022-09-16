@@ -1,4 +1,4 @@
-from ujson import loads, dumps
+from orjson import loads, dumps
 import discord
 from discord.ext import commands, tasks
 from datetime import datetime
@@ -7,8 +7,11 @@ import email
 import time
 import re
 from email.header import decode_header
+import asyncio
+
 
 class PM(discord.ui.Modal):
+
     def __init__(self,cog):
         super().__init__(title="登録するメールアカウントの情報を入力してください",timeout=None)
         self.cog = cog
@@ -22,8 +25,9 @@ class PM(discord.ui.Modal):
         self.add_item(self.user)
         self.pas = discord.ui.TextInput(label="IMAPのパスワードを入力してください")
         self.add_item(self.pas)
+
     async def on_submit(self, interaction: discord.Interaction):
-        mes = await interaction.response.send_message(content="接続を確認中です",view=discord.ui.View(),ephemeral=True)
+        mes = await interaction.response.send_message(content="接続を確認中です", view=discord.utils.MISSING, ephemeral=True)
         try:
             try:
                 m = imaplib.IMAP4(self.s.value,int(self.port.value))
@@ -34,27 +38,30 @@ class PM(discord.ui.Modal):
             m,pas = self.pas.value
             m.dch = interaction.channel
             m.lt = time.time()
-            cog.nlis.append(m)
-            cog.chl.setdefault(interaction.channel.id,dict())
-            cog.chl[interaction.channel.id][self.mname.value] = m
-            async with cog.bot.pool.acquire() as conn:
+            self.cog.nlis.append(m)
+            self.cog.chl.setdefault(interaction.channel.id,dict())
+            self.cog.chl[interaction.channel.id][self.mname.value] = m
+            async with self.cog.bot.pool.acquire() as conn:
                 async with conn.cursor() as cur:
                     d = dict()
                     d["s"] = self.s.value
                     d["port"] = self.port.value
                     d["user"] = self.user.value
                     d["pas"] = self.pas.value
-                    await cur.execute("INSERT INTO `mailnof` (`gid`, `cid`, `mname`, `data`) VALUES (%s,%s,%s,%s);",(interaction.channel.guild.id,interaction.channel.id,self.mname.value,dumps(d)))
+                    await cur.execute("INSERT INTO `mailnof` (`gid`, `cid`, `mname`, `data`) VALUES (%s,%s,%s,%s);",(interaction.guild.id,interaction.channel.id,self.mname.value,dumps(d)))
             await mes.edit(content="登録完了しました")
         except:
             await mes.edit(content="接続確認に失敗しました")
 
-class mail(commands.Cog):
+
+class Mail(commands.Cog):
+
     def __init__(self, bot):
         self.bot = bot
         self.nlis = list()
         self.chl = dict()
         self.noftask.start()
+
     async def cog_load(self):
         csql = "CREATE TABLE if not exists `mailnof` (`gid` BIGINT NOT NULL, `cid` BIGINT NOT NULL, `mname` VARCHAR(1000) NOT NULL, `data` JSON NOT NULL) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin;"
         async with self.bot.pool.acquire() as conn:
@@ -125,6 +132,7 @@ class mail(commands.Cog):
                     m.lt = dtmt
             except Exception as e:
                 continue
+
     async def getwebhook(self, channel: discord.TextChannel) -> discord.Webhook:
         webhooks = await channel.webhooks()
         webhook = discord.utils.get(webhooks, name='sakurabot')
@@ -136,6 +144,7 @@ class mail(commands.Cog):
     async def mail(self, ctx: commands.Context):
         if not ctx.invoked_subcommand:
             await ctx.reply("使用方法が違います")
+
     @mail.command()
     async def remove(self, ctx):
         """
@@ -155,7 +164,7 @@ class mail(commands.Cog):
         await ctx.send("DMを確認してください")
         await ctx.author.send("登録したメールアドレスを入力してください")
         try:
-            message = await client.wait_for('message', timeout=360.0, check=check)
+            message = await self.bot.wait_for('message', timeout=360.0, check=check)
         except asyncio.TimeoutError:
             await ctx.author.send('タイムアウトしました.  再度操作をやり直してね')
             return
@@ -169,6 +178,7 @@ class mail(commands.Cog):
                 self.chl[ctx.channel.id].pop(mname)
                 await ctx.author.send("解除しました")
                 await ctx.send("解除しました")
+
     @mail.command()
     async def set(self, ctx):
         """
@@ -190,7 +200,7 @@ class mail(commands.Cog):
             await ctx.send("DMを確認してください")
             await ctx.author.send("登録するメールアドレスを入力してください")
             try:
-                message = await client.wait_for('message', timeout=360.0, check=check)
+                message = await self.bot.wait_for('message', timeout=360.0, check=check)
             except asyncio.TimeoutError:
                 await ctx.author.send('タイムアウトしました.  再度操作をやり直してね')
                 return
@@ -198,7 +208,7 @@ class mail(commands.Cog):
                 mname = message.content
             await ctx.author.send("IMAPサーバーのurlを入力してください")
             try:
-                message = await client.wait_for('message', timeout=360.0, check=check)
+                message = await self.bot.wait_for('message', timeout=360.0, check=check)
             except asyncio.TimeoutError:
                 await ctx.author.send('タイムアウトしました.  再度操作をやり直してね')
                 return
@@ -206,7 +216,7 @@ class mail(commands.Cog):
                 s = message.content
             await ctx.author.send("IMAPサーバーのportを入力してください")
             try:
-                message = await client.wait_for('message', timeout=360.0, check=check)
+                message = await self.bot.wait_for('message', timeout=360.0, check=check)
             except asyncio.TimeoutError:
                 await ctx.author.send('タイムアウトしました.  再度操作をやり直してね')
                 return
@@ -214,7 +224,7 @@ class mail(commands.Cog):
                 port = message.content
             await ctx.author.send("IMAPのユーザー名を入力してください")
             try:
-                message = await client.wait_for('message', timeout=360.0, check=check)
+                message = await self.bot.wait_for('message', timeout=360.0, check=check)
             except asyncio.TimeoutError:
                 await ctx.author.send('タイムアウトしました.  再度操作をやり直してね')
                 return
@@ -222,7 +232,7 @@ class mail(commands.Cog):
                 user = message.content
             await ctx.author.send("IMAPのパスワードを入力してください")
             try:
-                message = await client.wait_for('message', timeout=360.0, check=check)
+                message = await self.bot.wait_for('message', timeout=360.0, check=check)
             except asyncio.TimeoutError:
                 await ctx.author.send('タイムアウトしました.  再度操作をやり直してね')
                 return
@@ -254,8 +264,8 @@ class mail(commands.Cog):
             except:
                 await mes.edit(content="接続確認に失敗しました")
         else:
-             ctx.interaction.response.send_modal(PM(self))
+            ctx.interaction.response.send_modal(PM(self))
+
+
 async def setup(bot):
-    global client
-    client = bot
-    await bot.add_cog(mail(bot))
+    await bot.add_cog(Mail(bot))

@@ -4,10 +4,12 @@ import discord
 from datetime import datetime
 from asyncio import Event
 
+from utils import Bot
+
 
 class schedule(commands.Cog):
 
-    def __init__(self, bot):
+    def __init__(self, bot: Bot):
         self.bot = bot
         self.cache = dict()
         self.ready = Event()
@@ -20,12 +22,12 @@ class schedule(commands.Cog):
         async with self.pool.acquire() as conn:
             async with conn.cursor() as cursor:
                 await cursor.execute(
-                    f"""CREATE TABLE IF NOT EXISTS schedule (
+                    """CREATE TABLE IF NOT EXISTS schedule (
                         UserID BIGINT NOT NULL, body TEXT, stime TEXT, etime TEXT, day TEXT, dmnotice VARCHAR(3)
                     );"""
                 )
                 # キャッシュを用意しておく。
-                await cursor.execute(f"SELECT * FROM schedule;")
+                await cursor.execute("SELECT * FROM schedule;")
                 for row in await cursor.fetchall():
                     if row and row[1]:
                         try:
