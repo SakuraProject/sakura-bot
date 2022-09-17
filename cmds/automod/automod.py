@@ -625,9 +625,9 @@ class AutoMod(commands.Cog):
                 RaidActionTime = VALUES(RaidActionTime),
                 IgnoreChannel = VALUES(IgnoreChannel),
                 IgnoreRole = VALUES(IgnoreRole), NGWord = VALUES(NGWord),
-                Duplict = VALUES(Duplict), Action = VALUES(Action)
+                Duplict = VALUES(Duplict), Action = VALUES(Action),
                 Tokens = VALUES(Tokens)
-            """, (
+            ;""", (
                 guild_id, dumps(se["adminrole"]), dumps(se["modrole"]),
                 se["muterole"], se["antiraid"], se["raidaction"],
                 se["raidactiontime"], dumps(se["ignore_channel"]),
