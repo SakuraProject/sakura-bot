@@ -444,7 +444,8 @@ class AutoMod(commands.Cog):
 
     async def do_punish(
         self, g_setting: Setting, author: discord.Member,
-        channel: discord.abc.MessageableChannel | None = None
+        channel: discord.TextChannel | discord.VoiceChannel | discord.Thread | 
+                 discord.DMChannel | discord.PartialMessageable | discord.GroupChannel | None = None
     ):
         "刑罰を実行します。"
         punish = self.punishments[str(author.guild.id)][str(author.id)]
