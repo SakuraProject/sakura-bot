@@ -565,6 +565,8 @@ class AutoMod(commands.Cog):
         puni = ''
         for k in g_setting['action'].keys():
             puni = puni+str(k)+':'+g_setting['action'][k]+'\n'
+        if puni == '':
+            puni = 'No Punishments'
         ign = ''
         igchi = 0
         for igk in g_setting['ignore_channel']:
