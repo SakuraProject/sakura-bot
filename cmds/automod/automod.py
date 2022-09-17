@@ -632,7 +632,7 @@ class AutoMod(commands.Cog):
                 se["muterole"], se["antiraid"], se["raidaction"],
                 se["raidactiontime"], dumps(se["ignore_channel"]),
                 dumps(se["ignore_role"]), dumps(se["ngword"]),
-                dumps(se["duplct"]), se["action"], se["tokens"]
+                dumps(se["duplct"]), dumps(se["action"]), se["tokens"]
             )
         )
 
