@@ -523,7 +523,8 @@ class AutoMod(commands.Cog):
             # Spam対策
             self.sendtime[s_gid][s_uid] = time.time()
             self.sendmsgs[s_gid][s_uid].append(msg)
-            if len(self.sendmsgs[s_gid][s_uid]) >= int(g_setting['duplct']):
+            if (len(self.sendmsgs[s_gid][s_uid]) >= int(g_setting['duplct'])
+                    and int(g_setting['duplct']) != 0):
                 self.punishments[s_gid][s_uid] += 1
                 await msg.channel.send('Spamは禁止されています')
                 await self.save(gid)
