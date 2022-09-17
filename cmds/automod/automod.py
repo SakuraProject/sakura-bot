@@ -10,13 +10,17 @@ from discord.ext import commands, tasks
 import discord
 from pytimeparse.timeparse import timeparse
 from datetime import timedelta
-from orjson import loads, dumps
+from orjson import loads, dumps as dumps_default
 import time
 import re
 
 from utils import Bot, TryConverter
 
 from ._types import Setting, Actions, MutedUser
+
+
+def dumps(*args, **kwargs):
+    return dumps_default(*args, **kwargs).decode()
 
 
 def arrayinarray(list1, list2) -> bool:
