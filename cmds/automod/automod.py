@@ -615,7 +615,7 @@ class AutoMod(commands.Cog):
             """INSERT INTO AutoModSetting (
                 GuildId, AdminRole, ModRole, MuteRole, AntiRaid,
                 RaidAction, RaidActionTime, IgnoreChannel,
-                IgnoreRole, NGWord, Duplict, Action, Tokens
+                IgnoreRole, NGWord, Duplct, Action, Tokens
             ) VALUES (
                 %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
             ) ON DUPLICATE KEY UPDATE
@@ -625,7 +625,7 @@ class AutoMod(commands.Cog):
                 RaidActionTime = VALUES(RaidActionTime),
                 IgnoreChannel = VALUES(IgnoreChannel),
                 IgnoreRole = VALUES(IgnoreRole), NGWord = VALUES(NGWord),
-                Duplict = VALUES(Duplict), Action = VALUES(Action),
+                Duplct = VALUES(Duplct), Action = VALUES(Action),
                 Tokens = VALUES(Tokens)
             ;""", (
                 guild_id, dumps(se["adminrole"]), dumps(se["modrole"]),
