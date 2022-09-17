@@ -48,7 +48,7 @@ else:
                     new_params.append(p)
                 else:
                     if not isinstance(p, commands.Greedy | commands.Range):
-                        raise TypeError(f"parameter {param!r} isn't a converter.")
+                        raise TypeError(f"parameter {p!r} isn't a converter.")
                     else:
                         new_params.append(p)
 
