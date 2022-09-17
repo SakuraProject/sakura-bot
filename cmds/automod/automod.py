@@ -79,11 +79,11 @@ class AutoMod(commands.Cog):
 
         for row in res[0]:
             self.settings[str(row[0])] = Setting(
-                adminrole=loads(row[1]), modrole=loads(row[2]),
+                adminrole=row[1], modrole=row[2],
                 muterole=row[3], antiraid=row[4], raidaction=row[5],
                 raidactiontime=row[6], raidcount=row[7],
-                ignore_channel=loads(row[8]), ignore_role=loads(row[9]),
-                ngword=loads(row[10]), duplct=row[11], action=loads(row[12]),
+                ignore_channel=row[8], ignore_role=row[9],
+                ngword=row[10], duplct=row[11], action=row[12],
                 tokens=row[13]
             )
         for row in res[1]:
@@ -633,11 +633,11 @@ class AutoMod(commands.Cog):
                 Duplct = VALUES(Duplct), Action = VALUES(Action),
                 Tokens = VALUES(Tokens)
             ;""", (
-                guild_id, dumps(se["adminrole"]), dumps(se["modrole"]),
+                guild_id, se["adminrole"], se["modrole"],
                 se["muterole"], se["antiraid"], se["raidaction"],
-                se["raidactiontime"], dumps(se["ignore_channel"]),
-                dumps(se["ignore_role"]), dumps(se["ngword"]),
-                dumps(se["duplct"]), dumps(se["action"]), se["tokens"]
+                se["raidactiontime"], se["ignore_channel"],
+                se["ignore_role"], se["ngword"],
+                se["duplct"], se["action"], se["tokens"]
             )
         )
 
