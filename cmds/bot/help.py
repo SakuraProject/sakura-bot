@@ -121,13 +121,12 @@ class CatList(discord.ui.Select):
         for name in os.listdir("cmds"):
             if not name.startswith((".", "_")):
                 try:
-                    name = importlib.import_module(f"cmds.{name}")
-                    exec("from cmds." + name + " import name as " + name)
+                    name = importlib.import_module(f"cmds.{name}").name
                     try:
                         rname = eval(name)[l]
                     except KeyError:
                         rname = eval(name)["default"]
-                except ImportError:
+                except AttributeError:
                     rname = name
                 options.append(discord.SelectOption(
                     label=name, description='', value=rname))
