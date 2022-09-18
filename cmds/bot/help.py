@@ -178,13 +178,13 @@ class CmdList(discord.ui.Select):
         if type(cmd).__name__ == "Command" or type(cmd).__name__ == "HybridCommand":
             if cmd.parent != None:
                 spl = val.split(" ")
-                hl = await self.cog.hpl(spl[0], spl[1])
+                hl = await self.cog.create_help(spl[0], spl[1])
             else:
-                hl = await self.cog.hpl(val)
+                hl = await self.cog.create_help(val)
             ebd = hl["ebd"]
             await interaction.response.edit_message(embeds=[ebd])
         else:
-            hl = await self.cog.hpl(val)
+            hl = await self.cog.create_help(val)
             ebd = hl["ebd"]
             view = discord.ui.View()
             view.add_item(CatList(self.cog))
