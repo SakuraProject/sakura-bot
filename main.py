@@ -30,10 +30,10 @@ async def on_ready():
         user=os.environ["MYSQLUSER"], password=os.environ["MYSQLPASS"],
         db=os.environ["MYSQLDB"], loop=bot.loop, autocommit=True
     )
-    for name in os.listdir("cmds"):
+    for name in os.listdir("cogs"):
         if not name.startswith("."):
             try:
-                await bot.load_extension("cmds."+name.replace(".py", ""))
+                await bot.load_extension("cogs."+name.replace(".py", ""))
             except Exception as e:
                 print("[Log][err]" + str(e))
             else:

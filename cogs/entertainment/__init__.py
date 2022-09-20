@@ -3,10 +3,10 @@ import logging
 
 
 async def setup(bot):
-    for name in listdir("cmds/entertainment"):
+    for name in listdir("cogs/entertainment"):
         if not name.startswith(("_", ".")):
             try:
-                await bot.load_extension("cmds.entertainment."+name.replace(".py", ""))
+                await bot.load_extension("cogs.entertainment."+name.replace(".py", ""))
             except:
                 logging.exception(f"Error on entertainment.{name}")
             else:

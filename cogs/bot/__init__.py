@@ -3,11 +3,11 @@ import logging
 
 
 async def setup(bot):
-    for name in listdir("cmds/automod"):
+    for name in listdir("cogs/bot"):
         if not name.startswith(("_", ".")):
             try:
-                await bot.load_extension("cmds.automod."+name.replace(".py", ""))
+                await bot.load_extension("cogs.bot."+name.replace(".py", ""))
             except:
-                logging.exception("Error on automod.%s", name)
+                logging.exception("Error on bot.%s", name)
             else:
                 print("[Log][load]" + name)

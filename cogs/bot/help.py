@@ -118,10 +118,10 @@ class CatList(discord.ui.Select):
         l = "ja"
         self.cog = cog
         options = []
-        for name in os.listdir("cmds"):
+        for name in os.listdir("cogs"):
             if not name.startswith((".", "_")):
                 try:
-                    name = importlib.import_module(f"cmds.{name}").name
+                    name = importlib.import_module(f"cogs.{name}").name
                     try:
                         rname = eval(name)[l]
                     except KeyError:
@@ -138,7 +138,7 @@ class CatList(discord.ui.Select):
         cmds = list()
         l = "ja"
         view = discord.ui.View()
-        for c in [m for m in bot.cogs.values() if m.__module__.startswith("cmds."+self.values[0])]:
+        for c in [m for m in bot.cogs.values() if m.__module__.startswith("cogs."+self.values[0])]:
             for cm in c.get_commands():
                 if cm.callback.__doc__ != None:
                     doc = await self.cog.parsedoc(cm.callback.__doc__)

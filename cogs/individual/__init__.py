@@ -3,10 +3,10 @@ import logging
 
 
 async def setup(bot):
-    for name in listdir("cmds/individual"):
+    for name in listdir("cogs/individual"):
         if not name.startswith(("_", ".")):
             try:
-                await bot.load_extension("cmds.individual."+name.replace(".py", ""))
+                await bot.load_extension("cogs.individual."+name.replace(".py", ""))
             except:
                 logging.exception(f"Error on individual.{name}")
             else:
