@@ -15,10 +15,9 @@ class SakuraPoint(commands.Cog):
 
     def __init__(self, bot: Bot) -> None:
         self.bot = bot
-        self.pattern = re.compile("(https?://)?discord(.gg|.com/invite)/.{6,}")
+        self.pattern = re.compile("(https?://)?discord(.gg|.com/invite)/KW4CZvYMJg")
         self.url = re.compile(
-            f'https://discord.com/oauth2/authorize\\?client_id={bot.user.id}'
-            ".*"
+            "https://discord.com/oauth2/authorize\\?client_id=985852917489737728.*"
         )
         self.ad_cache = []
 
@@ -59,9 +58,10 @@ class SakuraPoint(commands.Cog):
     async def on_message(self, message: discord.Message):
         if not isinstance(message.channel, discord.TextChannel):
             return
+        assert message.guild
         if message.author.bot:
             return
-        if not ("discord.gg/freert" in message.content or self.url.search(message.content)):
+        if not (self.url.search(message.content) or self.url.search(message.content)):
             return
         content = "宣伝ありがとうございます！"
         if not message.guild.id in self.ad_cache:
