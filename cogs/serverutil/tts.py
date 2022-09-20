@@ -17,7 +17,7 @@ import torch
 import random
 import pyopenjtalk
 import torchaudio
-from cmds.entertainment.music import AudioMixer
+from cogs.entertainment.music import AudioMixer
 
 class tts(commands.Cog):
     def __init__(self,bot):

@@ -3,11 +3,11 @@ import logging
 
 
 async def setup(bot):
-    for name in listdir("cmds/bot"):
+    for name in listdir("cogs/serverutil"):
         if not name.startswith(("_", ".")):
             try:
-                await bot.load_extension("cmds.bot."+name.replace(".py", ""))
+                await bot.load_extension("cogs.serverutil."+name.replace(".py", ""))
             except:
-                logging.exception("Error on bot.%s", name)
+                logging.exception(f"Error on serverutil.{name}")
             else:
                 print("[Log][load]" + name)

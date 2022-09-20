@@ -178,10 +178,10 @@ class websocket(commands.Cog):
     
     async def help_catlist(self,args):
         options = []
-        for name in os.listdir("cmds"):
+        for name in os.listdir("cogs"):
             if not name.startswith((".", "_")):
                 try:
-                    exec("from cmds." + name + " import name as " + name)
+                    exec("from cogs." + name + " import name as " + name)
                     try:
                         rname = eval(name)[args["l"]]
                     except KeyError:
@@ -199,7 +199,7 @@ class websocket(commands.Cog):
         bot = self.bot
         cmds = list()
         l = args["l"]
-        for c in [m for m in bot.cogs.values() if m.__module__.startswith("cmds."+args["id"])]:
+        for c in [m for m in bot.cogs.values() if m.__module__.startswith("cogs."+args["id"])]:
             for cm in c.get_commands():
                 cmds.append(await self.command({"id":cm.name}))
         args["res"] = cmds
