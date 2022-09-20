@@ -3,7 +3,7 @@ import discord
 from discord.ext import commands
 import os
 from ujson import loads, dumps
-from os import listdir
+from os import listdir, environ
 import subprocess
 import asyncio
 import aiofiles
@@ -35,9 +35,9 @@ class tts(commands.Cog):
         self.dic = dict()
         self.odic = "data/tts/OpenJTalk/dic"
         #additional tts settings
-        self.ttsserverurl = "" # server url on assistant seika
-        self.basicuser = "" #username
-        self.basicpass = "" #password
+        self.ttsserverurl = environ.get("TTS_SERVER_URL") # server url on assistant seika
+        self.basicuser = environ.get("TTS_USER") #username
+        self.basicpass = environ.get("TTS_PASSWORD") #password
 
     async def cog_load(self):
         ctsql = "CREATE TABLE if not exists `tts` (`gid` BIGINT NOT NULL,`voice` VARCHAR(100) NOT NULL,`dic` JSON NULL) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin;"
