@@ -52,7 +52,7 @@ class globalchat(commands.Cog):
                         ref = message.reference.cached_message
                     else:
                         rch = message.channel
-                        ref = await ch.fetch_message(message.reference.message_id)
+                        ref = await rch.fetch_message(message.reference.message_id)
                     reb = discord.Embed(
                         description=ref.clean_content, title="返信先")
                     if embeds == None:
@@ -63,7 +63,7 @@ class globalchat(commands.Cog):
                 vie = None
                 for c in message.components:
                     if vie == None:
-                        vie = discord.ui.View
+                        vie = discord.ui.View()
                     vie.add_item(c)
                 alm = discord.AllowedMentions.none()
                 if vie != None:
@@ -97,7 +97,7 @@ class globalchat(commands.Cog):
                     for cr in res1:
                         asyncio.ensure_future(self.gcsend(cr[0], message))
 
-    async def getwebhook(self, channel):
+    async def getwebhook(self, channel: discord.TextChannel):
         webhooks = await channel.webhooks()
         webhook = discord.utils.get(webhooks, name='sakuraglobal')
         if webhook == None:

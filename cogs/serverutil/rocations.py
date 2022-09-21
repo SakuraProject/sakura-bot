@@ -1,5 +1,5 @@
 from discord.ext import commands
-import discord
+import asyncio
 from time import time
 
 class rocations(commands.Cog):

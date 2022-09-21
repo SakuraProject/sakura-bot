@@ -79,16 +79,18 @@ class ticket(commands.Cog):
 
     @commands.Cog.listener()
     async def on_interaction(self, interaction: discord.Interaction):
+        if not interaction.data or not interaction.guild or not interaction.message:
+            return
         if interaction.data.get("custom_id", "") == "sakuraticket":
             chan = interaction.channel
-            cat = chan.category
+            cat = getattr(chan, "category", None)
             permission = {
                 interaction.guild.default_role: discord.PermissionOverwrite(read_messages=False),
                 interaction.guild.me: discord.PermissionOverwrite(read_messages=True),
                 interaction.user: discord.PermissionOverwrite(
                     read_messages=True)
             }
-            ch = await interaction.guild.create_text_channel(name=interaction.user.name+'-'+interaction.message.embeds[0].title, overwrites=permission, category=cat, topic='（sakuraticket'+str(interaction.user.id)+'）')
+            ch = await interaction.guild.create_text_channel(name=f"{interaction.user.name}-{interaction.message.embeds[0].title}", overwrites=permission, category=cat, topic='（sakuraticket'+str(interaction.user.id)+'）')
             await interaction.response.send_message(content="作成しました", ephemeral=True)
             await ch.send(interaction.user.mention + "チャンネルを作成しました。閉じる場合は" + self.bot.command_prefix + "ticket closeと発言してください。ユーザをメンションすることで他のユーザーを参加させることも出来ます")
 

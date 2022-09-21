@@ -27,6 +27,7 @@ class PM(discord.ui.Modal):
         self.add_item(self.pas)
 
     async def on_submit(self, interaction: discord.Interaction):
+        assert interaction.channel and interaction.guild
         mes = await interaction.response.send_message(content="接続を確認中です", view=discord.utils.MISSING, ephemeral=True)
         try:
             try:
@@ -108,6 +109,7 @@ class Mail(commands.Cog):
                         wh = await self.getwebhook(m.dch)
                         subject = decode_header(dtm.get('Subject'))[0][0].decode()
                         fro = dtm["From"]
+                        payload = "..."
                         if dtm.is_multipart():
                             for part in dtm.walk():
                                 payload = part.get_payload(decode=True)
