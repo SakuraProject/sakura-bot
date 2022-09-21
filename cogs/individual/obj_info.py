@@ -4,6 +4,7 @@ from discord.ext import commands
 import discord
 
 from utils import Bot, EmbedsView
+from data import sakurabadge
 
 
 PERMISSIONS = {
@@ -55,7 +56,7 @@ class ObjectInfo(commands.Cog):
     BOT_EMOJI = "<:bot1:795159827318964284><:bot2:795160390400868402>"
     VERIFIED_BOT_EMOJI = "<:verified_bot:991963186234413139>"
 
-    @commands.command(aliases=("ui", "lookup", "user", "ユーザー情報"))
+    @commands.hybrid_command(aliases=("ui", "lookup", "user", "ユーザー情報"))
     async def userinfo(
         self, ctx: commands.Context, target: discord.Member | discord.User = commands.Author
     ):
@@ -153,8 +154,21 @@ class ObjectInfo(commands.Cog):
 
         return embed
 
+    def create_ui_embed_4(self, target: discord.Member | discord.User) -> discord.Embed:
+        "Sakuraバッヂ用"
+        embed = discord.Embed(
+            title="Sakura Badge 一覧",
+            description="その人が持っているSakuraバッヂの一覧です。"
+        )
+        badges = (sakurabadge.BADGES[i] for i in 
+            sakurabadge.get_badge(target, self.bot))
+        embed.add_field(name="** **", value="\n".join(
+            f"{i['emoji']}{i['name']}: {i['description']}"
+            for i in badges
+        )[:1000])
+        return embed
 
-    @commands.command(aliases=("si", "server", "サーバー情報"))
+    @commands.hybrid_command(aliases=("si", "server", "サーバー情報"))
     async def serverinfo(
         self, ctx: commands.Context, target: discord.Guild = commands.CurrentGuild
     ):
@@ -231,7 +245,7 @@ class ObjectInfo(commands.Cog):
         desc = "\n".join(
             f"{m.mention}: {discord.utils.format_dt(m.joined_at)}"
             f"({(discord.utils.utcnow() - m.joined_at).days}日前)"
-            for m in sorted(target.members, key=lambda m: m.joined_at)
+            for m in sorted(target.members, key=lambda m: m.joined_at)  # type: ignore
         )
         embed = discord.Embed(
             title="古参メンバーランキング",
@@ -240,7 +254,7 @@ class ObjectInfo(commands.Cog):
         return embed
 
 
-    @commands.command()
+    @commands.hybrid_command()
     async def emojiinfo(self, ctx: commands.Context, target: discord.Emoji):
         """
         NLang ja 絵文字の情報を表示するコマンドです
@@ -265,7 +279,7 @@ class ObjectInfo(commands.Cog):
         )
         await ctx.send(embed=embed)
 
-    @commands.command()
+    @commands.hybrid_command()
     async def inviteinfo(self, ctx: commands.Context, target: discord.Invite):
         """
         NLang ja 招待リンクの情報を表示するコマンドです

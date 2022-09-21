@@ -4,6 +4,7 @@ from typing import Literal
 
 import re
 import asyncio
+from collections import defaultdict
 
 import discord
 from discord.ext import commands
@@ -20,6 +21,7 @@ class SakuraPoint(commands.Cog):
             "https://discord.com/oauth2/authorize\\?client_id=985852917489737728.*"
         )
         self.ad_cache = []
+        self.cache = defaultdict(int)
 
     async def cog_load(self) -> None:
         await self.bot.execute_sql(
@@ -27,18 +29,21 @@ class SakuraPoint(commands.Cog):
                 UserID BIGINT PRIMARY KEY NOT NULL, Point BIGINT
             );"""
         )
+        data = await self.bot.execute_sql(
+            "SELECT * FROM SakuraPoint;", _return_type="fetchall"
+        )
+        assert isinstance(data, tuple)
+        for i in data:
+            self.cache[i[0]] = i[1]
 
     @commands.command()
     async def spoint(self, ctx: commands.Context, target: discord.User | None = None):
-        if target and not self.bot.is_owner(ctx.author):
+        if target and not await self.bot.is_owner(ctx.author):
             raise commands.NotOwner()
-        data = await self.bot.execute_sql(
-            "SELECT Point FROM SakuraPoint WHERE UserID = %s;",
-            ((target or ctx.author).id,), "fetchone"
-        )
+        data = self.cache.get((target or ctx.author).id)
         if not data:
             return await ctx.send("あなたはまだ一度もSakuraPointを獲得したことがありません。")
-        await ctx.send(f"あなたのポイント: {data[0]}ポイント")
+        await ctx.send(f"あなたのポイント: {data}ポイント")
 
     @commands.command()
     @commands.is_owner()
@@ -52,6 +57,7 @@ class SakuraPoint(commands.Cog):
                 ON DUPLICATE KEY UPDATE Point = VALUES(Point) + %s;""",
             (target.id, amount, amount)
         )
+        self.cache[target.id] += amount
         await ctx.send("Ok.")
 
     @commands.Cog.listener()
@@ -71,6 +77,7 @@ class SakuraPoint(commands.Cog):
                     ON DUPLICATE KEY UPDATE Point = VALUES(Point) + %s;""",
                 (message.author.id, 1000, 1000)
             )
+            self.cache[message.author.id] += 1000
         try:
             await message.channel.send(content, delete_after=3)
         except:
