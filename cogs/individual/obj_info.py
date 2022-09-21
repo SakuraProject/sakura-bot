@@ -79,9 +79,8 @@ class ObjectInfo(commands.Cog):
         if ctx.author.id in self.bot.owner_ids:
             embeds.append(self.create_ui_embed_3(target))
 
-        if len(embeds) == 1:
-            return await ctx.send(embed=embeds[0])
-        await ctx.reply(embed=embeds[0], view=EmbedsView(embeds))
+        view = EmbedsView(embeds)
+        await view.send(ctx)
 
     # User info Embed creator
 
@@ -191,9 +190,8 @@ class ObjectInfo(commands.Cog):
             embeds.append(self.create_si_embed_3(target))
             descriptions["古参メンバーランキング"] = "このサーバーに最も古くからいるメンバーから順番に表示します。"
 
-        if len(embeds) == 1:
-            return await ctx.send(embed=embeds[0])
-        await ctx.send(embed=embeds[0], view=EmbedsView(embeds, descriptions))
+        view = EmbedsView(embeds, descriptions)
+        await view.send(ctx)
 
     # Server info Embed creator
 
