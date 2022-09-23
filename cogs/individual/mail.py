@@ -13,7 +13,7 @@ import asyncio
 class PM(discord.ui.Modal):
 
     def __init__(self,cog):
-        super().__init__(title="登録するメールアカウントの情報を入力してください",timeout=None)
+        super().__init__(title="登録するメールアカウントの情報を入力してください", timeout=None)
         self.cog = cog
         self.mname = discord.ui.TextInput(label="登録するメールアドレスを入力してください")
         self.add_item(self.mname)
@@ -31,24 +31,25 @@ class PM(discord.ui.Modal):
         mes = await interaction.response.send_message(content="接続を確認中です", view=discord.utils.MISSING, ephemeral=True)
         try:
             try:
-                m = imaplib.IMAP4(self.s.value,int(self.port.value))
+                m = imaplib.IMAP4(self.s.value, int(self.port.value))
             except:
-                m = imaplib.IMAP4_SSL(self.s.value,int(self.port.value))
-            m.login(self.user.value,self.pas.value)
+                m = imaplib.IMAP4_SSL(self.s.value, int(self.port.value))
+            m.login(self.user.value, self.pas.value)
             m.user = self.user.value
-            m,pas = self.pas.value
+            m.pas = self.pas.value
             m.dch = interaction.channel
             m.lt = time.time()
             self.cog.nlis.append(m)
-            self.cog.chl.setdefault(interaction.channel.id,dict())
+            self.cog.chl.setdefault(interaction.channel.id, dict())
             self.cog.chl[interaction.channel.id][self.mname.value] = m
             async with self.cog.bot.pool.acquire() as conn:
                 async with conn.cursor() as cur:
-                    d = dict()
-                    d["s"] = self.s.value
-                    d["port"] = self.port.value
-                    d["user"] = self.user.value
-                    d["pas"] = self.pas.value
+                    d = {
+                        "s": self.s.value,
+                        "port": self.port.value,
+                        "user": self.user.value,
+                        "pas": self.pas.value
+                    }
                     await cur.execute("INSERT INTO `mailnof` (`gid`, `cid`, `mname`, `data`) VALUES (%s,%s,%s,%s);",(interaction.guild.id,interaction.channel.id,self.mname.value,dumps(d)))
             await mes.edit(content="登録完了しました")
         except:
@@ -59,8 +60,8 @@ class Mail(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        self.nlis = list()
-        self.chl = dict()
+        self.nlis = []
+        self.chl = {}
         self.noftask.start()
 
     async def cog_load(self):
@@ -76,16 +77,16 @@ class Mail(commands.Cog):
                         try:
                             d = loads(row[3])
                             try:
-                                m = imaplib.IMAP4(d["s"],int(d["port"]))
+                                m = imaplib.IMAP4(d["s"], int(d["port"]))
                             except:
-                                m = imaplib.IMAP4_SSL(d["s"],int(d["port"]))
+                                m = imaplib.IMAP4_SSL(d["s"], int(d["port"]))
                             m.user = d["user"]
                             m.pas = d["pas"]
-                            m.login(m.user,m.pas)
+                            m.login(m.user, m.pas)
                             m.dch = ch
                             m.lt = time.time()
                             self.nlis.append(m)
-                            self.chl.setdefault(ch.id,dict())
+                            self.chl.setdefault(ch.id, dict())
                             self.chl[ch.id][row[2]] = m
                         except:
                             continue
@@ -96,15 +97,15 @@ class Mail(commands.Cog):
             try:
                 dtmt = None
                 m.select()
-                d = m.search(None,datetime.fromtimestamp(m.lt).strftime("(SINCE \"%d-%B-%Y\")"))
+                d = m.search(None, datetime.fromtimestamp(m.lt).strftime("(SINCE \"%d-%B-%Y\")"))
                 for n in d[1][0].split():
                     h, dt = m.fetch(n, '(RFC822)')
                     dtm = email.message_from_string(dt[0][1].decode())
-                    dte = re.sub(" [(]([A-Z]*)[)]","",dtm["Date"])
+                    dte = re.sub(" [(]([A-Z]*)[)]","", dtm["Date"])
                     try:
-                        dtmt = datetime.strptime(dte,"%a, %d %b %Y %X %z").timestamp()
+                        dtmt = datetime.strptime(dte, "%a, %d %b %Y %X %z").timestamp()
                     except:
-                        dtmt = datetime.strptime(dte,"%d %b %Y %X %z").timestamp()
+                        dtmt = datetime.strptime(dte, "%d %b %Y %X %z").timestamp()
                     if m.lt < dtmt:
                         wh = await self.getwebhook(m.dch)
                         subject = decode_header(dtm.get('Subject'))[0][0].decode()
@@ -125,7 +126,7 @@ class Mail(commands.Cog):
                                 payload = payload.decode(charset, "ignore")
                         if len(payload)>1024:
                             payload = payload[:1024]
-                        embed = discord.Embed(title="SakuraBotメール通知",description="新着メールです")
+                        embed = discord.Embed(title="SakuraBotメール通知", description="新着メールです")
                         embed.add_field(name="送り主", value=fro)
                         embed.add_field(name="タイトル", value=subject)
                         embed.add_field(name="内容", value=payload)
@@ -175,7 +176,7 @@ class Mail(commands.Cog):
         m = self.chl[ctx.channel.id][mname]
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
-                await cur.execute("delete from `mailnof` where `gid`=%s and `cid`=%s and `mname`=%s",(ctx.guild.id,ctx.channel.id,mname))
+                await cur.execute("delete from `mailnof` where `gid`=%s and `cid`=%s and `mname`=%s",(ctx.guild.id, ctx.channel.id, mname))
                 self.nlis.remove(m)
                 self.chl[ctx.channel.id].pop(mname)
                 await ctx.author.send("解除しました")
