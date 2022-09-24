@@ -2,7 +2,7 @@ from discord.utils import get
 import discord
 from discord.ext import commands
 import os
-from ujson import loads, dumps
+from orjson import loads, dumps
 from os import listdir, environ
 import subprocess
 import asyncio
@@ -19,8 +19,10 @@ import pyopenjtalk
 import torchaudio
 from cogs.entertainment.music import AudioMixer
 
+from utils import Bot
+
 class tts(commands.Cog):
-    def __init__(self,bot):
+    def __init__(self,bot: Bot):
         self.bot = bot
         self.pl = [' ', 'I', 'N', 'U', 'a', 'b', 'by', 'ch', 'cl', 'd', 'dy', 'e', 'f', 'g', 'gy', 'h', 'hy', 'i', 'j', 'k', 'ky', 'm', 'my', 'n', 'ny', 'o', 'p', 'py', 'r', 'ry', 's', 'sh', 't', 'ts', 'ty', 'u', 'v', 'w', 'y', 'z']
         self.pi = {p : i for i, p in enumerate(self.pl, 0)}
@@ -61,7 +63,7 @@ class tts(commands.Cog):
                 if embeds is not None:
                     for e in embeds:
                         if isinstance(e.description, str):
-                            sc = sc + embed.description
+                            sc = sc + e.description
                         if e.fields is not None:
                             for fi in e.fields:
                                 sc = sc + fi.name + fi.value
@@ -122,20 +124,18 @@ class tts(commands.Cog):
             await ctx.reply("使用方法が違います")
 
     @tts.command()
-    async def join(self,ctx,ch :discord.TextChannel=None):
+    async def join(self,ctx,ch: discord.TextChannel = commands.CurrentChannel):
         channel = ctx.message.author.voice.channel
         voice = get(self.bot.voice_clients, guild=ctx.guild)
         if voice and voice.is_connected():
             await voice.move_to(channel)
         else:
             voice = await channel.connect()
-        if ch == None:
-            ch = ctx.channel
         self.rch.append(ch.id)
         await ctx.send("読み上げを開始します")
 
-    @tts.command()
-    async def voice(self, ctx):
+    @tts.command("voice")
+    async def voice_(self, ctx):
         lis = []
         option = []
         for name in listdir("data/tts/voices"):
@@ -159,36 +159,37 @@ class tts(commands.Cog):
     @tts.command()
     async def disconnect(self, ctx):
         voice = get(self.bot.voice_clients, guild=ctx.guild)
-        await voice.disconnect()
+        if not voice:
+            return await ctx.send("接続していません。")
+        await voice.disconnect(force=True)
 
     @tts.command()
     async def dicadd(self,ctx,text,replased):
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
-                await cur.execute("SELECT * FROM `tts` where `gid` = %s", ( interaction.guild.id,))
+                await cur.execute("SELECT * FROM `tts` where `gid` = %s", (ctx.guild.id,))
                 res = await cur.fetchall()
                 await conn.commit()
                 self.dic.setdefault(str(ctx.guild.id), dict())
                 self.dic[str(ctx.guild.id)][text] = replased
                 if len(res) == 0:
-                    await cur.execute("INSERT INTO `tts` (`gid`, `voice`, `dic`) VALUES (%s,%s,%s);", (interaction.guild.id,self.values[0],dumps(self.dic[str(ctx.guild.id)])))
+                    await cur.execute("INSERT INTO `tts` (`gid`, `voice`, `dic`) VALUES (%s,%s,%s);", (ctx.guild.id,self.values[0],dumps(self.dic[str(ctx.guild.id)])))
                 else:
-                    await cur.execute("UPDATE `tts` SET `dic` = %s where `gid` = %s;", (dumps(self.dic[str(ctx.guild.id)]),interaction.guild.id))
+                    await cur.execute("UPDATE `tts` SET `dic` = %s where `gid` = %s;", (dumps(self.dic[str(ctx.guild.id)]),ctx.guild.id))
                 await ctx.send("登録しました")
 
     @tts.command()
     async def dicremove(self,ctx,text):
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
-                await cur.execute("SELECT * FROM `tts` where `gid` = %s", ( interaction.guild.id,))
+                await cur.execute("SELECT * FROM `tts` where `gid` = %s", (ctx.guild.id,))
                 res = await cur.fetchall()
-                await conn.commit()
                 self.dic.setdefault(str(ctx.guild.id), dict())
                 self.dic[str(ctx.guild.id)].pop(text)
                 if len(res) == 0:
-                    await cur.execute("INSERT INTO `tts` (`gid`, `voice`, `dic`) VALUES (%s,%s,%s);", (interaction.guild.id,self.values[0],dumps(self.dic[str(ctx.guild.id)])))
+                    await cur.execute("INSERT INTO `tts` (`gid`, `voice`, `dic`) VALUES (%s,%s,%s);", (ctx.guild.id,self.values[0],dumps(self.dic[str(ctx.guild.id)])))
                 else:
-                    await cur.execute("UPDATE `tts` SET `dic` = %s where `gid` = %s;", (dumps(self.dic[str(ctx.guild.id)]),interaction.guild.id))
+                    await cur.execute("UPDATE `tts` SET `dic` = %s where `gid` = %s;", (dumps(self.dic[str(ctx.guild.id)]),ctx.guild.id))
                 await ctx.send("削除しました")
 
 class VoiceList(discord.ui.Select):
@@ -198,6 +199,7 @@ class VoiceList(discord.ui.Select):
         super().__init__(placeholder='', min_values=1, max_values=1, options=option)
 
     async def callback(self, interaction: discord.Interaction):
+        assert interaction.guild
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
                 await cur.execute("SELECT * FROM `tts` where `gid` = %s", ( interaction.guild.id,))
