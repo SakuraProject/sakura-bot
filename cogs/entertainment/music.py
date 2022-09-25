@@ -274,7 +274,6 @@ class music(commands.Cog):
             await ctx.send(embeds=[ebd], view=view)
             await self.addc(qp)
 
-
     async def addc(self, qp):
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
@@ -287,7 +286,7 @@ class music(commands.Cog):
                     await cur.execute("UPDATE `musicranking` SET `count` = %s,`vid` = %s where `vid` = %s;", (ct, qp.sid, qp.sid))
 
     async def asyncnextqueue(self, FFMPEG_OPTIONS, voice, ctx, nextqueue):
-        if 0 < len(self.queues[ctx.guild.id]):    
+        if 0 < len(self.queues[ctx.guild.id]):
             try:
                 self.queues[ctx.guild.id][0].close()
                 self.queues[ctx.guild.id].pop(0)
@@ -607,28 +606,31 @@ class AplButton(discord.ui.Button):
                     await cur.execute("INSERT INTO `musiclist` (`userid`,`vid`,`lname`) VALUES (%s,%s,%s);", (interaction.user.id, self.it.sid, message.content))
                     await interaction.channel.send('追加完了しました')
 
+
 class AudioMixer(discord.AudioSource):
-    def __init__(self,msource):
+    def __init__(self, msource):
         super().__init__()
         self.s = []
         self.s.append(msource)
         self.music = False
         self.tts = False
+
     def read(self):
         data = bytes(3840)
         for pcm in self.s:
             pcmdata = pcm.read()
             if not pcmdata:
-                if getattr(pcm,"nextqueue",None) != None:
-                    getattr(pcm,"nextqueue")(pcm.cog)
+                if getattr(pcm, "nextqueue", None) != None:
+                    getattr(pcm, "nextqueue")(pcm.cog)
                 pcm.cleanup()
                 self.s.remove(pcm)
             else:
-                data = audioop.add(data,pcmdata,2)
+                data = audioop.add(data, pcmdata, 2)
         if len(self.s) == 0:
             return bytes()
         else:
             return data
+
 
 async def setup(bot):
     await bot.add_cog(music(bot))

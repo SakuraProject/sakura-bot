@@ -4,6 +4,7 @@ from speedtest import Speedtest
 import asyncio
 import time
 
+
 class speedtest(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -53,7 +54,8 @@ class speedtest(commands.Cog):
         p2 = int((time.time() - t) * 1000)
         ebd = discord.Embed(title="ping", description="**Discordとの接続速度**:\n" +
                             str(p1) + "ms\n**バックエンドとの通信速度**:\n" + str(p2) + "ms")
-        await ctx.send( embeds=[ebd])
+        await ctx.send(embeds=[ebd])
+
 
 async def setup(bot):
     await bot.add_cog(speedtest(bot))

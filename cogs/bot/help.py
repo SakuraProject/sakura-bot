@@ -38,7 +38,8 @@ class Help(commands.Cog):
     async def create_help(self, cmd=None, subcmd=None) -> discord.Embed:
         l = "ja"
         sed = "これはBotのヘルプです。下の選択メニューからカテゴリを選ぶことによりコマンドを選択できます。これを見てもよくわからない方はサポートサーバーまでお問い合わせください"
-        prefix = self.bot.command_prefix if isinstance(self.bot.command_prefix, str) else "/"
+        prefix = self.bot.command_prefix if isinstance(
+            self.bot.command_prefix, str) else "/"
         if cmd is not None:
             if subcmd is None:
                 comd = self.bot.get_command(cmd)

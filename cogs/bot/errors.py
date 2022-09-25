@@ -23,7 +23,6 @@ class ErrorQuery(commands.Cog):
     def __init__(self, bot: Bot) -> None:
         self.bot = bot
 
-
     @commands.Cog.listener()
     async def on_command_error(self, ctx: commands.Context, error: commands.CommandError):
         embed = discord.Embed(title="エラー", description="", color=0xff0000)
@@ -137,7 +136,8 @@ class ErrorQuery(commands.Cog):
                     発生チャンネル：{getattr(ctx.channel, "name")}(ID:{ctx.channel.id})
                     発生ユーザー：{ctx.author}(ID:{ctx.author.id})
                     発生コマンド：{getattr(ctx.command, "name")}(`{ctx.message.content}`)""",
-                embed=discord.Embed(title="エラー詳細", description=f"```py\n{error_message}\n```")
+                embed=discord.Embed(
+                    title="エラー詳細", description=f"```py\n{error_message}\n```")
             )
 
             embed.add_field(

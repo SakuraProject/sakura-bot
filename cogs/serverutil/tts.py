@@ -11,7 +11,8 @@ if not os.path.exists("VITS"):
     cmd = "git clone https://github.com/zassou65535/VITS.git"
     subprocess.call(cmd.split())
     cmd = "python setup.py build_ext --inplace"
-    subprocess.call(cmd.split(),cwd="./VITS/module/model_component/monotonic_align/")
+    subprocess.call(
+        cmd.split(), cwd="./VITS/module/model_component/monotonic_align/")
 from VITS.module.vits_generator import VitsGenerator
 import torch
 import random
@@ -21,11 +22,13 @@ from cogs.entertainment.music import AudioMixer
 
 from utils import Bot
 
+
 class tts(commands.Cog):
-    def __init__(self,bot: Bot):
+    def __init__(self, bot: Bot):
         self.bot = bot
-        self.pl = [' ', 'I', 'N', 'U', 'a', 'b', 'by', 'ch', 'cl', 'd', 'dy', 'e', 'f', 'g', 'gy', 'h', 'hy', 'i', 'j', 'k', 'ky', 'm', 'my', 'n', 'ny', 'o', 'p', 'py', 'r', 'ry', 's', 'sh', 't', 'ts', 'ty', 'u', 'v', 'w', 'y', 'z']
-        self.pi = {p : i for i, p in enumerate(self.pl, 0)}
+        self.pl = [' ', 'I', 'N', 'U', 'a', 'b', 'by', 'ch', 'cl', 'd', 'dy', 'e', 'f', 'g', 'gy', 'h', 'hy', 'i', 'j',
+                   'k', 'ky', 'm', 'my', 'n', 'ny', 'o', 'p', 'py', 'r', 'ry', 's', 'sh', 't', 'ts', 'ty', 'u', 'v', 'w', 'y', 'z']
+        self.pi = {p: i for i, p in enumerate(self.pl, 0)}
         se = 999
         random.seed(se)
         torch.manual_seed(se)
@@ -36,10 +39,11 @@ class tts(commands.Cog):
         self.voice = dict()
         self.dic = dict()
         self.odic = "data/tts/OpenJTalk/dic"
-        #additional tts settings
-        self.ttsserverurl = environ.get("TTS_SERVER_URL") # server url on assistant seika
-        self.basicuser = environ.get("TTS_USER") #username
-        self.basicpass = environ.get("TTS_PASSWORD") #password
+        # additional tts settings
+        # server url on assistant seika
+        self.ttsserverurl = environ.get("TTS_SERVER_URL")
+        self.basicuser = environ.get("TTS_USER")  # username
+        self.basicpass = environ.get("TTS_PASSWORD")  # password
 
     async def cog_load(self):
         ctsql = "CREATE TABLE if not exists `tts` (`gid` BIGINT NOT NULL,`voice` VARCHAR(100) NOT NULL,`dic` JSON NULL) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin;"
@@ -54,7 +58,7 @@ class tts(commands.Cog):
                         self.dic[str(r[0])] = loads(r[2])
 
     @commands.Cog.listener()
-    async def on_message(self,message):
+    async def on_message(self, message):
         if message.channel.id in self.rch:
             voice = get(self.bot.voice_clients, guild=message.guild)
             if not voice == None:
@@ -71,41 +75,47 @@ class tts(commands.Cog):
                 swav = str(message.id) + ".wav"
                 self.dic.setdefault(str(message.guild.id), dict())
                 for dt in self.dic[str(message.guild.id)].keys():
-                     sc = sc.replace(dt,self.dic[str(message.guild.id)][dt])
+                    sc = sc.replace(dt, self.dic[str(message.guild.id)][dt])
                 self.voice.setdefault(str(message.guild.id), "mei.htsvoice")
                 if self.voice[str(message.guild.id)].endswith(".htsvoice"):
-                    args = ["open_jtalk", "-x", self.odic, "-m", "data/tts/voices/" + self.voice[str(message.guild.id)] + "/" + self.voice[str(message.guild.id)], '-r', '1.0', '-ow', swav]
-                    subprocess.run(args, input=sc.encode(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                    args = ["open_jtalk", "-x", self.odic, "-m", "data/tts/voices/" + self.voice[str(
+                        message.guild.id)] + "/" + self.voice[str(message.guild.id)], '-r', '1.0', '-ow', swav]
+                    subprocess.run(args, input=sc.encode(
+                    ), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 elif self.voice[str(message.guild.id)].endswith(".pth"):
-                    self.gen.load_state_dict(torch.load("data/tts/voices/" + self.voice[str(message.guild.id)] + "/" + self.voice[str(message.guild.id)]))
+                    self.gen.load_state_dict(torch.load(
+                        "data/tts/voices/" + self.voice[str(message.guild.id)] + "/" + self.voice[str(message.guild.id)]))
                     g = self.gen.to(self.device)
                     g.eval()
-                    p = [pyopenjtalk.g2p(element) for element in sc if(not element=="")]
-                    p = [element.replace(" ",",") for element in p]
+                    p = [pyopenjtalk.g2p(element)
+                         for element in sc if (not element == "")]
+                    p = [element.replace(" ", ",") for element in p]
                     p = ', ,'.join(p).replace("\n", "").split(",")
                     conv = [self.pi[t] for t in p]
                     foo = [0] * (len(conv) * 2 + 1)
                     foo[1::2] = conv
                     p = torch.LongTensor(foo).to(self.device)
-                    l = torch.tensor([p.size()[-1]], dtype=torch.long).to(self.device)
+                    l = torch.tensor(
+                        [p.size()[-1]], dtype=torch.long).to(self.device)
                     sl = torch.tensor([0], dtype=torch.long).to(self.device)
-                    o = g.text_to_speech(text_padded=p.unsqueeze(0), text_lengths=l, speaker_id=sl)[0].data.cpu()
+                    o = g.text_to_speech(text_padded=p.unsqueeze(
+                        0), text_lengths=l, speaker_id=sl)[0].data.cpu()
                     torchaudio.save(swav, o, sample_rate=22050)
                 elif self.voice[str(message.guild.id)].endswith(".vvx"):
-                    sid = self.voice[str(message.guild.id)].replace(".vvx","")
+                    sid = self.voice[str(message.guild.id)].replace(".vvx", "")
                     req = dict()
                     req["text"] = sc
                     req["speaker"] = sid
-                    async with self.bot.session.post("http://localhost:50021/audio_query",params=req) as resp:
+                    async with self.bot.session.post("http://localhost:50021/audio_query", params=req) as resp:
                         rpt = await resp.text()
-                    async with self.bot.session.post(f"http://localhost:50021/synthesis?speaker={sid}",json=await resp.json()) as resp:
+                    async with self.bot.session.post(f"http://localhost:50021/synthesis?speaker={sid}", json=await resp.json()) as resp:
                         async with aiofiles.open(swav, "wb") as fp:
                             await fp.write(await resp.read())
                 elif self.voice[str(message.guild.id)].endswith(".tsv"):
-                    sid = self.voice[str(message.guild.id)].replace(".tsv","")
+                    sid = self.voice[str(message.guild.id)].replace(".tsv", "")
                     req = dict()
                     req["talktext"] = sc
-                    async with self.bot.session.post(f"http://{self.basicuser}:{self.basicpass}@{self.ttsserverurl}/SAVE2/{sid}",json=req) as resp:
+                    async with self.bot.session.post(f"http://{self.basicuser}:{self.basicpass}@{self.ttsserverurl}/SAVE2/{sid}", json=req) as resp:
                         async with aiofiles.open(swav, "wb") as fp:
                             await fp.write(await resp.read())
                 if not voice.is_playing():
@@ -124,7 +134,7 @@ class tts(commands.Cog):
             await ctx.reply("使用方法が違います")
 
     @tts.command()
-    async def join(self,ctx,ch: discord.TextChannel = commands.CurrentChannel):
+    async def join(self, ctx, ch: discord.TextChannel = commands.CurrentChannel):
         channel = ctx.message.author.voice.channel
         voice = get(self.bot.voice_clients, guild=ctx.guild)
         if voice and voice.is_connected():
@@ -142,19 +152,20 @@ class tts(commands.Cog):
             with open("data/tts/voices/" + name + "/name.txt") as f:
                 vname = f.read()
             if len(option) == 20:
-                lis.append(VoiceList(self.bot,self,option))
+                lis.append(VoiceList(self.bot, self, option))
                 option = []
-            option.append(discord.SelectOption(label=vname,value=name))
+            option.append(discord.SelectOption(label=vname, value=name))
         if self.ttsserverurl != "":
             async with self.bot.session.get(f"http://{self.basicuser}:{self.basicpass}@{self.ttsserverurl}/AVATOR2") as resp:
                 j = await resp.json()
             for v in j:
                 if len(option) == 20:
-                    lis.append(VoiceList(self.bot,self,option))
+                    lis.append(VoiceList(self.bot, self, option))
                     option = []
-                option.append(discord.SelectOption(label=v["name"],value=str(v["cid"])+".tsv"))
-        lis.append(VoiceList(self.bot,self,option))
-        await ctx.send("音声を選んでください",view=MainView(lis))
+                option.append(discord.SelectOption(
+                    label=v["name"], value=str(v["cid"])+".tsv"))
+        lis.append(VoiceList(self.bot, self, option))
+        await ctx.send("音声を選んでください", view=MainView(lis))
 
     @tts.command()
     async def disconnect(self, ctx):
@@ -164,7 +175,7 @@ class tts(commands.Cog):
         await voice.disconnect(force=True)
 
     @tts.command()
-    async def dicadd(self,ctx,text,replased):
+    async def dicadd(self, ctx, text, replased):
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
                 await cur.execute("SELECT * FROM `tts` where `gid` = %s", (ctx.guild.id,))
@@ -173,13 +184,13 @@ class tts(commands.Cog):
                 self.dic.setdefault(str(ctx.guild.id), dict())
                 self.dic[str(ctx.guild.id)][text] = replased
                 if len(res) == 0:
-                    await cur.execute("INSERT INTO `tts` (`gid`, `voice`, `dic`) VALUES (%s,%s,%s);", (ctx.guild.id,self.values[0],dumps(self.dic[str(ctx.guild.id)])))
+                    await cur.execute("INSERT INTO `tts` (`gid`, `voice`, `dic`) VALUES (%s,%s,%s);", (ctx.guild.id, self.values[0], dumps(self.dic[str(ctx.guild.id)])))
                 else:
-                    await cur.execute("UPDATE `tts` SET `dic` = %s where `gid` = %s;", (dumps(self.dic[str(ctx.guild.id)]),ctx.guild.id))
+                    await cur.execute("UPDATE `tts` SET `dic` = %s where `gid` = %s;", (dumps(self.dic[str(ctx.guild.id)]), ctx.guild.id))
                 await ctx.send("登録しました")
 
     @tts.command()
-    async def dicremove(self,ctx,text):
+    async def dicremove(self, ctx, text):
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
                 await cur.execute("SELECT * FROM `tts` where `gid` = %s", (ctx.guild.id,))
@@ -187,13 +198,14 @@ class tts(commands.Cog):
                 self.dic.setdefault(str(ctx.guild.id), dict())
                 self.dic[str(ctx.guild.id)].pop(text)
                 if len(res) == 0:
-                    await cur.execute("INSERT INTO `tts` (`gid`, `voice`, `dic`) VALUES (%s,%s,%s);", (ctx.guild.id,self.values[0],dumps(self.dic[str(ctx.guild.id)])))
+                    await cur.execute("INSERT INTO `tts` (`gid`, `voice`, `dic`) VALUES (%s,%s,%s);", (ctx.guild.id, self.values[0], dumps(self.dic[str(ctx.guild.id)])))
                 else:
-                    await cur.execute("UPDATE `tts` SET `dic` = %s where `gid` = %s;", (dumps(self.dic[str(ctx.guild.id)]),ctx.guild.id))
+                    await cur.execute("UPDATE `tts` SET `dic` = %s where `gid` = %s;", (dumps(self.dic[str(ctx.guild.id)]), ctx.guild.id))
                 await ctx.send("削除しました")
 
+
 class VoiceList(discord.ui.Select):
-    def __init__(self, bot,cog,option):
+    def __init__(self, bot, cog, option):
         self.bot = bot
         self.cog = cog
         super().__init__(placeholder='', min_values=1, max_values=1, options=option)
@@ -202,20 +214,24 @@ class VoiceList(discord.ui.Select):
         assert interaction.guild
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
-                await cur.execute("SELECT * FROM `tts` where `gid` = %s", ( interaction.guild.id,))
+                await cur.execute("SELECT * FROM `tts` where `gid` = %s", (interaction.guild.id,))
                 res = await cur.fetchall()
                 await conn.commit()
                 self.cog.voice[str(interaction.guild.id)] = self.values[0]
                 if len(res) == 0:
-                    await cur.execute("INSERT INTO `tts` (`gid`, `voice`, `dic`) VALUES (%s,%s,%s);", (interaction.guild.id,self.values[0],dumps(dict())))
+                    await cur.execute("INSERT INTO `tts` (`gid`, `voice`, `dic`) VALUES (%s,%s,%s);", (interaction.guild.id, self.values[0], dumps(dict())))
                 else:
-                    await cur.execute("UPDATE `tts` SET `voice` = %s where `gid` = %s;", (self.values[0],interaction.guild.id))
+                    await cur.execute("UPDATE `tts` SET `voice` = %s where `gid` = %s;", (self.values[0], interaction.guild.id))
                 await interaction.response.send_message("音声を設定しました")
+
+
 class MainView(discord.ui.View):
     def __init__(self, args):
         super().__init__(timeout=None)
 
         for txt in args:
             self.add_item(txt)
+
+
 async def setup(bot):
     await bot.add_cog(tts(bot))

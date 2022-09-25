@@ -16,7 +16,8 @@ class SakuraPoint(commands.Cog):
 
     def __init__(self, bot: Bot) -> None:
         self.bot = bot
-        self.pattern = re.compile("(https?://)?discord(.gg|.com/invite)/KW4CZvYMJg")
+        self.pattern = re.compile(
+            "(https?://)?discord(.gg|.com/invite)/KW4CZvYMJg")
         self.url = re.compile(
             "https://discord.com/oauth2/authorize\\?client_id=985852917489737728.*"
         )

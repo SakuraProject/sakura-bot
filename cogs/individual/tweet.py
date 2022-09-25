@@ -81,7 +81,8 @@ class Tweet(commands.Cog, AsyncStreamingClient):
                     if rtext != "":
                         rtext = rtext + " OR "
                     rtext = rtext + "from:"+name
-                self.rid: Response = await self.add_rules(StreamRule(rtext))  # type: ignore
+                # type: ignore
+                self.rid: Response = await self.add_rules(StreamRule(rtext))
 
     async def setfilter(self):
         await self.setrule()
@@ -140,7 +141,7 @@ class Tweet(commands.Cog, AsyncStreamingClient):
                         try:
                             wh = await self.getwebhook(ch)
                             await wh.send(status.text, username=status.user.screen_name,
-                                avatar_url=status.user.default_profile_image)
+                                          avatar_url=status.user.default_profile_image)
                         except:
                             continue
 

@@ -12,7 +12,7 @@ import asyncio
 
 class PM(discord.ui.Modal):
 
-    def __init__(self,cog):
+    def __init__(self, cog):
         super().__init__(title="登録するメールアカウントの情報を入力してください", timeout=None)
         self.cog = cog
         self.mname = discord.ui.TextInput(label="登録するメールアドレスを入力してください")
@@ -50,7 +50,7 @@ class PM(discord.ui.Modal):
                         "user": self.user.value,
                         "pas": self.pas.value
                     }
-                    await cur.execute("INSERT INTO `mailnof` (`gid`, `cid`, `mname`, `data`) VALUES (%s,%s,%s,%s);",(interaction.guild.id,interaction.channel.id,self.mname.value,dumps(d)))
+                    await cur.execute("INSERT INTO `mailnof` (`gid`, `cid`, `mname`, `data`) VALUES (%s,%s,%s,%s);", (interaction.guild.id, interaction.channel.id, self.mname.value, dumps(d)))
             await mes.edit(content="登録完了しました")
         except:
             await mes.edit(content="接続確認に失敗しました")
@@ -97,18 +97,22 @@ class Mail(commands.Cog):
             try:
                 dtmt = None
                 m.select()
-                d = m.search(None, datetime.fromtimestamp(m.lt).strftime("(SINCE \"%d-%B-%Y\")"))
+                d = m.search(None, datetime.fromtimestamp(
+                    m.lt).strftime("(SINCE \"%d-%B-%Y\")"))
                 for n in d[1][0].split():
                     h, dt = m.fetch(n, '(RFC822)')
                     dtm = email.message_from_string(dt[0][1].decode())
-                    dte = re.sub(" [(]([A-Z]*)[)]","", dtm["Date"])
+                    dte = re.sub(" [(]([A-Z]*)[)]", "", dtm["Date"])
                     try:
-                        dtmt = datetime.strptime(dte, "%a, %d %b %Y %X %z").timestamp()
+                        dtmt = datetime.strptime(
+                            dte, "%a, %d %b %Y %X %z").timestamp()
                     except:
-                        dtmt = datetime.strptime(dte, "%d %b %Y %X %z").timestamp()
+                        dtmt = datetime.strptime(
+                            dte, "%d %b %Y %X %z").timestamp()
                     if m.lt < dtmt:
                         wh = await self.getwebhook(m.dch)
-                        subject = decode_header(dtm.get('Subject'))[0][0].decode()
+                        subject = decode_header(dtm.get('Subject'))[
+                            0][0].decode()
                         fro = dtm["From"]
                         payload = "..."
                         if dtm.is_multipart():
@@ -124,9 +128,10 @@ class Mail(commands.Cog):
                             charset = dtm.get_content_charset()
                             if charset is not None:
                                 payload = payload.decode(charset, "ignore")
-                        if len(payload)>1024:
+                        if len(payload) > 1024:
                             payload = payload[:1024]
-                        embed = discord.Embed(title="SakuraBotメール通知", description="新着メールです")
+                        embed = discord.Embed(
+                            title="SakuraBotメール通知", description="新着メールです")
                         embed.add_field(name="送り主", value=fro)
                         embed.add_field(name="タイトル", value=subject)
                         embed.add_field(name="内容", value=payload)
@@ -176,7 +181,7 @@ class Mail(commands.Cog):
         m = self.chl[ctx.channel.id][mname]
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
-                await cur.execute("delete from `mailnof` where `gid`=%s and `cid`=%s and `mname`=%s",(ctx.guild.id, ctx.channel.id, mname))
+                await cur.execute("delete from `mailnof` where `gid`=%s and `cid`=%s and `mname`=%s", (ctx.guild.id, ctx.channel.id, mname))
                 self.nlis.remove(m)
                 self.chl[ctx.channel.id].pop(mname)
                 await ctx.author.send("解除しました")
@@ -244,25 +249,26 @@ class Mail(commands.Cog):
             mes = await ctx.author.send("接続を確認中です")
             try:
                 try:
-                    m = imaplib.IMAP4(s,int(port))
+                    m = imaplib.IMAP4(s, int(port))
                 except:
-                    m = imaplib.IMAP4_SSL(s,int(port))
-                m.login(user,pas)
+                    m = imaplib.IMAP4_SSL(s, int(port))
+                m.login(user, pas)
                 m.user = user
                 m.pas = pas
                 m.dch = ctx.channel
                 m.lt = time.time()
                 self.nlis.append(m)
-                self.chl.setdefault(ctx.channel.id,dict())
+                self.chl.setdefault(ctx.channel.id, dict())
                 self.chl[ctx.channel.id][row[2]] = m
                 async with self.bot.pool.acquire() as conn:
                     async with conn.cursor() as cur:
-                        d = dict()
-                        d["s"] = s
-                        d["port"] = port
-                        d["user"] = user
-                        d["pas"] = pas
-                        await cur.execute("INSERT INTO `mailnof` (`gid`, `cid`, `mname`, `data`) VALUES (%s,%s,%s,%s);",(ctx.guild.id,ctx.channel.id,mname,dumps(d)))
+                        d = {
+                            "s": s,
+                            "port": port,
+                            "user": user,
+                            "pas": pas
+                        }
+                        await cur.execute("INSERT INTO `mailnof` (`gid`, `cid`, `mname`, `data`) VALUES (%s,%s,%s,%s);", (ctx.guild.id, ctx.channel.id, mname, dumps(d)))
                 await mes.edit(content="登録完了しました")
             except:
                 await mes.edit(content="接続確認に失敗しました")
