@@ -23,12 +23,11 @@ class gban(commands.Cog):
 
     @gban.command()
     @commands.has_permissions(administrator=True)
-    async def onoff(self, ctx, onoff):
+    async def onoff(self, ctx, onoff, ):
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
                 await cur.execute("SELECT * FROM `gbanset` where `gid` = %s", (ctx.guild.id,))
-                res = await cur.fetchall()
-                if len(res) == 0:
+                if await cur.fetchone() is None:
                     await cur.execute("INSERT INTO `gbanset` (`gid`, `onoff`) VALUES (%s,%s);", (ctx.guild.id, onoff.replace("true", "on")))
                 else:
                     await cur.execute("UPDATE `gbanset` SET `gid` = %s,`onoff` = %s,`role` = %s where `gid` = %s;", (ctx.guild.id, onoff.replace("true", "on"), roleid, ctx.guild.id))
@@ -40,8 +39,7 @@ class gban(commands.Cog):
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
                 await cur.execute("SELECT * FROM `gban` where `userid` = %s", (user_id,))
-                res = await cur.fetchall()
-                if len(res) != 0:
+                if await cur.fetchone() is not None:
                     await ctx.send("そのユーザーはすでに登録されています")
                     return
                 if ctx.message.attachments:
@@ -73,8 +71,7 @@ class gban(commands.Cog):
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
                 await cur.execute("SELECT * FROM `gban`")
-                res = await cur.fetchall()
-                if len(res) == 0:
+                if (res := await cur.fetchall()) == 0:
                     await ctx.send("gbanされた人はまだいません")
                 else:
                     ebds = list()

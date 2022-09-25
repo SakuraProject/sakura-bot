@@ -1,8 +1,11 @@
+# Sakurabot - automod
+
 from os import listdir
 import logging
 
 
 async def setup(bot):
+    # Load all modules in this directory
     for name in listdir("cogs/automod"):
         if not name.startswith(("_", ".")):
             try:
