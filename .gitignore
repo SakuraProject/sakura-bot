@@ -1,3 +1,4 @@
 .env
 pylintrc
 .discord_test/
+__pycache__/
