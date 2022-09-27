@@ -1,6 +1,7 @@
+from __future__ import annotations
+
 import os
 import inspect
-from unicodedata import category
 
 import discord
 from discord.ext import commands
@@ -15,7 +16,6 @@ FIRST_DESC = ("これはBotのヘルプです。下の選択メニューから�
 class Help(commands.Cog):
     def __init__(self, bot: Bot):
         self.bot = bot
-        self.helps = {}
 
     @commands.hybrid_command(
         description="ヘルプを表示します。", aliases=["ヘルプ"]
