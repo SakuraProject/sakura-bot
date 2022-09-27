@@ -1,12 +1,14 @@
 # Sakura Utility - Embeds View
 
+from __future__ import annotations
+
 from collections.abc import Sequence
 
 from discord.ext import commands
 import discord
 
 
-__all__ = ("EmbedSelect", "EmbedsView")
+__all__ = ("EmbedSelect", "EmbedsView", "TimeoutView")
 
 
 class EmbedSelect(discord.ui.Select):
@@ -55,7 +57,33 @@ class EmbedSelect(discord.ui.Select):
         )
 
 
-class EmbedsView(discord.ui.View):
+class TimeoutView(discord.ui.View):
+    """タイムアウト時に編集するビュー。
+    Inspiration by: RextTeam 2022"""
+
+    message: discord.Message | None
+
+    def __init__(self, children: Sequence[discord.ui.Item] | None = None):
+        super().__init__()
+        if children:
+            for child in children:
+                self.add_item(child)
+
+    async def send(self, ctx: commands.Context, *args, **kwargs):
+        message = await ctx.send(*args, **kwargs)
+        self.message = message
+        return message
+
+    async def on_timeout(self):
+        if not self.message:
+            return
+        for item in self.children:
+            if hasattr(item, "disabled"):
+                item.disabled = True  # type: ignore
+        await self.message.edit(view=self)
+
+
+class EmbedsView(TimeoutView):
     "Embedsビュー。初期化時にembedのリストを渡す。"
 
     author_id: int | None
@@ -70,7 +98,7 @@ class EmbedsView(discord.ui.View):
         self.embeds = embeds
         self.message, self.author_id = None, None
 
-        self.add_item(EmbedSelect(embeds, extras))
+        self.add_item(EmbedSelect(embeds, extras, self))
 
     async def send(self, ctx: commands.Context):
         "Sendして、author_idのセットもします。"
@@ -80,10 +108,3 @@ class EmbedsView(discord.ui.View):
         else:
             msg = await ctx.send(embed=self.embeds[0], view=self)
         self.message = msg
-
-    async def on_timeout(self):
-        if not self.message:
-            return
-        for item in self.children:
-            item.disabled = True
-        await self.message.edit(view=self)
