@@ -58,7 +58,7 @@ class Queue():
             'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
         try:
             if "nicovideo.jp" in self.url or "nico.ms" in self.url:
-                if self.video != None:
+                if self.video is not None:
                     self.video.close()
                 video = niconico.video.get_video(self.url)
                 video.connect()
@@ -121,7 +121,7 @@ class Queue():
 
     def close(self):
         # ニコニコ用
-        if self.video != None:
+        if self.video is not None:
             self.video.close()
 
 
@@ -620,7 +620,7 @@ class AudioMixer(discord.AudioSource):
         for pcm in self.s:
             pcmdata = pcm.read()
             if not pcmdata:
-                if getattr(pcm, "nextqueue", None) != None:
+                if getattr(pcm, "nextqueue", None) is not None:
                     getattr(pcm, "nextqueue")(pcm.cog)
                 pcm.cleanup()
                 self.s.remove(pcm)

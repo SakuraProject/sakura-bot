@@ -46,15 +46,15 @@ class giveaway(commands.Cog):
                                 new_message = None
                                 channel = self.bot.get_channel(
                                     int(gaway['cid'][str(i)]))
-                                if channel != None:
+                                if channel is not None:
                                     try:
                                         new_message = await channel.fetch_message(int(gaway['mid'][str(i)]))
                                     except discord.errors.NotFound:
-                                        str('no message')
+                                        new_message = None
                             except KeyError:
                                 str("keyerror")
-                            if channel != None:
-                                if new_message != None:
+                            if channel is not None:
+                                if new_message is not None:
                                     userstemp = [u async for u in new_message.reactions[0].users()]
                                     try:
                                         userstemp.pop(
@@ -93,7 +93,7 @@ class giveaway(commands.Cog):
                                     text='Thanks for entering!')
                                 channelt = self.bot.get_channel(
                                     int(gaway['cid'][str(i)]))
-                                if channelt != None:
+                                if channelt is not None:
                                     await channelt.send(embed=winning_announcement)
                                 self.gavs.pop(gk)
                                 await self.delete(gk)
@@ -152,11 +152,11 @@ class giveaway(commands.Cog):
             return
         channel = self.bot.get_channel(c_id)
         try:
-            jself.gavs = self.gavs[code]
-            prize = jself.gavs['prize']
-            author = jself.gavs['author']
+            gavs = self.gavs[code]
+            prize = gavs['prize']
+            author = gavs['author']
             endstr = datetime.datetime.fromtimestamp(
-                int(jself.gavs['end'])).strftime('%Y/%m/%d %H:%M')
+                int(gavs['end'])).strftime('%Y/%m/%d %H:%M')
             give = discord.Embed(color=0x2ecc71)
             give.set_author(name=f'GIVEAWAY TIME!',
                             icon_url='https://i.imgur.com/VaX0pfM.png')

@@ -38,12 +38,12 @@ class globalchat(commands.Cog):
 
     async def gcsend(self, id, message):
         channel = self.bot.get_channel(int(id))
-        if channel != None:
+        if channel is not None:
             webhook = await self.getwebhook(channel)
             if channel.guild.id != message.guild.id and message.author.discriminator != '0000':
                 flfl = None
                 for atc in message.attachments:
-                    if flfl == None:
+                    if flfl is None:
                         flfl = list()
                     flfl.append(await atc.to_file())
                 embeds = message.embeds
@@ -55,24 +55,24 @@ class globalchat(commands.Cog):
                         ref = await rch.fetch_message(message.reference.message_id)
                     reb = discord.Embed(
                         description=ref.clean_content, title="返信先")
-                    if embeds == None:
+                    if embeds is None:
                         embeds = list()
                     else:
                         embeds = message.embeds.copy()
                     embeds.append(reb)
                 vie = None
                 for c in message.components:
-                    if vie == None:
+                    if vie is None:
                         vie = discord.ui.View()
                     vie.add_item(c)
                 alm = discord.AllowedMentions.none()
-                if vie != None:
-                    if flfl == None:
+                if vie is not None:
+                    if flfl is None:
                         await webhook.send(content=message.content.replace('@here', '[here]').replace('@everyone', '[everyone]'), username=message.author.name+'#'+message.author.discriminator, avatar_url=message.author.avatar, embeds=embeds, view=vie, allowed_mentions=alm)
                     else:
                         await webhook.send(content=message.content.replace('@here', '[here]').replace('@everyone', '[everyone]'), username=message.author.name+'#'+message.author.discriminator, avatar_url=message.author.avatar, files=flfl, embeds=embeds, view=vie, allowed_mentions=alm)
                 else:
-                    if flfl == None:
+                    if flfl is None:
                         await webhook.send(content=message.content.replace('@here', '[here]').replace('@everyone', '[everyone]'), username=message.author.name+'#'+message.author.discriminator, avatar_url=message.author.avatar, embeds=embeds, allowed_mentions=alm)
                     else:
                         await webhook.send(content=message.content.replace('@here', '[here]').replace('@everyone', '[everyone]'), username=message.author.name+'#'+message.author.discriminator, avatar_url=message.author.avatar, files=flfl, embeds=embeds, allowed_mentions=alm)
@@ -100,7 +100,7 @@ class globalchat(commands.Cog):
     async def getwebhook(self, channel: discord.TextChannel):
         webhooks = await channel.webhooks()
         webhook = discord.utils.get(webhooks, name='sakuraglobal')
-        if webhook == None:
+        if webhook is None:
             webhook = await channel.create_webhook(name='sakuraglobal')
         return webhook
 

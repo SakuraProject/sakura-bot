@@ -113,13 +113,13 @@ class websocket(commands.Cog):
         req["args"] = arg
         await self.sock.send(dumps(req))
         await asyncio.sleep(1)
-        while self.res["jsk"][str(ctx.author.id)] == None:
+        while self.res["jsk"][str(ctx.author.id)] is None:
             await asyncio.sleep(1)
         await ctx.send(self.res["jsk"][str(ctx.author.id)]["res"])
 
     async def shareguilds(self, args):
         share = [g for g in self.bot.guilds if g.get_member(
-            int(args["id"])) != None]
+            int(args["id"])) is not None]
         res = list()
         for g in share:
             guild = await self.guild({"id": g.id})
@@ -136,7 +136,7 @@ class websocket(commands.Cog):
         guild["name"] = g.name
         guild["member_count"] = g.member_count
         guild["icon"] = dict()
-        if g.icon != None:
+        if g.icon is not None:
             guild["icon"]["url"] = g.icon.url
         else:
             guild["icon"]["url"] = None
@@ -223,7 +223,7 @@ class websocket(commands.Cog):
         for ckey in cm.clean_params.keys():
             clp.append(await self.convert_param(cm.clean_params[ckey]))
         dc["clean_params"] = clp
-        if cm.callback.__doc__ != None:
+        if cm.callback.__doc__ is not None:
             dc["doc"] = await self.bot.cogs["help"].parsedoc(cm.callback.__doc__)
         dc["type"] = type(cm).__name__
         args["res"] = dc

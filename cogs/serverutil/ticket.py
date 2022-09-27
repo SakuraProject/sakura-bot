@@ -98,7 +98,7 @@ class ticket(commands.Cog):
     async def on_message(self, msg):
         if not isinstance(msg.channel, discord.TextChannel):
             return
-        if msg.channel.topic == None:
+        if msg.channel.topic is None:
             return
         if msg.channel.topic.find('（sakuraticket') != -1:
             id = int(msg.channel.topic[msg.channel.topic.rfind(

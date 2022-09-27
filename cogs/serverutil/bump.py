@@ -137,7 +137,7 @@ class bump(commands.Cog):
                     if float(row[1]) <= nti:
                         if onoff == "on":
                             channel = self.bot.get_channel(row[0])
-                            if channel != None:
+                            if channel is not None:
                                 rol = channel.guild.get_role(int(res1[0][3]))
                                 ebd = discord.Embed(
                                     title=typ + "通知", color=self.bot.Color, description=self.dics[typ])
@@ -156,7 +156,7 @@ class bump(commands.Cog):
     @commands.command()
     @commands.has_guild_permissions(administrator=True)
     async def frrtraiseonoff(self, ctx, onoff, role: discord.Role = None):
-        if role == None:
+        if role is None:
             roleid = 0
         else:
             roleid = role.id
@@ -174,7 +174,7 @@ class bump(commands.Cog):
     @commands.command()
     @commands.has_guild_permissions(administrator=True)
     async def raiseonoff(self, ctx, onoff, role: discord.Role = None):
-        if role == None:
+        if role is None:
             roleid = 0
         else:
             roleid = role.id
@@ -192,7 +192,7 @@ class bump(commands.Cog):
     @commands.command()
     @commands.has_guild_permissions(administrator=True)
     async def bumponoff(self, ctx, onoff, role: discord.Role = None):
-        if role == None:
+        if role is None:
             roleid = 0
         else:
             roleid = role.id
@@ -210,7 +210,7 @@ class bump(commands.Cog):
     @commands.command()
     @commands.has_guild_permissions(administrator=True)
     async def tossonoff(self, ctx, onoff, role: discord.Role = None):
-        if role == None:
+        if role is None:
             roleid = 0
         else:
             roleid = role.id
@@ -228,7 +228,7 @@ class bump(commands.Cog):
     @commands.command()
     @commands.has_guild_permissions(administrator=True)
     async def uponoff(self, ctx, onoff, role: discord.Role = None):
-        if role == None:
+        if role is None:
             roleid = 0
         else:
             roleid = role.id

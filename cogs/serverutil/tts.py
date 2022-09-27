@@ -54,14 +54,14 @@ class tts(commands.Cog):
                 res = await cur.fetchall()
                 for r in res:
                     self.voice[str(r[0])] = r[1]
-                    if r[2] != None:
+                    if r[2] is not None:
                         self.dic[str(r[0])] = loads(r[2])
 
     @commands.Cog.listener()
     async def on_message(self, message):
         if message.channel.id in self.rch:
             voice = get(self.bot.voice_clients, guild=message.guild)
-            if not voice == None:
+            if not voice is None:
                 sc = message.content
                 embeds = message.embeds
                 if embeds is not None:

@@ -1,7 +1,7 @@
 from discord.ext import commands
 import discord
 import asyncio
-from ujson import loads, dumps
+from orjson import loads, dumps
 
 
 class gban(commands.Cog):
@@ -9,8 +9,8 @@ class gban(commands.Cog):
         self.bot, self.before = bot, ""
 
     async def cog_load(self):
-        csql = "CREATE TABLE if not exists `gban` (`userid` BIGINT NOT NULL,`reason` VARCHAR(2000) NOT NULL,`evidence` JSON NOT NULL) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin;"
-        csql1 = "CREATE TABLE if not exists `gbanset` (`gid` BIGINT NOT NULL,`onoff` VARCHAR(3) NOT NULL) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin;"
+        csql = "CREATE TABLE if not exists `gban` (`userid` PRIMARY KEY BIGINT NOT NULL,`reason` VARCHAR(2000) NOT NULL,`evidence` JSON NOT NULL) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin;"
+        csql1 = "CREATE TABLE if not exists `gbanset` (`gid` PRIMARY KEY BIGINT NOT NULL,`onoff` VARCHAR(3) NOT NULL) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin;"
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
                 await cur.execute(csql)
@@ -23,15 +23,13 @@ class gban(commands.Cog):
 
     @gban.command()
     @commands.has_permissions(administrator=True)
-    async def onoff(self, ctx, onoff, ):
-        async with self.bot.pool.acquire() as conn:
-            async with conn.cursor() as cur:
-                await cur.execute("SELECT * FROM `gbanset` where `gid` = %s", (ctx.guild.id,))
-                if await cur.fetchone() is None:
-                    await cur.execute("INSERT INTO `gbanset` (`gid`, `onoff`) VALUES (%s,%s);", (ctx.guild.id, onoff.replace("true", "on")))
-                else:
-                    await cur.execute("UPDATE `gbanset` SET `gid` = %s,`onoff` = %s,`role` = %s where `gid` = %s;", (ctx.guild.id, onoff.replace("true", "on"), roleid, ctx.guild.id))
-                await ctx.reply("設定しました")
+    async def onoff(self, ctx, onoff: bool):
+        await self.bot.execute_sql(
+            """INSERT INTO gbanset VALUES (%s, %s)
+                ON DUPLICATE KEY UPDATE onoff = VALUES(onoff);""",
+            (ctx.guild.id, "on" if onoff else "off")
+        )
+        await ctx.send("Ok")
 
     @gban.command()
     @commands.is_owner()
@@ -77,7 +75,7 @@ class gban(commands.Cog):
                     ebds = list()
                     for r in res:
                         user = self.bot.get_user(r[0])
-                        if user == None:
+                        if user is None:
                             uname = "名前が取得出来ませんでした"
                         else:
                             uname = user.name
