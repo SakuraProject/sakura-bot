@@ -179,7 +179,7 @@ class AutoMod(commands.Cog):
                                 del self.muteds[gid][uid]
                                 continue
                             await member.remove_roles(discord.Object(self.settings[str(gid)]["muterole"]))
-                    except:
+                    except BaseException:
                         pass
 
     @automod.command()
@@ -358,7 +358,8 @@ class AutoMod(commands.Cog):
         assert msg.guild and isinstance(msg.author, discord.Member)
         self.data_check(msg.guild.id)
 
-        if msg.channel.id in self.settings[str(msg.guild.id)]["ignore_channel"]:
+        if msg.channel.id in self.settings[str(
+                msg.guild.id)]["ignore_channel"]:
             return True
         return arrayinarray(
             [r.id for r in msg.author.roles],
@@ -577,17 +578,17 @@ class AutoMod(commands.Cog):
         embed = discord.Embed(title='Settings', color=self.bot.Color)
         puni = ''
         for k in g_setting['action'].keys():
-            puni = puni+str(k)+':'+g_setting['action'][k]+'\n'
+            puni = puni + str(k) + ':' + g_setting['action'][k] + '\n'
         if puni == '':
             puni = 'No Punishments'
         ign = ''
         igchi = 0
         for igk in g_setting['ignore_channel']:
-            igchi = igchi+1
-            ign = ign+'<#'+str(igk)+'> is ignored\n'
+            igchi = igchi + 1
+            ign = ign + '<#' + str(igk) + '> is ignored\n'
         for igkr in g_setting['ignore_role']:
-            ign = ign+'<@&'+str(igkr)+'> is ignored\n'
-            igchi = igchi+1
+            ign = ign + '<@&' + str(igkr) + '> is ignored\n'
+            igchi = igchi + 1
         if igchi == 0:
             ign = 'No ignored'
         automod = 'anti token:' + g_setting['tokens'] + '\n'

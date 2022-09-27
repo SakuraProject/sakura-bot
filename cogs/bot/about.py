@@ -12,7 +12,7 @@ ABOUT_SAKURA_BOT = cleandoc("""
     SakuraBotは`SakuraProject(旧FreeRT開発チーム)`によって開発された多機能botです。
     このBotを使うことでdiscord全体を明るく、楽しく、便利にすることを目指しています。
     もしあなたもこのBotに興味があればぜひ貢献をご検討ください。
-    
+
     ・Github: https://github.com/free-RT/sakura-bot/
     ・公式サーバー: (リンク準備中)
     ・公式サイト: (リンク準備中)

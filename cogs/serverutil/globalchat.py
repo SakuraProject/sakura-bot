@@ -68,14 +68,14 @@ class globalchat(commands.Cog):
                 alm = discord.AllowedMentions.none()
                 if vie is not None:
                     if flfl is None:
-                        await webhook.send(content=message.content.replace('@here', '[here]').replace('@everyone', '[everyone]'), username=message.author.name+'#'+message.author.discriminator, avatar_url=message.author.avatar, embeds=embeds, view=vie, allowed_mentions=alm)
+                        await webhook.send(content=message.content.replace('@here', '[here]').replace('@everyone', '[everyone]'), username=message.author.name + '#' + message.author.discriminator, avatar_url=message.author.avatar, embeds=embeds, view=vie, allowed_mentions=alm)
                     else:
-                        await webhook.send(content=message.content.replace('@here', '[here]').replace('@everyone', '[everyone]'), username=message.author.name+'#'+message.author.discriminator, avatar_url=message.author.avatar, files=flfl, embeds=embeds, view=vie, allowed_mentions=alm)
+                        await webhook.send(content=message.content.replace('@here', '[here]').replace('@everyone', '[everyone]'), username=message.author.name + '#' + message.author.discriminator, avatar_url=message.author.avatar, files=flfl, embeds=embeds, view=vie, allowed_mentions=alm)
                 else:
                     if flfl is None:
-                        await webhook.send(content=message.content.replace('@here', '[here]').replace('@everyone', '[everyone]'), username=message.author.name+'#'+message.author.discriminator, avatar_url=message.author.avatar, embeds=embeds, allowed_mentions=alm)
+                        await webhook.send(content=message.content.replace('@here', '[here]').replace('@everyone', '[everyone]'), username=message.author.name + '#' + message.author.discriminator, avatar_url=message.author.avatar, embeds=embeds, allowed_mentions=alm)
                     else:
-                        await webhook.send(content=message.content.replace('@here', '[here]').replace('@everyone', '[everyone]'), username=message.author.name+'#'+message.author.discriminator, avatar_url=message.author.avatar, files=flfl, embeds=embeds, allowed_mentions=alm)
+                        await webhook.send(content=message.content.replace('@here', '[here]').replace('@everyone', '[everyone]'), username=message.author.name + '#' + message.author.discriminator, avatar_url=message.author.avatar, files=flfl, embeds=embeds, allowed_mentions=alm)
 
     @commands.Cog.listener()
     async def on_message(self, message):

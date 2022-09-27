@@ -39,7 +39,8 @@ class Tweet(commands.Cog, AsyncStreamingClient):
         self.proxy = None
         self.return_type = Response
         self.rid: Response = None  # type: ignore
-        # super().__init__(consumer_key=os.environ["TWITTERAPIKEY"],consumer_secret=os.environ["TWITTERSECRET"],access_token=os.environ["TWITTERTOKEN"],access_token_secret=os.environ["TWITTERTOKENSEC"]) # API(handler)
+        # super().__init__(consumer_key=os.environ["TWITTERAPIKEY"],consumer_secret=os.environ["TWITTERSECRET"],access_token=os.environ["TWITTERTOKEN"],access_token_secret=os.environ["TWITTERTOKENSEC"])
+        # # API(handler)
 
     async def cog_load(self):
         csql = "CREATE TABLE if not exists `tweet` (`gid` BIGINT NOT NULL,`cid` BIGINT NOT NULL,`twiname` VARCHAR(1000) NULL) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin;"
@@ -80,7 +81,7 @@ class Tweet(commands.Cog, AsyncStreamingClient):
                 for name in self.fil:
                     if rtext != "":
                         rtext = rtext + " OR "
-                    rtext = rtext + "from:"+name
+                    rtext = rtext + "from:" + name
                 # type: ignore
                 self.rid: Response = await self.add_rules(StreamRule(rtext))
 
@@ -142,7 +143,7 @@ class Tweet(commands.Cog, AsyncStreamingClient):
                             wh = await self.getwebhook(ch)
                             await wh.send(status.text, username=status.user.screen_name,
                                           avatar_url=status.user.default_profile_image)
-                        except:
+                        except BaseException:
                             continue
 
     async def getwebhook(self, channel: discord.TextChannel) -> discord.Webhook:

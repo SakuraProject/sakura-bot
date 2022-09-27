@@ -163,7 +163,7 @@ class tts(commands.Cog):
                     lis.append(VoiceList(self.bot, self, option))
                     option = []
                 option.append(discord.SelectOption(
-                    label=v["name"], value=str(v["cid"])+".tsv"))
+                    label=v["name"], value=str(v["cid"]) + ".tsv"))
         lis.append(VoiceList(self.bot, self, option))
         await ctx.send("音声を選んでください", view=MainView(lis))
 

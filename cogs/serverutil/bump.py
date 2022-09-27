@@ -22,7 +22,8 @@ class bump(commands.Cog):
     async def on_message(self, message):
         if message.author.id == 832614051514417202:
             if message.embeds[0].title == "GlowBoard - 色々できるサーバー掲示板":
-                if message.embeds[0].description.find("サーバーの表示順位をアップしました!") != -1:
+                if message.embeds[0].description.find(
+                        "サーバーの表示順位をアップしました!") != -1:
                     nof = time() + 5400
                     await self.save(message, "toss", nof)
                     async with self.bot.pool.acquire() as conn:
@@ -39,7 +40,8 @@ class bump(commands.Cog):
                                     color=self.bot.Color, description="tossを確認しました。次回は<t:" + str(int(nof)) + ":R>です。時間になったら通知します")
                                 await message.channel.send(embeds=[ebd])
         if message.author.id == 302050872383242240:
-            if message.embeds[0].description.find("表示順をアップしたよ") != -1 or message.embeds[0].description.find("Bump done") != -1:
+            if message.embeds[0].description.find(
+                    "表示順をアップしたよ") != -1 or message.embeds[0].description.find("Bump done") != -1:
                 nof = time() + 7200
                 await self.save(message, "bump", nof)
                 async with self.bot.pool.acquire() as conn:

@@ -25,7 +25,8 @@ class purge(commands.Cog):
 
             def check(m):
                 if member is not None:
-                    return m.author.id == member.id and m.id in [ml.id for ml in mlis]
+                    return m.author.id == member.id and m.id in [
+                        ml.id for ml in mlis]
                 else:
                     return m.id in [ml.id for ml in mlis]
             dmsg = await ctx.channel.purge(limit=100000, check=check)
@@ -33,7 +34,8 @@ class purge(commands.Cog):
         else:
             def check(m):
                 if member is not None:
-                    return m.author.id == member.id and m.id in [ml.id for ml in mlis]
+                    return m.author.id == member.id and m.id in [
+                        ml.id for ml in mlis]
                 else:
                     return True
             dmsg = await ctx.channel.purge(limit=length, check=check)

@@ -83,8 +83,7 @@ class mynews(commands.Cog):
         ELang default
         """
         async with self.bot.session.get(
-            "https://ysmsrv.wjg.jp/news/timebydiscord.php?input_date="
-        , query=urllib.parse.quote_plus(day, encoding='utf-8')) as resp:
+                "https://ysmsrv.wjg.jp/news/timebydiscord.php?input_date=", query=urllib.parse.quote_plus(day, encoding='utf-8')) as resp:
             rpt = await resp.json()
             if rpt == []:
                 await ctx.reply("すみません。何も見つかりませんでした。日付を確認してみてください。例:2022/07/10")
@@ -136,7 +135,7 @@ class mynews(commands.Cog):
 
 
 async def getusername(userid, bot: Bot):
-    async with bot.session.get("https://ysmsrv.wjg.jp/news/"+userid) as resp:
+    async with bot.session.get("https://ysmsrv.wjg.jp/news/" + userid) as resp:
         rpt = await resp.text()
         return rpt
 

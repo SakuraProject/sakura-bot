@@ -6,8 +6,8 @@ async def setup(bot):
     for name in listdir("cogs/bot"):
         if not name.startswith(("_", ".")):
             try:
-                await bot.load_extension("cogs.bot."+name.replace(".py", ""))
-            except:
+                await bot.load_extension("cogs.bot." + name.replace(".py", ""))
+            except BaseException:
                 logging.exception("Error on bot.%s", name)
             else:
                 print("[Log][load]" + name)

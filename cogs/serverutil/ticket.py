@@ -50,7 +50,7 @@ class ticket(commands.Cog):
         """
         if ctx.channel.topic.find('（sakuraticket') != -1:
             id = int(ctx.channel.topic[ctx.channel.topic.rfind(
-                "（")+13:ctx.channel.topic.rfind('）')])
+                "（") + 13:ctx.channel.topic.rfind('）')])
             if id == ctx.author.id:
                 for obj in ctx.channel.overwrites.keys():
                     perms = ctx.channel.overwrites_for(obj)
@@ -90,7 +90,7 @@ class ticket(commands.Cog):
                 interaction.user: discord.PermissionOverwrite(
                     read_messages=True)
             }
-            ch = await interaction.guild.create_text_channel(name=f"{interaction.user.name}-{interaction.message.embeds[0].title}", overwrites=permission, category=cat, topic='（sakuraticket'+str(interaction.user.id)+'）')
+            ch = await interaction.guild.create_text_channel(name=f"{interaction.user.name}-{interaction.message.embeds[0].title}", overwrites=permission, category=cat, topic='（sakuraticket' + str(interaction.user.id) + '）')
             await interaction.response.send_message(content="作成しました", ephemeral=True)
             await ch.send(interaction.user.mention + "チャンネルを作成しました。閉じる場合は" + self.bot.command_prefix + "ticket closeと発言してください。ユーザをメンションすることで他のユーザーを参加させることも出来ます")
 
@@ -102,10 +102,11 @@ class ticket(commands.Cog):
             return
         if msg.channel.topic.find('（sakuraticket') != -1:
             id = int(msg.channel.topic[msg.channel.topic.rfind(
-                '（')+13:msg.channel.topic.rfind('）')])
+                '（') + 13:msg.channel.topic.rfind('）')])
             if id == msg.author.id:
                 if len(msg.mentions) != 0:
-                    if msg.content.find(self.bot.command_prefix+'hide ') == 0:
+                    if msg.content.find(
+                            self.bot.command_prefix + 'hide ') == 0:
                         for m in msg.mentions:
                             perms = msg.channel.overwrites_for(m)
                             perms.read_messages = False

@@ -25,15 +25,15 @@ class board():
         self.upboard = dict()
         self.omc = 0
         self.turn = 1
-        self.varr = [-self.w, -self.w+1, 1, self.w +
-                     1, self.w, self.w-1, -1, -self.w-1]
+        self.varr = [-self.w, -self.w + 1, 1, self.w +
+                     1, self.w, self.w - 1, -1, -self.w - 1]
         self.ck3 = 0
         self.ck3b = 1
         self.btu = 5
 
     def botf(self, xy, ub):
         tc = 0
-        min = self.w*self.h
+        min = self.w * self.h
         max = 0
         mxd = 0
         mid = 0
@@ -43,19 +43,19 @@ class board():
                 xy["x"] = 1
                 xy["y"] = 1
                 raise SyntaxError()
-            if self.upboard[self.w-1] == 3:
+            if self.upboard[self.w - 1] == 3:
                 xy["x"] = self.w
                 xy["y"] = 1
                 raise SyntaxError()
-            if self.upboard[(self.h-1)*self.w] == 3:
+            if self.upboard[(self.h - 1) * self.w] == 3:
                 xy["x"] = 1
                 xy["y"] = self.h
                 raise SyntaxError()
-            if self.upboard[self.w*self.h-1] == 3:
+            if self.upboard[self.w * self.h - 1] == 3:
                 xy["x"] = self.w
                 xy["y"] = self.h
                 raise SyntaxError()
-            for lop in range(self.w*self.h):
+            for lop in range(self.w * self.h):
                 if self.upboard[lop] == 3:
                     tmpc = 0
                     tk = 0
@@ -64,15 +64,15 @@ class board():
                     elif self.turn == 2:
                         tk = 1
                     for bvi in range(8):
-                        if ub[lop+(self.varr[bvi])] == tk:
-                            ccc = lop+(self.varr[bvi])
+                        if ub[lop + (self.varr[bvi])] == tk:
+                            ccc = lop + (self.varr[bvi])
                             while ub[ccc] == tk:
-                                ccc = ccc+(self.varr[bvi])
+                                ccc = ccc + (self.varr[bvi])
                             if ub[ccc] == self.turn:
-                                ccco = lop+(self.varr[bvi])
+                                ccco = lop + (self.varr[bvi])
                                 while ub[ccco] == tk:
                                     tmpc = tmpc + 1
-                                    ccco = ccco+(self.varr[bvi])
+                                    ccco = ccco + (self.varr[bvi])
                     if max == tmpc:
                         if random.randint(1, 2) == 1:
                             mxd = lop
@@ -85,30 +85,31 @@ class board():
                     if tmpc > max:
                         max = tmpc
                         mxd = lop
-            if self.omc > self.w*self.h/2:
-                xy["x"] = mxd % self.w+1
-                xy["y"] = mxd/self.w+1
+            if self.omc > self.w * self.h / 2:
+                xy["x"] = mxd % self.w + 1
+                xy["y"] = mxd / self.w + 1
             else:
-                xy["x"] = mid % self.w+1
-                xy["y"] = mid/self.w+1
+                xy["x"] = mid % self.w + 1
+                xy["y"] = mid / self.w + 1
         except SyntaxError:
             str("break")
-        if (xy["y"]-1)*self.w+(xy["x"]-1) > 63 or (xy["y"]-1)*self.w+(xy["x"]-1) < 0:
-            for berr in range(self.h*self.w):
+        if (xy["y"] - 1) * self.w + (xy["x"] -
+                                     1) > 63 or (xy["y"] - 1) * self.w + (xy["x"] - 1) < 0:
+            for berr in range(self.h * self.w):
                 if self.upboard[berr] == 3:
-                    xy["x"] = berr % self.w+1
-                    xy["y"] = berr/self.w+1
-        elif self.upboard[(xy["y"]-1)*self.w+(xy["x"]-1)] != 3:
-            for berr in range(self.h*self.w):
+                    xy["x"] = berr % self.w + 1
+                    xy["y"] = berr / self.w + 1
+        elif self.upboard[(xy["y"] - 1) * self.w + (xy["x"] - 1)] != 3:
+            for berr in range(self.h * self.w):
                 if self.upboard[berr] == 3:
-                    xy["x"] = berr % self.w+1
-                    xy["y"] = berr/self.w+1
+                    xy["x"] = berr % self.w + 1
+                    xy["y"] = berr / self.w + 1
 
     def border(self, val):
         val = val + "◆"
         for c in range(self.w):
             val = val + \
-                str(c+1).translate(str.maketrans(
+                str(c + 1).translate(str.maketrans(
                     {chr(0x0021 + i): chr(0xFF01 + i) for i in range(94)}))
         val = val + "◆\n"
         return val
@@ -117,10 +118,10 @@ class board():
         val = self.border("")
         for c in range(self.h):
             val = val + \
-                str(c+1).translate(str.maketrans(
+                str(c + 1).translate(str.maketrans(
                     {chr(0x0021 + i): chr(0xFF01 + i) for i in range(94)}))
             for j in range(self.w):
-                biwj = b[c*self.w+j]
+                biwj = b[c * self.w + j]
                 if biwj == 0:
                     val = val + "　"
                 elif biwj == 1:
@@ -129,7 +130,7 @@ class board():
                     val = val + "●"
                 elif biwj == 3:
                     val = val + "・"
-            val = val + str(c+1).translate(str.maketrans(
+            val = val + str(c + 1).translate(str.maketrans(
                 {chr(0x0021 + i): chr(0xFF01 + i) for i in range(94)})) + "\n"
         val = self.border(val)
         return val
@@ -137,7 +138,7 @@ class board():
     def oend(self):
         bkc = 0
         wkc = 0
-        for ecc in range(self.w*self.h):
+        for ecc in range(self.w * self.h):
             if self.boards[ecc] == 1:
                 bkc = bkc + 1
             elif self.boards[ecc] == 2:
@@ -152,16 +153,16 @@ class board():
     async def o(self, board, msg, ctx):
         val = ""
         resend = False
-        start = ((self.h-2)/2)*self.w+((self.w-2)/2)
+        start = ((self.h - 2) / 2) * self.w + ((self.w - 2) / 2)
         board[start] = 2
-        board[start+1] = 1
-        board[start+self.w+1] = 2
-        board[start+self.w] = 1
-        for bvcfr in range(self.w*self.h):
+        board[start + 1] = 1
+        board[start + self.w + 1] = 2
+        board[start + self.w] = 1
+        for bvcfr in range(self.w * self.h):
             self.boards[bvcfr] = board[bvcfr]
         ebd = msg.embeds[0]
         while True:
-            if self.omc == self.w*self.h:
+            if self.omc == self.w * self.h:
                 ebd.description = self.oend()
                 await msg.edit(embeds=[ebd])
                 return
@@ -183,14 +184,15 @@ class board():
             y = 0
             if self.ck3 == 0:
                 if self.ck3b == 0:
-                    ebd.description = "どちらも置ける場所がない為終了します。\n" + (self.oend() or "")
+                    ebd.description = "どちらも置ける場所がない為終了します。\n" + \
+                        (self.oend() or "")
                     await msg.edit(embeds=[ebd])
                     return
                 val = "置ける場所がない為スキップされました。"
                 ebd.description = val
                 await msg.edit(embeds=[ebd])
                 self.ck3b = self.ck3
-                for i in range(self.w*self.h):
+                for i in range(self.w * self.h):
                     self.upboard[i] = 0
                 if self.turn == 1:
                     self.turn = 2
@@ -215,11 +217,11 @@ class board():
                     x = int(xy[0])
                     y = int(xy[1])
                     resend = True
-            if self.upboard[(y-1)*self.w+(x-1)] == 3:
-                self.boards[(y-1)*self.w+(x-1)] = self.turn
-                self.om((y-1)*self.w+(x-1), self.boards)
+            if self.upboard[(y - 1) * self.w + (x - 1)] == 3:
+                self.boards[(y - 1) * self.w + (x - 1)] = self.turn
+                self.om((y - 1) * self.w + (x - 1), self.boards)
                 self.ck3b = self.ck3
-                for i in range(self.w*self.h):
+                for i in range(self.w * self.h):
                     self.upboard[i] = 0
                 if self.turn == 1:
                     self.turn = 2
@@ -236,18 +238,18 @@ class board():
             tk = 1
         sty = ""
         for bvi in range(8):
-            if ub[xy+(self.varr[bvi])] == tk:
-                ccc = xy+(self.varr[bvi])
+            if ub[xy + (self.varr[bvi])] == tk:
+                ccc = xy + (self.varr[bvi])
                 while ub[ccc] == tk:
-                    ccc = ccc+(self.varr[bvi])
+                    ccc = ccc + (self.varr[bvi])
                 if ub[ccc] == self.turn:
-                    ccco = xy+(self.varr[bvi])
+                    ccco = xy + (self.varr[bvi])
                     while ub[ccco] == tk:
                         self.boards[ccco] = self.turn
-                        ccco = ccco+(self.varr[bvi])
+                        ccco = ccco + (self.varr[bvi])
 
     def upb(self, ub):
-        for ppp in range(self.w*self.h):
+        for ppp in range(self.w * self.h):
             if ub[ppp] == 3:
                 ub[ppp] = 0
         tk = 0
@@ -255,21 +257,23 @@ class board():
             tk = 2
         else:
             tk = 1
-        for bi in range(self.w*self.h):
+        for bi in range(self.w * self.h):
             if ub[bi] == self.turn:
                 for bvi in range(8):
                     try:
-                        if ub[bi+(self.varr[bvi])] == tk:
-                            if not ub[bi+(self.varr[bvi])] == 0:
-                                ccc = bi+(self.varr[bvi])
+                        if ub[bi + (self.varr[bvi])] == tk:
+                            if not ub[bi + (self.varr[bvi])] == 0:
+                                ccc = bi + (self.varr[bvi])
                                 while ub[ccc] == tk:
                                     if bvi < 4:
-                                        if (ccc+(self.varr[bvi])) % 8 == self.w+1:
+                                        if (ccc + (self.varr[bvi])
+                                                ) % 8 == self.w + 1:
                                             raise SyntaxError("break")
                                     else:
-                                        if (ccc+(self.varr[bvi])) % 8 == self.w-1:
+                                        if (ccc + (self.varr[bvi])
+                                                ) % 8 == self.w - 1:
                                             raise SyntaxError("break")
-                                    ccc = ccc+(self.varr[bvi])
+                                    ccc = ccc + (self.varr[bvi])
                                 if ub[ccc] == 0:
                                     ub[ccc] = 3
                                     self.upboard[ccc] = 3
@@ -282,9 +286,9 @@ class board():
         self.users[0] = "黒"
         self.users[1] = "白"
         math = dict()
-        for i in range(self.w*self.h):
+        for i in range(self.w * self.h):
             math[i] = 0
-        for i in range(self.w*self.h):
+        for i in range(self.w * self.h):
             self.upboard[i] = 0
         val = "ゲームモード選択\n1 . pvp\n2 . pve\n"
         ebd = discord.Embed(title="オセロ", description=val, color=self.bot.Color)

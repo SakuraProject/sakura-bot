@@ -37,11 +37,13 @@ def fmt_time(time):
         return '--:--:--'
     else:
         time = int(time)
-        return str(time // 3600) + ":" + str((time - (time // 3600)) // 60) + ":" + str(time % 60)
+        return str(time // 3600) + ":" + \
+            str((time - (time // 3600)) // 60) + ":" + str(time % 60)
 
 
 def restore(sid):
-    return sid.replace("daily:", "https://www.dailymotion.com/video/").replace("bili:", "https://www.bilibili.com/video/").replace("sc:", "https://soundcloud.com/").replace("yt:", "https://youtube.com/watch?v=").replace("nico:", "https://www.nicovideo.jp/watch/").replace("yf:", "https://ysmfilm.net/view.php?id=")
+    return sid.replace("daily:", "https://www.dailymotion.com/video/").replace("bili:", "https://www.bilibili.com/video/").replace("sc:", "https://soundcloud.com/").replace(
+        "yt:", "https://youtube.com/watch?v=").replace("nico:", "https://www.nicovideo.jp/watch/").replace("yf:", "https://ysmfilm.net/view.php?id=")
 
 
 class Queue():
@@ -171,7 +173,7 @@ class music(commands.Cog):
         EVAL self.bot.command_prefix+'play url or search query'
         ELang default
         """
-        pattern = "https?://[\w/:%#\$&\?\(\)~\.=\+\-]+"
+        pattern = "https?://[\\w/:%#\\$&\\?\\(\\)~\\.=\\+\\-]+"
         if not re.match(pattern, url):
             view = discord.ui.View()
             view.add_item(SearchList(ctx, self, url))
@@ -250,7 +252,7 @@ class music(commands.Cog):
                 self.lopq[ctx.guild.id].append(qp)
             self.queues[ctx.guild.id].append(qp)
         if voice.is_playing() and voice.source.music == True:
-            await ctx.send(qp.title+'をキューに追加しました')
+            await ctx.send(qp.title + 'をキューに追加しました')
         else:
             self.start = time()
             if not voice.is_playing():
@@ -499,7 +501,7 @@ class music(commands.Cog):
         qp = self.queues[ctx.guild.id][0]
         ebd.add_field(name="Title", value="[" + qp.title + "](" + qp.url + ")")
         ebd.add_field(name="Time", value=fmt_time(
-            int(time()-self.start)) + "/" + fmt_time(qp.duration))
+            int(time() - self.start)) + "/" + fmt_time(qp.duration))
         view = discord.ui.View()
         view.add_item(AplButton(qp, self.bot))
         await ctx.send(embeds=[ebd], view=view)
@@ -531,7 +533,7 @@ class music(commands.Cog):
                         if d.content == "キャンセル":
                             await ctx.send("キャンセルしました")
                             break
-                        await cur.execute("delete FROM `musiclist` where `userid` = %s and `lname` = %s and `id` = %s limit 1", (ctx.author.id, name, res[int(d.content)-1][3]))
+                        await cur.execute("delete FROM `musiclist` where `userid` = %s and `lname` = %s and `id` = %s limit 1", (ctx.author.id, name, res[int(d.content) - 1][3]))
                         await ctx.send("削除しました")
                 except SyntaxError:
                     await ctx.send("キャンセルしました")

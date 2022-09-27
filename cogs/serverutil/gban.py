@@ -143,7 +143,7 @@ class NextButton(discord.ui.View):
             return await interaction.response.send_message("このページが最初です", ephemeral=True)
 
     @discord.ui.button(label=">")
-    async def right(self, interaction: discord.Interaction,  bt):
+    async def right(self, interaction: discord.Interaction, bt):
         if self.page != len(self.it) - 1:
             self.page = self.page + 1
             await interaction.response.edit_message(embeds=[self.it[self.page]], view=self)

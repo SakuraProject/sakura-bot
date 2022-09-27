@@ -203,7 +203,8 @@ class websocket(commands.Cog):
         bot = self.bot
         cmds = list()
         l = args["l"]
-        for c in [m for m in bot.cogs.values() if m.__module__.startswith("cogs."+args["id"])]:
+        for c in [m for m in bot.cogs.values(
+        ) if m.__module__.startswith("cogs." + args["id"])]:
             for cm in c.get_commands():
                 cmds.append(await self.command({"id": cm.name}))
         args["res"] = cmds
@@ -238,10 +239,12 @@ class websocket(commands.Cog):
     async def commands(self, args):
         ccl = list()
         for c in self.bot.commands:
-            if type(c).__name__ == "Group" or type(c).__name__ == "HybridGroup":
+            if type(c).__name__ == "Group" or type(
+                    c).__name__ == "HybridGroup":
                 comds = list(c.commands)
                 for cm in comds:
-                    if type(cm).__name__ == "Group" or type(cm).__name__ == "HybridGroup":
+                    if type(cm).__name__ == "Group" or type(
+                            cm).__name__ == "HybridGroup":
                         comds1 = list(cm.commands)
                         for ccm in comds1:
                             ccl.append(await self.command({"id": c.name + " " + cm.name + " " + ccm.name}))

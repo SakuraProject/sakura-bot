@@ -140,7 +140,8 @@ class ObjectInfo(commands.Cog):
 
         return embed
 
-    def create_ui_embed_3(self, target: discord.Member | discord.User) -> discord.Embed:
+    def create_ui_embed_3(self, target: discord.Member |
+                          discord.User) -> discord.Embed:
         "管理者用: 共通サーバー一覧"
         embed = discord.Embed(
             title=f"{target}の共通サーバー一覧",
@@ -156,7 +157,8 @@ class ObjectInfo(commands.Cog):
 
         return embed
 
-    def create_ui_embed_4(self, target: discord.Member | discord.User) -> discord.Embed:
+    def create_ui_embed_4(self, target: discord.Member |
+                          discord.User) -> discord.Embed:
         "Sakuraバッヂ用"
         embed = discord.Embed(
             title="Sakura Badge 一覧",
