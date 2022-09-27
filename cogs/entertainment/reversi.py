@@ -1,4 +1,3 @@
-import os
 import discord
 from discord.ext import commands
 import asyncio
@@ -45,16 +44,16 @@ class board():
                 xy["y"] = 1
                 raise SyntaxError()
             if self.upboard[self.w-1] == 3:
-                xy["x"] = w
+                xy["x"] = self.w
                 xy["y"] = 1
                 raise SyntaxError()
             if self.upboard[(self.h-1)*self.w] == 3:
                 xy["x"] = 1
-                xy["y"] = h
+                xy["y"] = self.h
                 raise SyntaxError()
             if self.upboard[self.w*self.h-1] == 3:
-                xy["x"] = w
-                xy["y"] = h
+                xy["x"] = self.w
+                xy["y"] = self.h
                 raise SyntaxError()
             for lop in range(self.w*self.h):
                 if self.upboard[lop] == 3:
@@ -163,7 +162,7 @@ class board():
         ebd = msg.embeds[0]
         while True:
             if self.omc == self.w*self.h:
-                ebd.description = oend()
+                ebd.description = self.oend()
                 await msg.edit(embeds=[ebd])
                 return
             if self.turn == 1:
@@ -184,7 +183,7 @@ class board():
             y = 0
             if self.ck3 == 0:
                 if self.ck3b == 0:
-                    ebd.description = "どちらも置ける場所がない為終了します。\n" + oend()
+                    ebd.description = "どちらも置ける場所がない為終了します。\n" + (self.oend() or "")
                     await msg.edit(embeds=[ebd])
                     return
                 val = "置ける場所がない為スキップされました。"

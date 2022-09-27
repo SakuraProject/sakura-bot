@@ -259,7 +259,7 @@ class Mail(commands.Cog):
                 m.lt = time.time()
                 self.nlis.append(m)
                 self.chl.setdefault(ctx.channel.id, dict())
-                self.chl[ctx.channel.id][row[2]] = m
+                # self.chl[ctx.channel.id][row[2]] = m
                 async with self.bot.pool.acquire() as conn:
                     async with conn.cursor() as cur:
                         d = {
