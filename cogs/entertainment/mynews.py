@@ -57,7 +57,7 @@ class mynews(commands.Cog):
         await ctx.send("投稿を開始します")
         req = dict()
         req["did"] = str(ctx.author.id)
-        req["diname"] = ctx.author.name+'#'+ctx.author.discriminator
+        req["diname"] = ctx.author.name + '#' + ctx.author.discriminator
         try:
             req["ti"] = (await self.input(ctx, "ニュースのタイトルを入力してください")).content
             req["val"] = (await self.input(ctx, "ニュースの本文を入力してください")).content
@@ -84,13 +84,12 @@ class mynews(commands.Cog):
         """
         async with self.bot.session.get(
             "https://ysmsrv.wjg.jp/news/timebydiscord.php?input_date="
-            + urllib.parse.quote_plus(day, encoding='utf-8')
-        ) as resp:
-            rpt = await resp.text()
-            if rpt == "[]":
+        , query=urllib.parse.quote_plus(day, encoding='utf-8')) as resp:
+            rpt = await resp.json()
+            if rpt == []:
                 await ctx.reply("すみません。何も見つかりませんでした。日付を確認してみてください。例:2022/07/10")
             else:
-                gj = loads(rpt)
+                gj = rpt
                 vie = discord.ui.View()
                 if len(gj) >= 25:
                     tmp = []
