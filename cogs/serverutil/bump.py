@@ -22,7 +22,8 @@ class bump(commands.Cog):
     async def on_message(self, message):
         if message.author.id == 832614051514417202:
             if message.embeds[0].title == "GlowBoard - 色々できるサーバー掲示板":
-                if message.embeds[0].description.find("サーバーの表示順位をアップしました!") != -1:
+                if message.embeds[0].description.find(
+                        "サーバーの表示順位をアップしました!") != -1:
                     nof = time() + 5400
                     await self.save(message, "toss", nof)
                     async with self.bot.pool.acquire() as conn:
@@ -39,7 +40,8 @@ class bump(commands.Cog):
                                     color=self.bot.Color, description="tossを確認しました。次回は<t:" + str(int(nof)) + ":R>です。時間になったら通知します")
                                 await message.channel.send(embeds=[ebd])
         if message.author.id == 302050872383242240:
-            if message.embeds[0].description.find("表示順をアップしたよ") != -1 or message.embeds[0].description.find("Bump done") != -1:
+            if message.embeds[0].description.find(
+                    "表示順をアップしたよ") != -1 or message.embeds[0].description.find("Bump done") != -1:
                 nof = time() + 7200
                 await self.save(message, "bump", nof)
                 async with self.bot.pool.acquire() as conn:
@@ -137,7 +139,7 @@ class bump(commands.Cog):
                     if float(row[1]) <= nti:
                         if onoff == "on":
                             channel = self.bot.get_channel(row[0])
-                            if channel != None:
+                            if channel is not None:
                                 rol = channel.guild.get_role(int(res1[0][3]))
                                 ebd = discord.Embed(
                                     title=typ + "通知", color=self.bot.Color, description=self.dics[typ])
@@ -156,7 +158,7 @@ class bump(commands.Cog):
     @commands.command()
     @commands.has_guild_permissions(administrator=True)
     async def frrtraiseonoff(self, ctx, onoff, role: discord.Role = None):
-        if role == None:
+        if role is None:
             roleid = 0
         else:
             roleid = role.id
@@ -174,7 +176,7 @@ class bump(commands.Cog):
     @commands.command()
     @commands.has_guild_permissions(administrator=True)
     async def raiseonoff(self, ctx, onoff, role: discord.Role = None):
-        if role == None:
+        if role is None:
             roleid = 0
         else:
             roleid = role.id
@@ -192,7 +194,7 @@ class bump(commands.Cog):
     @commands.command()
     @commands.has_guild_permissions(administrator=True)
     async def bumponoff(self, ctx, onoff, role: discord.Role = None):
-        if role == None:
+        if role is None:
             roleid = 0
         else:
             roleid = role.id
@@ -210,7 +212,7 @@ class bump(commands.Cog):
     @commands.command()
     @commands.has_guild_permissions(administrator=True)
     async def tossonoff(self, ctx, onoff, role: discord.Role = None):
-        if role == None:
+        if role is None:
             roleid = 0
         else:
             roleid = role.id
@@ -228,7 +230,7 @@ class bump(commands.Cog):
     @commands.command()
     @commands.has_guild_permissions(administrator=True)
     async def uponoff(self, ctx, onoff, role: discord.Role = None):
-        if role == None:
+        if role is None:
             roleid = 0
         else:
             roleid = role.id

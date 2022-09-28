@@ -53,8 +53,10 @@ class KasoNotice(commands.Cog):
                 continue
             if not channel.last_message_id:
                 continue
-            last_datetime = discord.utils.snowflake_time(channel.last_message_id)
-            if self.cache[ch_id] < (discord.utils.utcnow() - last_datetime).seconds // 60:
+            last_datetime = discord.utils.snowflake_time(
+                channel.last_message_id)
+            if self.cache[ch_id] < (
+                    discord.utils.utcnow() - last_datetime).seconds // 60:
                 # 通知
                 await channel.send(
                     f"過疎化通知です。前回のメッセージ送信から{self.cache[ch_id]}分経ちました。"

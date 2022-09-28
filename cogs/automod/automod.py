@@ -39,7 +39,8 @@ class AutoMod(commands.Cog):
         self.time_ = {}  # raid関連
         self.sendtime: dict[str, dict[str, float]] = {}  # spam対策関連
         self.sendcont: dict[str, dict[str, str]] = {}  # spam対策関連
-        self.sendmsgs: dict[str, dict[str, list[discord.Message]]] = {}  # spam対策関連
+        self.sendmsgs: dict[str,
+                            dict[str, list[discord.Message]]] = {}  # spam対策関連
         self.sendcount: dict[str, dict[str, str]] = {}  # spam対策関連
         self.untask.start()
 
@@ -105,7 +106,8 @@ class AutoMod(commands.Cog):
         for key, value in defaults.items():
             if key not in self.settings[str(guild_id)]:
                 self.settings[str(guild_id)][key] = value
-        self.settings[str(guild_id)] = Setting(**self.settings[str(guild_id)])  # type: ignore
+        self.settings[str(guild_id)] = Setting(
+            **self.settings[str(guild_id)])  # type: ignore
 
         # デフォルトの設定
         for item in (
@@ -115,7 +117,8 @@ class AutoMod(commands.Cog):
             item.setdefault(str(guild_id), {})  # type: ignore
         if author_id:
             self.sendmsgs[str(guild_id)].setdefault(str(author_id), [])
-            self.sendtime[str(guild_id)].setdefault(str(author_id), time.time())
+            self.sendtime[str(guild_id)].setdefault(
+                str(author_id), time.time())
             self.sendcont[str(guild_id)].setdefault(str(author_id), '')
             self.sendcount[str(guild_id)].setdefault(str(author_id), '')
             self.punishments[str(guild_id)].setdefault(str(author_id), 0)
@@ -176,7 +179,7 @@ class AutoMod(commands.Cog):
                                 del self.muteds[gid][uid]
                                 continue
                             await member.remove_roles(discord.Object(self.settings[str(gid)]["muterole"]))
-                    except:
+                    except BaseException:
                         pass
 
     @automod.command()
@@ -264,7 +267,8 @@ class AutoMod(commands.Cog):
         self.data_check(member.guild.id, member.id)
 
         if (
-            not (g_setting := deepcopy(self.settings[str(member.guild.id)]))['antiraid']
+            not (g_setting := deepcopy(
+                self.settings[str(member.guild.id)]))['antiraid']
             or g_setting['raidaction'] == "none"
             or self.raidcheck(member)
         ):
@@ -273,7 +277,8 @@ class AutoMod(commands.Cog):
         # do_punishで実行するために少し改造
         g_setting["action"][str(15 ** 12)] = g_setting["raidaction"]
         if g_setting["raidactiontime"] != "none":
-            g_setting["action"][str(15 ** 12)] += f",{g_setting['raidactiontime']}"
+            g_setting["action"][str(
+                15 ** 12)] += f",{g_setting['raidactiontime']}"
         before = self.punishments[str(member.guild.id)].get(str(member.id), 0)
         self.punishments[str(member.guild.id)][str(member.id)] = 15 ** 12
 
@@ -318,9 +323,11 @@ class AutoMod(commands.Cog):
         assert ctx.guild
         await self.check_permissions("admin", ctx)
 
-        self.settings[str(ctx.guild.id)]["raidactiontime"] = timeparse(time) or 0
+        self.settings[str(ctx.guild.id)
+                      ]["raidactiontime"] = timeparse(time) or 0
 
-        self.settings[str(ctx.guild.id)]["antiraid"] = "off" if action == "none" else "on"
+        self.settings[str(ctx.guild.id)
+                      ]["antiraid"] = "off" if action == "none" else "on"
         self.settings[str(ctx.guild.id)]["raidcount"] = joincount
         self.settings[str(ctx.guild.id)]["raidaction"] = action
         if action != "none":
@@ -332,13 +339,15 @@ class AutoMod(commands.Cog):
     @automod.command()
     async def ignore(
         self, ctx: commands.Context, mode: Literal["channel", "role"],
-        target: TryConverter[discord.TextChannel, discord.Role] = commands.CurrentChannel
+        target: TryConverter[discord.TextChannel,
+                             discord.Role] = commands.CurrentChannel
     ):
         await self.check_permissions("admin", ctx)
         assert ctx.guild
 
         if mode == "channel":
-            self.settings[str(ctx.guild.id)]["ignore_channel"].append(target.id)
+            self.settings[str(ctx.guild.id)
+                          ]["ignore_channel"].append(target.id)
         else:
             self.settings[str(ctx.guild.id)]["ignore_role"].append(target.id)
 
@@ -349,7 +358,8 @@ class AutoMod(commands.Cog):
         assert msg.guild and isinstance(msg.author, discord.Member)
         self.data_check(msg.guild.id)
 
-        if msg.channel.id in self.settings[str(msg.guild.id)]["ignore_channel"]:
+        if msg.channel.id in self.settings[str(
+                msg.guild.id)]["ignore_channel"]:
             return True
         return arrayinarray(
             [r.id for r in msg.author.roles],
@@ -384,7 +394,8 @@ class AutoMod(commands.Cog):
 
         self.settings[str(ctx.guild.id)]["action"][str(strike)] = modaction
         if sec2 is not None:
-            self.settings[str(ctx.guild.id)]["action"][str(strike)] += f",{sec2}"
+            self.settings[str(ctx.guild.id)]["action"][str(
+                strike)] += f",{sec2}"
 
         await self.save(ctx.guild.id)
         await ctx.send(f"{strike}ストライクで{modaction}をするように設定しました。")
@@ -449,8 +460,8 @@ class AutoMod(commands.Cog):
 
     async def do_punish(
         self, g_setting: Setting, author: discord.Member,
-        channel: discord.TextChannel | discord.VoiceChannel | discord.Thread | 
-                 discord.DMChannel | discord.PartialMessageable | discord.GroupChannel | None = None
+        channel: discord.TextChannel | discord.VoiceChannel | discord.Thread |
+        discord.DMChannel | discord.PartialMessageable | discord.GroupChannel | None = None
     ):
         "刑罰を実行します。"
         punish = self.punishments[str(author.guild.id)][str(author.id)]
@@ -460,7 +471,8 @@ class AutoMod(commands.Cog):
             if g_setting['action'][str(punish)].startswith('ban'):
                 if g_setting['action'][str(punish)].startswith('ban,'):
                     self.muteds[str(author.guild.id)][str(author.id)] = MutedUser(
-                        time=int(time.time()) + int(g_setting['action'][str(punish)][4:]),
+                        time=int(time.time()) +
+                        int(g_setting['action'][str(punish)][4:]),
                         type="ban"
                     )
                 await author.ban(reason="sakura automod")
@@ -471,12 +483,14 @@ class AutoMod(commands.Cog):
                     await author.add_roles(discord.Object(g_setting["muterole"]))
                     if g_setting['action'][str(punish)].startswith('mute,'):
                         self.muteds[str(author.guild.id)][str(author.id)] = MutedUser(
-                            time=int(time.time()) + int(g_setting["action"][str(punish)][5:]),
+                            time=int(time.time()) +
+                            int(g_setting["action"][str(punish)][5:]),
                             type="mute"
                         )
             if g_setting['action'][str(punish)].startswith('timeout'):
                 await author.timeout(
-                    timedelta(seconds=int(g_setting['action'][str(punish)][8:])),
+                    timedelta(seconds=int(
+                        g_setting['action'][str(punish)][8:])),
                     reason="sakura automod"
                 )
         except discord.HTTPException:
@@ -564,22 +578,22 @@ class AutoMod(commands.Cog):
         embed = discord.Embed(title='Settings', color=self.bot.Color)
         puni = ''
         for k in g_setting['action'].keys():
-            puni = puni+str(k)+':'+g_setting['action'][k]+'\n'
+            puni = puni + str(k) + ':' + g_setting['action'][k] + '\n'
         if puni == '':
             puni = 'No Punishments'
         ign = ''
         igchi = 0
         for igk in g_setting['ignore_channel']:
-            igchi = igchi+1
-            ign = ign+'<#'+str(igk)+'> is ignored\n'
+            igchi = igchi + 1
+            ign = ign + '<#' + str(igk) + '> is ignored\n'
         for igkr in g_setting['ignore_role']:
-            ign = ign+'<@&'+str(igkr)+'> is ignored\n'
-            igchi = igchi+1
+            ign = ign + '<@&' + str(igkr) + '> is ignored\n'
+            igchi = igchi + 1
         if igchi == 0:
             ign = 'No ignored'
         automod = 'anti token:' + g_setting['tokens'] + '\n'
         automod += (f"antiraid: {g_setting['antiraid']}、"
-            f"{g_setting['raidcount']}人連続参加で動作、action: {g_setting['raidaction']}")
+                    f"{g_setting['raidcount']}人連続参加で動作、action: {g_setting['raidaction']}")
         embed.add_field(name='punishments', value=puni)
         embed.add_field(name='ignore', value=ign)
         embed.add_field(name='anti-token・anti-raid', value=automod)
@@ -595,7 +609,7 @@ class AutoMod(commands.Cog):
     @automod.command()
     async def role(
         self, ctx: commands.Context, type_: Literal["admin", "mod"],
-        mode: Literal["add","remove"], role: TryConverter[discord.Role, discord.Object]
+        mode: Literal["add", "remove"], role: TryConverter[discord.Role, discord.Object]
     ):
         await self.check_permissions("admin", ctx)
         assert ctx.guild
@@ -604,14 +618,16 @@ class AutoMod(commands.Cog):
             if mode == "add":
                 await ctx.send('このロールはすでに追加されています。')
             else:
-                self.settings[str(ctx.guild.id)][f'{type_}role'].remove(str(role.id))
+                self.settings[str(ctx.guild.id)][f'{type_}role'].remove(
+                    str(role.id))
                 await self.save(ctx.guild.id)
                 await ctx.send('削除完了しました。')
         else:
             if mode == "remove":
                 await ctx.send('このロールは存在しません。')
             else:
-                self.settings[str(ctx.guild.id)][f'{type_}role'].append(str(role.id))
+                self.settings[str(ctx.guild.id)][f'{type_}role'].append(
+                    str(role.id))
                 await self.save(ctx.guild.id)
                 await ctx.send('追加完了しました。')
 
@@ -643,6 +659,7 @@ class AutoMod(commands.Cog):
                 dumps(se["duplct"]), dumps(se["action"]), se["tokens"]
             )
         )
+
         async def sqler(cursor):
             await cursor.executemany(
                 """INSERT INTO AutoModPunishments VALUES (

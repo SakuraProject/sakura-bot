@@ -37,11 +37,13 @@ def fmt_time(time):
         return '--:--:--'
     else:
         time = int(time)
-        return str(time // 3600) + ":" + str((time - (time // 3600)) // 60) + ":" + str(time % 60)
+        return str(time // 3600) + ":" + \
+            str((time - (time // 3600)) // 60) + ":" + str(time % 60)
 
 
 def restore(sid):
-    return sid.replace("daily:", "https://www.dailymotion.com/video/").replace("bili:", "https://www.bilibili.com/video/").replace("sc:", "https://soundcloud.com/").replace("yt:", "https://youtube.com/watch?v=").replace("nico:", "https://www.nicovideo.jp/watch/").replace("yf:", "https://ysmfilm.net/view.php?id=")
+    return sid.replace("daily:", "https://www.dailymotion.com/video/").replace("bili:", "https://www.bilibili.com/video/").replace("sc:", "https://soundcloud.com/").replace(
+        "yt:", "https://youtube.com/watch?v=").replace("nico:", "https://www.nicovideo.jp/watch/").replace("yf:", "https://ysmfilm.net/view.php?id=")
 
 
 class Queue():
@@ -58,7 +60,7 @@ class Queue():
             'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
         try:
             if "nicovideo.jp" in self.url or "nico.ms" in self.url:
-                if self.video != None:
+                if self.video is not None:
                     self.video.close()
                 video = niconico.video.get_video(self.url)
                 video.connect()
@@ -121,7 +123,7 @@ class Queue():
 
     def close(self):
         # ニコニコ用
-        if self.video != None:
+        if self.video is not None:
             self.video.close()
 
 
@@ -171,7 +173,7 @@ class music(commands.Cog):
         EVAL self.bot.command_prefix+'play url or search query'
         ELang default
         """
-        pattern = "https?://[\w/:%#\$&\?\(\)~\.=\+\-]+"
+        pattern = "https?://[\\w/:%#\\$&\\?\\(\\)~\\.=\\+\\-]+"
         if not re.match(pattern, url):
             view = discord.ui.View()
             view.add_item(SearchList(ctx, self, url))
@@ -250,7 +252,7 @@ class music(commands.Cog):
                 self.lopq[ctx.guild.id].append(qp)
             self.queues[ctx.guild.id].append(qp)
         if voice.is_playing() and voice.source.music == True:
-            await ctx.send(qp.title+'をキューに追加しました')
+            await ctx.send(qp.title + 'をキューに追加しました')
         else:
             self.start = time()
             if not voice.is_playing():
@@ -274,7 +276,6 @@ class music(commands.Cog):
             await ctx.send(embeds=[ebd], view=view)
             await self.addc(qp)
 
-
     async def addc(self, qp):
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
@@ -287,7 +288,7 @@ class music(commands.Cog):
                     await cur.execute("UPDATE `musicranking` SET `count` = %s,`vid` = %s where `vid` = %s;", (ct, qp.sid, qp.sid))
 
     async def asyncnextqueue(self, FFMPEG_OPTIONS, voice, ctx, nextqueue):
-        if 0 < len(self.queues[ctx.guild.id]):    
+        if 0 < len(self.queues[ctx.guild.id]):
             try:
                 self.queues[ctx.guild.id][0].close()
                 self.queues[ctx.guild.id].pop(0)
@@ -500,7 +501,7 @@ class music(commands.Cog):
         qp = self.queues[ctx.guild.id][0]
         ebd.add_field(name="Title", value="[" + qp.title + "](" + qp.url + ")")
         ebd.add_field(name="Time", value=fmt_time(
-            int(time()-self.start)) + "/" + fmt_time(qp.duration))
+            int(time() - self.start)) + "/" + fmt_time(qp.duration))
         view = discord.ui.View()
         view.add_item(AplButton(qp, self.bot))
         await ctx.send(embeds=[ebd], view=view)
@@ -532,7 +533,7 @@ class music(commands.Cog):
                         if d.content == "キャンセル":
                             await ctx.send("キャンセルしました")
                             break
-                        await cur.execute("delete FROM `musiclist` where `userid` = %s and `lname` = %s and `id` = %s limit 1", (ctx.author.id, name, res[int(d.content)-1][3]))
+                        await cur.execute("delete FROM `musiclist` where `userid` = %s and `lname` = %s and `id` = %s limit 1", (ctx.author.id, name, res[int(d.content) - 1][3]))
                         await ctx.send("削除しました")
                 except SyntaxError:
                     await ctx.send("キャンセルしました")
@@ -607,28 +608,31 @@ class AplButton(discord.ui.Button):
                     await cur.execute("INSERT INTO `musiclist` (`userid`,`vid`,`lname`) VALUES (%s,%s,%s);", (interaction.user.id, self.it.sid, message.content))
                     await interaction.channel.send('追加完了しました')
 
+
 class AudioMixer(discord.AudioSource):
-    def __init__(self,msource):
+    def __init__(self, msource):
         super().__init__()
         self.s = []
         self.s.append(msource)
         self.music = False
         self.tts = False
+
     def read(self):
         data = bytes(3840)
         for pcm in self.s:
             pcmdata = pcm.read()
             if not pcmdata:
-                if getattr(pcm,"nextqueue",None) != None:
-                    getattr(pcm,"nextqueue")(pcm.cog)
+                if getattr(pcm, "nextqueue", None) is not None:
+                    getattr(pcm, "nextqueue")(pcm.cog)
                 pcm.cleanup()
                 self.s.remove(pcm)
             else:
-                data = audioop.add(data,pcmdata,2)
+                data = audioop.add(data, pcmdata, 2)
         if len(self.s) == 0:
             return bytes()
         else:
             return data
+
 
 async def setup(bot):
     await bot.add_cog(music(bot))

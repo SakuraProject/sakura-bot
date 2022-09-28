@@ -58,7 +58,8 @@ class schedule(commands.Cog):
             }
         }
     )
-    @app_commands.describe(start="予定開始時間", end="予定終了時間", day="日付", notice="DM通知するかどうか", title="タイトル")
+    @app_commands.describe(start="予定開始時間", end="予定終了時間",
+                           day="日付", notice="DM通知するかどうか", title="タイトル")
     async def set_(self, ctx: commands.Context, start, end, day, notice: bool, *, title):
         n = "on" if notice else "off"
         await ctx.typing()

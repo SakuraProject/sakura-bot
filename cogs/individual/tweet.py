@@ -39,7 +39,8 @@ class Tweet(commands.Cog, AsyncStreamingClient):
         self.proxy = None
         self.return_type = Response
         self.rid: Response = None  # type: ignore
-        # super().__init__(consumer_key=os.environ["TWITTERAPIKEY"],consumer_secret=os.environ["TWITTERSECRET"],access_token=os.environ["TWITTERTOKEN"],access_token_secret=os.environ["TWITTERTOKENSEC"]) # API(handler)
+        # super().__init__(consumer_key=os.environ["TWITTERAPIKEY"],consumer_secret=os.environ["TWITTERSECRET"],access_token=os.environ["TWITTERTOKEN"],access_token_secret=os.environ["TWITTERTOKENSEC"])
+        # # API(handler)
 
     async def cog_load(self):
         csql = "CREATE TABLE if not exists `tweet` (`gid` BIGINT NOT NULL,`cid` BIGINT NOT NULL,`twiname` VARCHAR(1000) NULL) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin;"
@@ -47,7 +48,7 @@ class Tweet(commands.Cog, AsyncStreamingClient):
             async with conn.cursor() as cur:
                 await cur.execute(csql)
         rs = await self.get_rules()
-        if rs.data != None:
+        if rs.data is not None:
             for r in rs.data:
                 await self.delete_rules(r.id)
         await self.setfilter()
@@ -69,19 +70,20 @@ class Tweet(commands.Cog, AsyncStreamingClient):
                                 self.fil.append(twiid)
                         except NotFound:
                             ch = self.bot.get_channel(row[0])
-                            if ch != None:
+                            if ch is not None:
                                 await ch.send("通知を試みましたがユーザーが見つかりませんでした。")
                             await cur.execute("delete FROM `tweet` where `cid`=%s and `twiname`=%s", (row[0], row[1]))
                         except Forbidden:
                             ch = self.bot.get_channel(row[0])
-                            if ch != None:
+                            if ch is not None:
                                 await ch.send("通知を試みましたが情報の取得に失敗しました")
                 rtext = ""
                 for name in self.fil:
                     if rtext != "":
                         rtext = rtext + " OR "
-                    rtext = rtext + "from:"+name
-                self.rid: Response = await self.add_rules(StreamRule(rtext))  # type: ignore
+                    rtext = rtext + "from:" + name
+                # type: ignore
+                self.rid: Response = await self.add_rules(StreamRule(rtext))
 
     async def setfilter(self):
         await self.setrule()
@@ -96,7 +98,7 @@ class Tweet(commands.Cog, AsyncStreamingClient):
             id=tweet.author_id, user_fields="username,profile_image_url").data
         twiname = user.username
         image = user.profile_image_url
-        if tweet.referenced_tweets != None:
+        if tweet.referenced_tweets is not None:
             if tweet.referenced_tweets[0].type == "quoted":
                 tweet.text = twiname + " ReTweeted [This Tweet](https://twitter.com/" + self.api.get_user(id=self.api.get_tweet(tweet.referenced_tweets[0].id, user_fields="username",
                                                                                                                                 expansions="author_id").data.author_id, user_fields="username,profile_image_url").data.username + "/status/" + str(tweet.referenced_tweets[0].id) + ")\n" + tweet.text
@@ -111,7 +113,7 @@ class Tweet(commands.Cog, AsyncStreamingClient):
                 result = await cur.fetchall()
                 for row in result:
                     ch = self.bot.get_channel(row[0])
-                    if ch != None:
+                    if ch is not None:
                         try:
                             wh = await self.getwebhook(ch)
                             await wh.send(tweet.text, username=twiname, avatar_url=image)
@@ -136,12 +138,12 @@ class Tweet(commands.Cog, AsyncStreamingClient):
                 result = await cur.fetchall()
                 for row in result:
                     ch = self.bot.get_channel(int(row[0]))
-                    if ch != None:
+                    if ch is not None:
                         try:
                             wh = await self.getwebhook(ch)
                             await wh.send(status.text, username=status.user.screen_name,
-                                avatar_url=status.user.default_profile_image)
-                        except:
+                                          avatar_url=status.user.default_profile_image)
+                        except BaseException:
                             continue
 
     async def getwebhook(self, channel: discord.TextChannel) -> discord.Webhook:
@@ -179,7 +181,7 @@ class Tweet(commands.Cog, AsyncStreamingClient):
                 if len(result) == 0:
                     await cur.execute("INSERT INTO `tweet` (gid, cid, twiname) VALUES (%s,%s,%s)", (ctx.guild.id, ctx.channel.id, name))
                     await ctx.send("設定しました")
-                    if self.rid.data != None:
+                    if self.rid.data is not None:
                         await self.delete_rules(ids=self.rid.data[0].id)
                     else:
                         try:
@@ -209,7 +211,7 @@ class Tweet(commands.Cog, AsyncStreamingClient):
             async with conn.cursor() as cur:
                 await cur.execute("delete from `tweet` where twiname=%s and cid=%s limit 1;", (name, ctx.channel.id))
                 await ctx.send("削除しました")
-                if self.rid.data != None:
+                if self.rid.data is not None:
                     await self.delete_rules(ids=self.rid.data[0].id)
                 else:
                     try:

@@ -91,7 +91,8 @@ class ObjectInfo(commands.Cog):
         elif target.bot:
             badge = self.BOT_EMOJI
 
-        badge += "".join(self.BADGES.get(str(flg)[10:], "") for flg in target.public_flags.all())
+        badge += "".join(self.BADGES.get(str(flg)[10:], "")
+                         for flg in target.public_flags.all())
 
         embed = discord.Embed(
             title=f"{target}の情報",
@@ -118,14 +119,16 @@ class ObjectInfo(commands.Cog):
                 embed.add_field(name="表示名", value=target.display_name)
             embed.add_field(
                 name="サーバーへの参加日",
-                value=discord.utils.format_dt(target.joined_at) if target.joined_at else "不明"
+                value=discord.utils.format_dt(
+                    target.joined_at) if target.joined_at else "不明"
             )
         return embed
 
     def create_ui_embed_2(self, target: discord.Member) -> discord.Embed:
         "権限一覧(メンバー専用)"
         desc = "\n".join(
-            (":white_check_mark: " if getattr(target.guild_permissions, perm, False) else ":x:") + name
+            (":white_check_mark: " if getattr(
+                target.guild_permissions, perm, False) else ":x:") + name
             for perm, name in PERMISSIONS.items()
         )
         embed = discord.Embed(
@@ -137,7 +140,8 @@ class ObjectInfo(commands.Cog):
 
         return embed
 
-    def create_ui_embed_3(self, target: discord.Member | discord.User) -> discord.Embed:
+    def create_ui_embed_3(self, target: discord.Member |
+                          discord.User) -> discord.Embed:
         "管理者用: 共通サーバー一覧"
         embed = discord.Embed(
             title=f"{target}の共通サーバー一覧",
@@ -153,14 +157,15 @@ class ObjectInfo(commands.Cog):
 
         return embed
 
-    def create_ui_embed_4(self, target: discord.Member | discord.User) -> discord.Embed:
+    def create_ui_embed_4(self, target: discord.Member |
+                          discord.User) -> discord.Embed:
         "Sakuraバッヂ用"
         embed = discord.Embed(
             title="Sakura Badge 一覧",
             description="その人が持っているSakuraバッヂの一覧です。"
         )
-        badges = (sakurabadge.BADGES[i] for i in 
-            sakurabadge.get_badge(target, self.bot))
+        badges = (sakurabadge.BADGES[i] for i in
+                  sakurabadge.get_badge(target, self.bot))
         embed.add_field(name="** **", value="\n".join(
             f"{i['emoji']}{i['name']}: {i['description']}"
             for i in badges
@@ -210,7 +215,8 @@ class ObjectInfo(commands.Cog):
             value=discord.utils.format_dt(target.created_at)
         )
         if target.owner:
-            embed.add_field(name="オーナー", value=f"{target.owner} ({target.owner.id})")
+            embed.add_field(
+                name="オーナー", value=f"{target.owner} ({target.owner.id})")
 
         embed.add_field(
             name="チャンネル数 (カテゴリ, テキスト, ボイス, ステージ)",
@@ -243,14 +249,14 @@ class ObjectInfo(commands.Cog):
         desc = "\n".join(
             f"{m.mention}: {discord.utils.format_dt(m.joined_at)}"
             f"({(discord.utils.utcnow() - m.joined_at).days}日前)"
-            for m in sorted(target.members, key=lambda m: m.joined_at)  # type: ignore
+            # type: ignore
+            for m in sorted(target.members, key=lambda m: m.joined_at)
         )
         embed = discord.Embed(
             title="古参メンバーランキング",
             description=desc[:4090] + "\n..." if len(desc) > 4095 else desc
         )
         return embed
-
 
     @commands.hybrid_command()
     async def emojiinfo(self, ctx: commands.Context, target: discord.Emoji):
@@ -296,11 +302,11 @@ class ObjectInfo(commands.Cog):
             color=self.bot.Color
         )
         embed.add_field(name="作成日時",
-            value=discord.utils.format_dt(target.created_at)
-                  if target.created_at else "なし")
+                        value=discord.utils.format_dt(target.created_at)
+                        if target.created_at else "なし")
         embed.add_field(name="有効期限",
-            value=discord.utils.format_dt(target.expires_at)
-                  if target.expires_at else "不明")
+                        value=discord.utils.format_dt(target.expires_at)
+                        if target.expires_at else "不明")
         embed.add_field(name="使用回数", value=target.uses)
         embed.add_field(name="使用可能回数", value=target.max_uses)
         embed.add_field(

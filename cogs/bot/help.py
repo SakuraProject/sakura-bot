@@ -1,6 +1,7 @@
+from __future__ import annotations
+
 import os
 import inspect
-from unicodedata import category
 
 import discord
 from discord.ext import commands
@@ -9,13 +10,12 @@ from utils import Bot, TimeoutView
 from data.help import HELP
 
 FIRST_DESC = ("これはBotのヘルプです。下の選択メニューからカテゴリを選ぶことによりコマンドを選択できます。"
-    "これを見てもよくわからない方はサポートサーバーまでお問い合わせください。")
+              "これを見てもよくわからない方はサポートサーバーまでお問い合わせください。")
 
 
 class Help(commands.Cog):
     def __init__(self, bot: Bot):
         self.bot = bot
-        self.helps = {}
 
     @commands.hybrid_command(
         description="ヘルプを表示します。", aliases=["ヘルプ"]
@@ -57,7 +57,8 @@ class Help(commands.Cog):
         result = []
         for cmd_name in cmds:
             cmd = self.bot.get_command(cmd_name)
-            if not cmd: continue
+            if not cmd:
+                continue
             result.append(cmd)
         return result
 

@@ -1,7 +1,7 @@
 from discord.ext import commands
 import discord
 import asyncio
-from ujson import loads, dumps
+from orjson import loads, dumps
 
 
 class gban(commands.Cog):
@@ -9,8 +9,8 @@ class gban(commands.Cog):
         self.bot, self.before = bot, ""
 
     async def cog_load(self):
-        csql = "CREATE TABLE if not exists `gban` (`userid` BIGINT NOT NULL,`reason` VARCHAR(2000) NOT NULL,`evidence` JSON NOT NULL) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin;"
-        csql1 = "CREATE TABLE if not exists `gbanset` (`gid` BIGINT NOT NULL,`onoff` VARCHAR(3) NOT NULL) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin;"
+        csql = "CREATE TABLE if not exists `gban` (`userid` PRIMARY KEY BIGINT NOT NULL,`reason` VARCHAR(2000) NOT NULL,`evidence` JSON NOT NULL) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin;"
+        csql1 = "CREATE TABLE if not exists `gbanset` (`gid` PRIMARY KEY BIGINT NOT NULL,`onoff` VARCHAR(3) NOT NULL) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin;"
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
                 await cur.execute(csql)
@@ -23,16 +23,13 @@ class gban(commands.Cog):
 
     @gban.command()
     @commands.has_permissions(administrator=True)
-    async def onoff(self, ctx, onoff):
-        async with self.bot.pool.acquire() as conn:
-            async with conn.cursor() as cur:
-                await cur.execute("SELECT * FROM `gbanset` where `gid` = %s", (ctx.guild.id,))
-                res = await cur.fetchall()
-                if len(res) == 0:
-                    await cur.execute("INSERT INTO `gbanset` (`gid`, `onoff`) VALUES (%s,%s);", (ctx.guild.id, onoff.replace("true", "on")))
-                else:
-                    await cur.execute("UPDATE `gbanset` SET `gid` = %s,`onoff` = %s,`role` = %s where `gid` = %s;", (ctx.guild.id, onoff.replace("true", "on"), roleid, ctx.guild.id))
-                await ctx.reply("設定しました")
+    async def onoff(self, ctx, onoff: bool):
+        await self.bot.execute_sql(
+            """INSERT INTO gbanset VALUES (%s, %s)
+                ON DUPLICATE KEY UPDATE onoff = VALUES(onoff);""",
+            (ctx.guild.id, "on" if onoff else "off")
+        )
+        await ctx.send("Ok")
 
     @gban.command()
     @commands.is_owner()
@@ -40,8 +37,7 @@ class gban(commands.Cog):
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
                 await cur.execute("SELECT * FROM `gban` where `userid` = %s", (user_id,))
-                res = await cur.fetchall()
-                if len(res) != 0:
+                if await cur.fetchone() is not None:
                     await ctx.send("そのユーザーはすでに登録されています")
                     return
                 if ctx.message.attachments:
@@ -73,14 +69,13 @@ class gban(commands.Cog):
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
                 await cur.execute("SELECT * FROM `gban`")
-                res = await cur.fetchall()
-                if len(res) == 0:
+                if (res := await cur.fetchall()) == 0:
                     await ctx.send("gbanされた人はまだいません")
                 else:
                     ebds = list()
                     for r in res:
                         user = self.bot.get_user(r[0])
-                        if user == None:
+                        if user is None:
                             uname = "名前が取得出来ませんでした"
                         else:
                             uname = user.name
@@ -148,7 +143,7 @@ class NextButton(discord.ui.View):
             return await interaction.response.send_message("このページが最初です", ephemeral=True)
 
     @discord.ui.button(label=">")
-    async def right(self, interaction: discord.Interaction,  bt):
+    async def right(self, interaction: discord.Interaction, bt):
         if self.page != len(self.it) - 1:
             self.page = self.page + 1
             await interaction.response.edit_message(embeds=[self.it[self.page]], view=self)

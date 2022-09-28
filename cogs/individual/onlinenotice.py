@@ -49,7 +49,7 @@ class OnlineNotice(commands.Cog):
             """INSERT INTO OnlineNotice VALUES (%s, %s)
             ON DUPLICATE KEY UPDATE Authors=%s""",
             (notice_user.id, dumps(self.cache[notice_user.id]),
-            dumps(self.cache[notice_user.id]))
+             dumps(self.cache[notice_user.id]))
         )
         await ctx.send("Ok")
 
@@ -91,7 +91,8 @@ class OnlineNotice(commands.Cog):
                     )
                     user = self.bot.get_user(id_)
                     if not user:
-                        del self.cache[after.id][self.cache[after.id].index(id_)]
+                        del self.cache[after.id][self.cache[after.id].index(
+                            id_)]
                         await self.bot.execute_sql(
                             "UPDATE OnlineNotice SET Authors = %s WHERE UserId = %s",
                             (dumps(self.cache[after.id]), after.id)

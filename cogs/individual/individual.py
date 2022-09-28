@@ -46,10 +46,10 @@ class Individual(commands.Cog):
             u for u in self.bot.users
             if u.bot and u not in ctx.guild.members
             and (m.status != discord.Status.offline
-                if (m := u.mutual_guilds[0].get_member(u.id)) and condition == "online"
-                else True)
+                 if (m := u.mutual_guilds[0].get_member(u.id)) and condition == "online"
+                 else True)
             and (u.id not in self.ignore_bot_cache
-                if condition != "include_ignored" else True)
+                 if condition != "include_ignored" else True)
         ]
         bot = random.choice(bots)
         await ctx.send(f"{bot}が見つかりました。(全{len(bots)}bot)", embed=discord.Embed(

@@ -4,6 +4,7 @@ import random
 from hashids import Hashids
 from ujson import loads, dumps
 
+
 class captcha(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -35,13 +36,13 @@ class captcha(commands.Cog):
         """
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
-                await cur.execute("SELECT * FROM `captcha` where `gid`=%s and `cid`=%s",(ctx.guild.id,ctx.channel.id))
+                await cur.execute("SELECT * FROM `captcha` where `gid`=%s and `cid`=%s", (ctx.guild.id, ctx.channel.id))
                 res = await cur.fetchall()
                 await conn.commit()
                 if len(res) == 0:
-                    await cur.execute("INSERT INTO `captcha` (`gid`, `cid`, `rid`, `type`) VALUES (%s,%s,%s,%s);",(ctx.guild.id,ctx.channel.id,role.id,"web"))
+                    await cur.execute("INSERT INTO `captcha` (`gid`, `cid`, `rid`, `type`) VALUES (%s,%s,%s,%s);", (ctx.guild.id, ctx.channel.id, role.id, "web"))
                 else:
-                    await cur.execute("UPDATE `captcha` SET `gid` = %s,`cid` = %s,`rid` = %s, `type` = %s where `gid`=%s and `cid`=%s",(ctx.guild.id,ctx.channel.id,role.id,"web",ctx.guild.id,ctx.channel.id))
+                    await cur.execute("UPDATE `captcha` SET `gid` = %s,`cid` = %s,`rid` = %s, `type` = %s where `gid`=%s and `cid`=%s", (ctx.guild.id, ctx.channel.id, role.id, "web", ctx.guild.id, ctx.channel.id))
                 embed = discord.Embed(
                     title="認証パネル", color=self.bot.Color, description="このサーバを利用するには認証が必要です。ボタンをおして認証を開始して下さい")
                 bts = list()
@@ -67,13 +68,13 @@ class captcha(commands.Cog):
         """
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
-                await cur.execute("SELECT * FROM `captcha` where `gid`=%s and `cid`=%s",(ctx.guild.id,ctx.channel.id))
+                await cur.execute("SELECT * FROM `captcha` where `gid`=%s and `cid`=%s", (ctx.guild.id, ctx.channel.id))
                 res = await cur.fetchall()
                 await conn.commit()
                 if len(res) == 0:
-                    await cur.execute("INSERT INTO `captcha` (`gid`, `cid`, `rid`, `type`) VALUES (%s,%s,%s,%s);",(ctx.guild.id,ctx.channel.id,role.id,"pass:" + password))
+                    await cur.execute("INSERT INTO `captcha` (`gid`, `cid`, `rid`, `type`) VALUES (%s,%s,%s,%s);", (ctx.guild.id, ctx.channel.id, role.id, "pass:" + password))
                 else:
-                    await cur.execute("UPDATE `captcha` SET `gid` = %s,`cid` = %s,`rid` = %s, `type` = %s where `gid`=%s and `cid`=%s",(ctx.guild.id,ctx.channel.id,role.id,"pass:" + password,ctx.guild.id,ctx.channel.id))
+                    await cur.execute("UPDATE `captcha` SET `gid` = %s,`cid` = %s,`rid` = %s, `type` = %s where `gid`=%s and `cid`=%s", (ctx.guild.id, ctx.channel.id, role.id, "pass:" + password, ctx.guild.id, ctx.channel.id))
                 embed = discord.Embed(
                     title="認証パネル", color=self.bot.Color, description="このサーバを利用するには認証が必要です。ボタンをおして認証を開始して下さい")
                 bts = list()
@@ -86,11 +87,13 @@ class captcha(commands.Cog):
     @commands.Cog.listener()
     async def on_interaction(self, interaction: discord.Interaction):
         if interaction.data.get("custom_id", "") == "sakurawebcaptcha":
-            vcode = random.randint(10000,99999)
+            vcode = random.randint(10000, 99999)
             option = []
             for r in range(10):
-                option.append(discord.SelectOption(label=str(random.randint(10000,99999))))
-            option.append(discord.SelectOption(label=str(vcode),value="vcode"))
+                option.append(discord.SelectOption(
+                    label=str(random.randint(10000, 99999))))
+            option.append(discord.SelectOption(
+                label=str(vcode), value="vcode"))
             random.shuffle(option)
             ws = self.bot.cogs["websocket"]
             sen = dict()
@@ -103,14 +106,16 @@ class captcha(commands.Cog):
             sen["type"] = "res"
             await ws.sock.send(dumps(sen))
             bts = list()
-            button = discord.ui.Button(label="Web Captchaページへ",url="https://sakura-bot.net/captcha?reqkey=" + args["id"])
+            button = discord.ui.Button(
+                label="Web Captchaページへ", url="https://sakura-bot.net/captcha?reqkey=" + args["id"])
             bts.append(button)
             lis = NList(option)
             bts.append(lis)
-            await interaction.response.send_message(content="認証を開始します。下のボタンを押してWebページからCaptchaを完了してください。完了後認証用コードが表示されるのでセレクトボタンから同じものを選んでください",ephemeral=True,view=MainView(bts))
+            await interaction.response.send_message(content="認証を開始します。下のボタンを押してWebページからCaptchaを完了してください。完了後認証用コードが表示されるのでセレクトボタンから同じものを選んでください", ephemeral=True, view=MainView(bts))
         if interaction.data.get("custom_id", "") == "sakurapasscaptcha":
             m = PM()
             await interaction.response.send_modal(m)
+
 
 class MainView(discord.ui.View):
     def __init__(self, args):
@@ -118,6 +123,7 @@ class MainView(discord.ui.View):
 
         for txt in args:
             self.add_item(txt)
+
 
 class NList(discord.ui.Select):
     def __init__(self, args):
@@ -127,36 +133,40 @@ class NList(discord.ui.Select):
         if self.values[0] == "vcode":
             async with bot.pool.acquire() as conn:
                 async with conn.cursor() as cur:
-                    await cur.execute("SELECT * FROM `captcha` where `gid`=%s and `cid`=%s",(interaction.guild.id,interaction.channel.id))
+                    await cur.execute("SELECT * FROM `captcha` where `gid`=%s and `cid`=%s", (interaction.guild.id, interaction.channel.id))
                     res = await cur.fetchall()
                     await conn.commit()
                     role = interaction.guild.get_role(res[0][2])
-                    await interaction.user.add_roles(role,reason="Sakura Captcha")
-                    await interaction.response.edit_message(content="認証が完了しました",view=discord.ui.View())
+                    await interaction.user.add_roles(role, reason="Sakura Captcha")
+                    await interaction.response.edit_message(content="認証が完了しました", view=discord.ui.View())
         else:
-            await interaction.response.edit_message(content="確認コードが間違っています",view=discord.ui.View())
+            await interaction.response.edit_message(content="確認コードが間違っています", view=discord.ui.View())
+
 
 class PassInput(discord.ui.TextInput):
     def __init__(self):
         super().__init__(label="このサーバーで話すにはパスワード認証が必要です。パスワードを入力してください")
 
+
 class PM(discord.ui.Modal):
     def __init__(self):
-        super().__init__(title="認証を開始します。パスワードを入力してください",timeout=None)
+        super().__init__(title="認証を開始します。パスワードを入力してください", timeout=None)
         self.iv = PassInput()
         self.add_item(self.iv)
+
     async def on_submit(self, interaction: discord.Interaction):
         async with bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
-                await cur.execute("SELECT * FROM `captcha` where `gid`=%s and `cid`=%s",(interaction.guild.id,interaction.channel.id))
+                await cur.execute("SELECT * FROM `captcha` where `gid`=%s and `cid`=%s", (interaction.guild.id, interaction.channel.id))
                 res = await cur.fetchall()
                 await conn.commit()
                 if "pass:" + self.iv.value == res[0][3]:
                     role = interaction.guild.get_role(res[0][2])
-                    await interaction.user.add_roles(role,reason="Sakura Captcha")
-                    await interaction.response.send_message(content="認証が完了しました",view=discord.ui.View(),ephemeral=True)
+                    await interaction.user.add_roles(role, reason="Sakura Captcha")
+                    await interaction.response.send_message(content="認証が完了しました", view=discord.ui.View(), ephemeral=True)
                 else:
-                    await interaction.response.send_message(content="パスワードが違います",view=discord.ui.View(),ephemeral=True)
+                    await interaction.response.send_message(content="パスワードが違います", view=discord.ui.View(), ephemeral=True)
+
 
 async def setup(_bot):
     global bot
