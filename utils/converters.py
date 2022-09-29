@@ -39,7 +39,7 @@ else:
             pass
 
         def __repr__(self) -> None:
-            return f'<class TryConverter([{", ".join(repr(c) for c in elf.converters)}])>'
+            return f'<class TryConverter([{", ".join(repr(c) for c in self.converters)}])>'
 
         def __class_getitem__(cls, params):
             if not isinstance(params, tuple):
