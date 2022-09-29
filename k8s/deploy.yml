@@ -10,7 +10,7 @@ spec:
   template:
     metadata:
       labels:
-        app: knowledge
+        app: sakura-bot
     spec:
       containers:
       - name: sakura-container
