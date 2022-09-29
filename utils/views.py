@@ -36,7 +36,7 @@ class EmbedSelect(discord.ui.Select):
     async def callback(self, interaction: discord.Interaction):
         assert interaction.message is not None
         if self.parent and self.parent.author_id:
-            if self.parent.author_id != interaction.user:
+            if self.parent.author_id != interaction.user.id:
                 return await interaction.response.send_message(
                     'あなたはこの操作をすることができません。', ephemeral=True
                 )
