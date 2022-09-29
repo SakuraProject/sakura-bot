@@ -391,6 +391,8 @@ class AutoMod(commands.Cog):
         assert ctx.guild
         if sec is not None:
             sec2 = timeparse(sec)
+        else:
+            sec2 = None
 
         self.settings[str(ctx.guild.id)]["action"][str(strike)] = modaction
         if sec2 is not None:
