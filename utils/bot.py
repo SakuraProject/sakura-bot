@@ -1,6 +1,6 @@
 # Sakura Utils - Bot
 
-from typing import Any, Callable
+from typing import Callable
 
 from inspect import iscoroutinefunction
 
@@ -11,8 +11,10 @@ from aiomysql import Pool
 
 __all__ = ["Bot"]
 
+
 class Bot(commands.Bot):
     "SakuraBotのコアです。"
+
     session: ClientSession
     pool: Pool
     owner_ids: list[int]
@@ -25,6 +27,7 @@ class Bot(commands.Bot):
         **kwargs
     ):
         "SQL文を実行します。"
+
         async with self.pool.acquire() as conn:
             async with conn.cursor() as cursor:
                 if iscoroutinefunction(sql):

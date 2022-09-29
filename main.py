@@ -14,8 +14,10 @@ from utils import Bot
 
 load_dotenv()
 
-bot = Bot(command_prefix='sk!', intents=discord.Intents.all(), help_command=None, 
-    allowed_mentions=discord.AllowedMentions.none())
+bot = Bot(
+    command_prefix='sk!', intents=discord.Intents.all(),
+    help_command=None, allowed_mentions=discord.AllowedMentions.none()
+)
 
 
 @bot.listen()
