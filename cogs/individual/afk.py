@@ -64,7 +64,7 @@ class Afk(commands.Cog):
                             await cur.execute(sql)
                             mresult = await cur.fetchall()
                             vl = mresult[0][1]
-                            await wh.send(vl, username=maid.name+'-留守メッセージ', avatar_url=maid.display_avatar.url)
+                            await wh.send(vl, username=maid.name + '-留守メッセージ', avatar_url=maid.display_avatar.url)
 
 
 async def setup(bot):

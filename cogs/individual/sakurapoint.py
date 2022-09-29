@@ -16,7 +16,8 @@ class SakuraPoint(commands.Cog):
 
     def __init__(self, bot: Bot) -> None:
         self.bot = bot
-        self.pattern = re.compile("(https?://)?discord(.gg|.com/invite)/KW4CZvYMJg")
+        self.pattern = re.compile(
+            "(https?://)?discord(.gg|.com/invite)/KW4CZvYMJg")
         self.url = re.compile(
             "https://discord.com/oauth2/authorize\\?client_id=985852917489737728.*"
         )
@@ -67,7 +68,8 @@ class SakuraPoint(commands.Cog):
         assert message.guild
         if message.author.bot:
             return
-        if not (self.url.search(message.content) or self.url.search(message.content)):
+        if not (self.url.search(message.content)
+                or self.url.search(message.content)):
             return
         content = "宣伝ありがとうございます！"
         if not message.guild.id in self.ad_cache:
@@ -80,7 +82,7 @@ class SakuraPoint(commands.Cog):
             self.cache[message.author.id] += 1000
         try:
             await message.channel.send(content, delete_after=3)
-        except:
+        except BaseException:
             pass
         if not message.guild.id in self.ad_cache:
             self.ad_cache.append(message.guild.id)

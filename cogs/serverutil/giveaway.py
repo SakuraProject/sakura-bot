@@ -46,28 +46,28 @@ class giveaway(commands.Cog):
                                 new_message = None
                                 channel = self.bot.get_channel(
                                     int(gaway['cid'][str(i)]))
-                                if channel != None:
+                                if channel is not None:
                                     try:
                                         new_message = await channel.fetch_message(int(gaway['mid'][str(i)]))
                                     except discord.errors.NotFound:
-                                        str('no message')
+                                        new_message = None
                             except KeyError:
                                 str("keyerror")
-                            if channel != None:
-                                if new_message != None:
+                            if channel is not None:
+                                if new_message is not None:
                                     userstemp = [u async for u in new_message.reactions[0].users()]
                                     try:
                                         userstemp.pop(
                                             users.index(self.bot.user))
-                                    except:
+                                    except BaseException:
                                         str('poperror')
                                         users.extend(userstemp)
                                 ufc = 0
                                 for u in users:
                                     if u.id == self.bot.user.id:
                                         users.pop(ufc)
-                                        ufc = ufc-1
-                                    ufc = ufc+1
+                                        ufc = ufc - 1
+                                    ufc = ufc + 1
                                 # users.pop(users.index(self.bot.user))
                         win = int(gaway['win'])
                         prize = gaway['prize']
@@ -75,13 +75,13 @@ class giveaway(commands.Cog):
                             winner = 'No users'
                         else:
                             wusgiv = random.choice(users)
-                            wusgivt = wusgiv.name+'#'+wusgiv.discriminator
-                            winner = wusgiv.mention+'('+wusgivt+')'
-                            for i in range(win-1):
+                            wusgivt = wusgiv.name + '#' + wusgiv.discriminator
+                            winner = wusgiv.mention + '(' + wusgivt + ')'
+                            for i in range(win - 1):
                                 wusgiv = random.choice(users)
-                                wusgivt = wusgiv.name+'#'+wusgiv.discriminator
-                                winner = winner+',' + \
-                                    wusgiv.mention+'('+wusgivt+')'
+                                wusgivt = wusgiv.name + '#' + wusgiv.discriminator
+                                winner = winner + ',' + \
+                                    wusgiv.mention + '(' + wusgivt + ')'
                             for i in range(len(gaway['cid'])):
                                 winning_announcement = discord.Embed(
                                     color=0xff2424)
@@ -93,7 +93,7 @@ class giveaway(commands.Cog):
                                     text='Thanks for entering!')
                                 channelt = self.bot.get_channel(
                                     int(gaway['cid'][str(i)]))
-                                if channelt != None:
+                                if channelt is not None:
                                     await channelt.send(embed=winning_announcement)
                                 self.gavs.pop(gk)
                                 await self.delete(gk)
@@ -147,16 +147,16 @@ class giveaway(commands.Cog):
                 giveaway_answers.append(message.content)
         try:
             c_id = int(giveaway_answers[0][2:-1])
-        except:
+        except BaseException:
             await ctx.channel.send(f'チャンネルメンションが無効だよ。このように入力してね: {ctx.channel.mention}')
             return
         channel = self.bot.get_channel(c_id)
         try:
-            jself.gavs = self.gavs[code]
-            prize = jself.gavs['prize']
-            author = jself.gavs['author']
+            gavs = self.gavs[code]
+            prize = gavs['prize']
+            author = gavs['author']
             endstr = datetime.datetime.fromtimestamp(
-                int(jself.gavs['end'])).strftime('%Y/%m/%d %H:%M')
+                int(gavs['end'])).strftime('%Y/%m/%d %H:%M')
             give = discord.Embed(color=0x2ecc71)
             give.set_author(name=f'GIVEAWAY TIME!',
                             icon_url='https://i.imgur.com/VaX0pfM.png')
@@ -191,7 +191,7 @@ class giveaway(commands.Cog):
                 giveaway_answers.append(message.content)
         try:
             c_id = int(giveaway_answers[0][2:-1])
-        except:
+        except BaseException:
             await ctx.channel.send(f'チャンネルメンションが無効だよ。このように入力してね: {ctx.channel.mention}')
             return
         channel = self.bot.get_channel(c_id)
@@ -214,13 +214,13 @@ class giveaway(commands.Cog):
         igvi = 1
         while True:
             if idt in self.gavs.keys():
-                idt = id+'_'+str(igvi)
-                igvi = igvi+1
+                idt = id + '_' + str(igvi)
+                igvi = igvi + 1
             else:
                 break
         id = idt
         self.gavs[id] = {
-            "end": int(datetime.datetime.now().timestamp())+times,
+            "end": int(datetime.datetime.now().timestamp()) + times,
             "win": win,
             "cid": {"0": channel.id},
             "mid": {"0": my_message.id},

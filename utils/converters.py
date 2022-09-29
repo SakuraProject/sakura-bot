@@ -27,15 +27,16 @@ else:
                 raise ValueError("Converters not found.")
             for con in self.converters:
                 try:
-                    await con().convert(ctx, argument)
-                    break
+                    return await con().convert(ctx, argument)
                 except:
                     pass
-            else:
-                raise commands.BadArgument("can't be converted.")
+            raise commands.BadArgument("can't be converted.")
 
         def __call__(self) -> None:
             pass
+
+        def __repr__(self) -> None:
+            return f'<class TryConverter([{", ".join(repr(c) for c in elf.converters)}])>'
 
         def __class_getitem__(cls, params):
             if not isinstance(params, tuple):
