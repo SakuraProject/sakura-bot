@@ -29,7 +29,7 @@ class KasoNotice(commands.Cog):
         description="過疎化通知を設定します。",
         aliases=("kasonotice", "過疎通知", "過疎化通知", "kaso_tuuti")
     )
-    @app_commands.describe(deadline="どのぐらい過疎化したら通知するか。")
+    @app_commands.describe(deadline="何分過疎化したら通知するか。")
     async def kaso_notice(self, ctx: commands.Context, deadline: int):
         self.cache[ctx.channel.id] = deadline
         await self.bot.execute_sql(
