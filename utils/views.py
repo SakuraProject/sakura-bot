@@ -59,7 +59,9 @@ class EmbedSelect(discord.ui.Select):
 
 class TimeoutView(discord.ui.View):
     """タイムアウト時に編集するビュー。
-    Inspiration by: RextTeam 2022"""
+
+    Inspiration by: RextTeam 2022
+    """
 
     message: discord.Message | None
 
@@ -69,7 +71,8 @@ class TimeoutView(discord.ui.View):
             for child in children:
                 self.add_item(child)
 
-    async def send(self, ctx: commands.Context, *args, **kwargs):
+    async def send(self, ctx: commands.Context, *args, **kwargs) -> discord.Message:
+        "送信した後にmessageをセットします。"
         message = await ctx.send(*args, **kwargs)
         self.message = message
         return message

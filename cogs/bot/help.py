@@ -21,11 +21,12 @@ class Help(commands.Cog):
         description="ヘルプを表示します。", aliases=["ヘルプ"]
     )
     async def help(self, ctx: commands.Context, *, search_query: str | None = None):
-        embed = await self.create_help(search_query)
+        embed = self.create_help(search_query)
         view = TimeoutView([CategoryList(self)])
         await view.send(ctx, embed=embed, view=view)
 
-    async def create_help(self, query: str | None) -> discord.Embed:
+    def create_help(self, query: str | None) -> discord.Embed:
+        "helpのEmbedを生成します。"
         desc = FIRST_DESC
         if query:
             # ヘルプを検索する。
@@ -36,11 +37,17 @@ class Help(commands.Cog):
         return discord.Embed(color=self.bot.Color, description=desc)
 
     def get_category(self, command: commands.Command) -> str:
+        "コマンドからカテゴリ名を取得します。"
         paths = inspect.getfile(command).split(os.path.sep)
         category_name = paths[paths.index("cogs") - len(paths) + 1]
         return category_name
 
+    def get_categories(self) -> list[str]:
+        "カテゴリ名のリストを取得します。"
+        return list(self.create_categories_commands().keys())
+
     def create_categories_commands(self) -> dict[str, list[str]]:
+        "カテゴリとコマンドを入れ子にしたデータを取得できます。"
         result = {}
         for cmd_name in HELP.keys():
             command = self.bot.get_command(cmd_name)
@@ -53,7 +60,8 @@ class Help(commands.Cog):
                 result[category].append(cmd_name)
         return result
 
-    def get_commands(self, cmds: list[str]) -> list[commands.Command]:
+    def convert_commands(self, cmds: list[str]) -> list[commands.Command]:
+        "コマンド名のリストからコマンドのリストに変換します。"
         result = []
         for cmd_name in cmds:
             cmd = self.bot.get_command(cmd_name)
@@ -68,7 +76,7 @@ class CategoryList(discord.ui.Select):
         self.cog = cog
 
         options = []
-        for category_name in self.cog.create_categories_commands().keys():
+        for category_name in self.cog.get_categories():
             options.append(discord.SelectOption(
                 label=category_name, value=category_name
             ))
@@ -98,7 +106,7 @@ class CmdList(discord.ui.Select):
         self.cog = cog
         options = []
         self.category_name = category_name
-        self.cmds = cog.get_commands(
+        self.cmds = cog.convert_commands(
             cog.create_categories_commands()[category_name]
         )
         for cm in self.cmds:
@@ -114,7 +122,7 @@ class CmdList(discord.ui.Select):
         bot = self.cog.bot
         val = self.values[0]
         cmd = bot.get_command(val)
-        embed = await self.cog.create_help(val)
+        embed = self.cog.create_help(val)
         if isinstance(cmd, commands.Command | commands.HybridCommand):
             await interaction.response.edit_message(embeds=[embed])
         else:

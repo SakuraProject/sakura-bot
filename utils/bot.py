@@ -27,7 +27,6 @@ class Bot(commands.Bot):
         **kwargs
     ):
         "SQL文を実行します。"
-
         async with self.pool.acquire() as conn:
             async with conn.cursor() as cursor:
                 if iscoroutinefunction(sql):
