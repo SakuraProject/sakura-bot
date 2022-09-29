@@ -38,7 +38,9 @@ class Help(commands.Cog):
 
     def get_category(self, command: commands.Command) -> str:
         "コマンドからカテゴリ名を取得します。"
-        paths = inspect.getfile(command).split(os.path.sep)
+        paths = inspect.getfile(command.callback).split(os.path.sep)
+        if "cogs" not in paths:
+            return "others"
         category_name = paths[paths.index("cogs") - len(paths) + 1]
         return category_name
 

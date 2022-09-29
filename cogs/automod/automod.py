@@ -389,8 +389,8 @@ class AutoMod(commands.Cog):
             return await ctx.send("タイムアウトの場合は時間を指定しなければいけません！")
         await self.check_permissions("manage-guild", ctx)
         assert ctx.guild
-
-        sec2 = timeparse(sec)
+        if sec is not None:
+            sec2 = timeparse(sec)
 
         self.settings[str(ctx.guild.id)]["action"][str(strike)] = modaction
         if sec2 is not None:
