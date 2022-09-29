@@ -42,11 +42,6 @@ class EmbedSelect(discord.ui.Select):
                 )
         if not self.parent:
             pass
-        elif self.parent.message:
-            if self.parent.message.author != interaction.user:
-                return await interaction.response.send_message(
-                    'あなたはこの操作をすることができません。', ephemeral=True
-                )
         elif self.parent.author_id:
             if self.parent.author_id != interaction.user:
                 return await interaction.response.send_message(
