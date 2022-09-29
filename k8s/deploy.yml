@@ -15,4 +15,5 @@ spec:
       containers:
       - name: sakura-container
         image: sakura-bot
-        imagePullPolicy: Never
+        imagePullPolicy: IfNotPresent
+
