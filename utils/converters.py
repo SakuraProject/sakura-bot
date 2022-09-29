@@ -27,9 +27,12 @@ else:
                 raise ValueError("Converters not found.")
             for con in self.converters:
                 try:
-                    return await con().convert(ctx, argument)
+                    return await con.convert(ctx, argument)
                 except:
-                    pass
+                    try:
+                        return await con().convert(ctx, argument)
+                    except:
+                        pass
             raise commands.BadArgument("can't be converted.")
 
         def __call__(self) -> None:
