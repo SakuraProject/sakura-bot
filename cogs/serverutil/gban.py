@@ -9,8 +9,8 @@ class gban(commands.Cog):
         self.bot, self.before = bot, ""
 
     async def cog_load(self):
-        csql = "CREATE TABLE if not exists `gban` (`userid` PRIMARY KEY BIGINT NOT NULL,`reason` VARCHAR(2000) NOT NULL,`evidence` JSON NOT NULL) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin;"
-        csql1 = "CREATE TABLE if not exists `gbanset` (`gid` PRIMARY KEY BIGINT NOT NULL,`onoff` VARCHAR(3) NOT NULL) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin;"
+        csql = "CREATE TABLE if not exists `gban` (`userid` BIGINT NOT NULL PRIMARY KEY,`reason` VARCHAR(2000) NOT NULL,`evidence` JSON NOT NULL) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin;"
+        csql1 = "CREATE TABLE if not exists `gbanset` (`gid` BIGINT NOT NULL PRIMARY KEY,`onoff` VARCHAR(3) NOT NULL) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin;"
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
                 await cur.execute(csql)
