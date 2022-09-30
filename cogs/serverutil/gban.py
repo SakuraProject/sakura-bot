@@ -1,12 +1,14 @@
 from discord.ext import commands
 import discord
 import asyncio
-from orjson import loads, dumps
+from orjson import loads
+
+from utils import Bot, dumps
 
 
 class gban(commands.Cog):
-    def __init__(self, bot):
-        self.bot, self.before = bot, ""
+    def __init__(self, bot: Bot):
+        self.bot = bot
 
     async def cog_load(self):
         csql = "CREATE TABLE if not exists `gban` (`userid` BIGINT NOT NULL PRIMARY KEY,`reason` VARCHAR(2000) NOT NULL,`evidence` JSON NOT NULL) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin;"
@@ -17,13 +19,13 @@ class gban(commands.Cog):
                 await cur.execute(csql1)
 
     @commands.group()
-    async def gban(self, ctx):
+    async def gban(self, ctx: commands.Context):
         if not ctx.invoked_subcommand:
             await ctx.reply("使用方法が違います。")
 
     @gban.command()
     @commands.has_permissions(administrator=True)
-    async def onoff(self, ctx, onoff: bool):
+    async def onoff(self, ctx: commands.Context, onoff: bool):
         await self.bot.execute_sql(
             """INSERT INTO gbanset VALUES (%s, %s)
                 ON DUPLICATE KEY UPDATE onoff = VALUES(onoff);""",
@@ -33,7 +35,7 @@ class gban(commands.Cog):
 
     @gban.command()
     @commands.is_owner()
-    async def add(self, ctx, user_id: int, *, reason):
+    async def add(self, ctx: commands.Context, user_id: int, *, reason):
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
                 await cur.execute("SELECT * FROM `gban` where `userid` = %s", (user_id,))
@@ -65,7 +67,7 @@ class gban(commands.Cog):
                 await ctx.send("完了しました")
 
     @gban.command()
-    async def list(self, ctx):
+    async def list(self, ctx: commands.Context):
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
                 await cur.execute("SELECT * FROM `gban`")
@@ -102,7 +104,7 @@ class gban(commands.Cog):
                 if len(res) != 0:
                     await member.ban(reason="Sakura gbanのため")
 
-    async def input(self, ctx, q):
+    async def input(self, ctx: commands.Context, q: str):
         def check(m):
             return m.author == ctx.author and m.channel == ctx.channel
         await ctx.send(q)
@@ -129,27 +131,27 @@ class gban(commands.Cog):
 
 
 class NextButton(discord.ui.View):
-    def __init__(self, ebds):
-        self.it = ebds
+    def __init__(self, embeds):
+        self.embeds = embeds
         self.page = 0
         super().__init__()
 
     @discord.ui.button(label="<")
-    async def left(self, interaction: discord.Interaction, bt):
+    async def left(self, interaction: discord.Interaction, _):
         if self.page != 0:
             self.page = self.page - 1
-            await interaction.response.edit_message(embeds=[self.it[self.page]], view=self)
+            await interaction.response.edit_message(embeds=[self.embeds[self.page]], view=self)
         else:
             return await interaction.response.send_message("このページが最初です", ephemeral=True)
 
     @discord.ui.button(label=">")
-    async def right(self, interaction: discord.Interaction, bt):
-        if self.page != len(self.it) - 1:
+    async def right(self, interaction: discord.Interaction, _):
+        if self.page != len(self.embeds) - 1:
             self.page = self.page + 1
-            await interaction.response.edit_message(embeds=[self.it[self.page]], view=self)
+            await interaction.response.edit_message(embeds=[self.embeds[self.page]], view=self)
         else:
             return await interaction.response.send_message("次のページはありません", ephemeral=True)
 
 
-async def setup(bot):
+async def setup(bot: Bot):
     await bot.add_cog(gban(bot))
