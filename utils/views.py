@@ -8,9 +8,6 @@ from discord.ext import commands
 import discord
 
 
-__all__ = ("EmbedSelect", "EmbedsView", "TimeoutView")
-
-
 class EmbedSelect(discord.ui.Select):
     "embed選択用のセレクトメニュー。"
 

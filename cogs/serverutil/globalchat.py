@@ -1,7 +1,7 @@
 from discord.ext import commands
 import discord
 
-from utils import Bot
+from utils import Bot, get_webhook
 
 
 class GlobalChat(commands.Cog):
@@ -22,7 +22,6 @@ class GlobalChat(commands.Cog):
         )
         assert isinstance(ids, tuple)
         self.channels_cache = list(ids)
-
 
     @commands.hybrid_group(
         description="グローバルチャットです。",
@@ -60,11 +59,11 @@ class GlobalChat(commands.Cog):
             return await ctx.reply("グローバルチャットに接続していません。")
         await ctx.reply("グローバルチャットから切断しました。")
 
-    async def gcsend(self, channel_id: int, message: discord.Message):
+    async def gc_send(self, channel_id: int, message: discord.Message):
         channel = self.bot.get_channel(channel_id)
         if not channel or not isinstance(channel, discord.TextChannel):
             return
-        webhook = await self.get_webhook(channel)
+        webhook = await get_webhook(channel)
         if channel.guild == message.guild or message.author.discriminator == '0000':
             return
 
@@ -115,14 +114,7 @@ class GlobalChat(commands.Cog):
 
         assert isinstance(response, tuple)
         for resp in response:
-            self.bot.loop.create_task(self.gcsend(resp[0], message))
-
-    async def get_webhook(self, channel: discord.TextChannel):
-        webhooks = await channel.webhooks()
-        webhook = discord.utils.get(webhooks, name='sakuraglobal')
-        if webhook is None:
-            webhook = await channel.create_webhook(name='sakuraglobal')
-        return webhook
+            self.bot.loop.create_task(self.gc_send(resp[0], message))
 
 
 async def setup(bot: Bot):

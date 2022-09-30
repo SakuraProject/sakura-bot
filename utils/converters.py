@@ -5,9 +5,6 @@ from typing import TYPE_CHECKING
 from discord.ext import commands
 
 
-__all__ = ["TryConverter"]
-
-
 if TYPE_CHECKING:
     from typing import Annotated as TryConverter
 else:
