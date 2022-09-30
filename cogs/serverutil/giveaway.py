@@ -59,7 +59,7 @@ class giveaway(commands.Cog):
                                     try:
                                         userstemp.pop(
                                             users.index(self.bot.user))
-                                    except BaseException:
+                                    except Exception:
                                         str('poperror')
                                         users.extend(userstemp)
                                 ufc = 0
@@ -147,7 +147,7 @@ class giveaway(commands.Cog):
                 giveaway_answers.append(message.content)
         try:
             c_id = int(giveaway_answers[0][2:-1])
-        except BaseException:
+        except Exception:
             await ctx.channel.send(f'チャンネルメンションが無効だよ。このように入力してね: {ctx.channel.mention}')
             return
         channel = self.bot.get_channel(c_id)
@@ -191,7 +191,7 @@ class giveaway(commands.Cog):
                 giveaway_answers.append(message.content)
         try:
             c_id = int(giveaway_answers[0][2:-1])
-        except BaseException:
+        except Exception:
             await ctx.channel.send(f'チャンネルメンションが無効だよ。このように入力してね: {ctx.channel.mention}')
             return
         channel = self.bot.get_channel(c_id)

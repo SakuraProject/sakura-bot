@@ -14,7 +14,7 @@ else:
     class TryConverter:
         """An Original Converter that tries to convert some times.
 
-        examples:
+        Examples
             TryConverter[discord.Guild, discord.TextChannel]
             this converter tries to convert to 2 types.
         """
@@ -28,10 +28,10 @@ else:
             for con in self.converters:
                 try:
                     return await con.convert(ctx, argument)
-                except:
+                except Exception:
                     try:
                         return await con().convert(ctx, argument)
-                    except:
+                    except Exception:
                         pass
             raise commands.BadArgument("can't be converted.")
 

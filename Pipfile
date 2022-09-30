@@ -20,6 +20,8 @@ websockets = "*"
 speedtest = "*"
 aiofiles = "*"
 hashids = "*"
+pyqrcode = "*"
+"niconico.py" = "*"
 
 [dev-packages]
 flake8 = "*"

@@ -6,15 +6,17 @@ from discord.ext import commands
 from urllib.parse import quote_plus
 from orjson import loads
 
+from utils import Bot
+
 
 class GameSearch(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: Bot):
         self.bot = bot
 
     @commands.command(
         aliases=["searchgame", "ゲームを探す"],
     )
-    async def gamesearch(self, ctx, *, name: str):
+    async def gamesearch(self, ctx: commands.Context, *, name: str):
         """
         NLang ja ゲームを検索するコマンドです。
         ゲームを検索するコマンドです。

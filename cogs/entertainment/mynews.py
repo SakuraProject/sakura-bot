@@ -13,11 +13,11 @@ class mynews(commands.Cog):
         self.bot = bot
 
     @commands.group()
-    async def mynews(self, ctx):
+    async def mynews(self, ctx: commands.Context):
         if ctx.invoked_subcommand is None:
             return await ctx.send("使用方法が違います。")
 
-    async def input(self, ctx, q):
+    async def input(self, ctx: commands.Context, q: str):
         def check(m):
             return m.author == ctx.author and m.channel == ctx.channel
         await ctx.send(q)
@@ -43,7 +43,7 @@ class mynews(commands.Cog):
                             break
 
     @mynews.command()
-    async def post(self, ctx):
+    async def post(self, ctx: commands.Context):
         """
         NLang ja newsを投稿するコマンドです。
         newsを投稿するコマンドです。質問されるので答えるだけで投稿可能です
@@ -71,7 +71,7 @@ class mynews(commands.Cog):
             await ctx.send("投稿をキャンセルしました")
 
     @mynews.command()
-    async def day(self, ctx, day):
+    async def day(self, ctx: commands.Context, day):
         """
         NLang ja 年月日でニュースを探すコマンドです
         newsを年月日で探します。日付の形式は西暦で書いてください
@@ -103,7 +103,7 @@ class mynews(commands.Cog):
                 await ctx.send("見たい記事を選択してください", view=vie)
 
     @mynews.command()
-    async def today(self, ctx):
+    async def today(self, ctx: commands.Context):
         """
         NLang ja 今日のnewsを表示します
         今日のnewsを表示します
@@ -161,5 +161,5 @@ class SearchList(discord.ui.Select):
                 await interaction.response.edit_message(embeds=[ebd])
 
 
-async def setup(bot):
+async def setup(bot: Bot):
     await bot.add_cog(mynews(bot))

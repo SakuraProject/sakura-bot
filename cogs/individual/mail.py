@@ -32,7 +32,7 @@ class PM(discord.ui.Modal):
         try:
             try:
                 m = imaplib.IMAP4(self.s.value, int(self.port.value))
-            except BaseException:
+            except Exception:
                 m = imaplib.IMAP4_SSL(self.s.value, int(self.port.value))
             m.login(self.user.value, self.pas.value)
             m.user = self.user.value
@@ -52,7 +52,7 @@ class PM(discord.ui.Modal):
                     }
                     await cur.execute("INSERT INTO `mailnof` (`gid`, `cid`, `mname`, `data`) VALUES (%s,%s,%s,%s);", (interaction.guild.id, interaction.channel.id, self.mname.value, dumps(d)))
             await mes.edit(content="登録完了しました")
-        except BaseException:
+        except Exception:
             await mes.edit(content="接続確認に失敗しました")
 
 
@@ -78,7 +78,7 @@ class Mail(commands.Cog):
                             d = loads(row[3])
                             try:
                                 m = imaplib.IMAP4(d["s"], int(d["port"]))
-                            except BaseException:
+                            except Exception:
                                 m = imaplib.IMAP4_SSL(d["s"], int(d["port"]))
                             m.user = d["user"]
                             m.pas = d["pas"]
@@ -88,7 +88,7 @@ class Mail(commands.Cog):
                             self.nlis.append(m)
                             self.chl.setdefault(ch.id, dict())
                             self.chl[ch.id][row[2]] = m
-                        except BaseException:
+                        except Exception:
                             continue
 
     @tasks.loop(seconds=180)
@@ -106,7 +106,7 @@ class Mail(commands.Cog):
                     try:
                         dtmt = datetime.strptime(
                             dte, "%a, %d %b %Y %X %z").timestamp()
-                    except BaseException:
+                    except Exception:
                         dtmt = datetime.strptime(
                             dte, "%d %b %Y %X %z").timestamp()
                     if m.lt < dtmt:
@@ -250,7 +250,7 @@ class Mail(commands.Cog):
             try:
                 try:
                     m = imaplib.IMAP4(s, int(port))
-                except BaseException:
+                except Exception:
                     m = imaplib.IMAP4_SSL(s, int(port))
                 m.login(user, pas)
                 m.user = user
@@ -270,7 +270,7 @@ class Mail(commands.Cog):
                         }
                         await cur.execute("INSERT INTO `mailnof` (`gid`, `cid`, `mname`, `data`) VALUES (%s,%s,%s,%s);", (ctx.guild.id, ctx.channel.id, mname, dumps(d)))
                 await mes.edit(content="登録完了しました")
-            except BaseException:
+            except Exception:
                 await mes.edit(content="接続確認に失敗しました")
         else:
             ctx.interaction.response.send_modal(PM(self))

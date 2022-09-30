@@ -7,7 +7,7 @@ async def setup(bot):
         if not name.startswith(("_", ".")):
             try:
                 await bot.load_extension("cogs.serverutil." + name.replace(".py", ""))
-            except BaseException:
+            except Exception:
                 logging.exception(f"Error on serverutil.{name}")
             else:
                 print("[Log][load]" + name)

@@ -143,7 +143,7 @@ class Tweet(commands.Cog, AsyncStreamingClient):
                             wh = await self.getwebhook(ch)
                             await wh.send(status.text, username=status.user.screen_name,
                                           avatar_url=status.user.default_profile_image)
-                        except BaseException:
+                        except Exception:
                             continue
 
     async def getwebhook(self, channel: discord.TextChannel) -> discord.Webhook:
