@@ -10,7 +10,7 @@ import discord
 import requests
 from discord import FFmpegPCMAudio
 from discord.ext import commands
-from niconico import NicoNico
+from niconico.niconico import NicoNico
 from youtube_dl import YoutubeDL
 
 from utils import Bot
@@ -340,7 +340,7 @@ class music(commands.Cog):
             'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
         loop = asyncio.get_event_loop()
         channel = ctx.message.author.voice.channel
-        voice = get(self.bot.voice_clients, guild=ctx.guild)
+        voice = discord.utils.get(self.bot.voice_clients, guild=ctx.guild)
         if voice and voice.is_connected():
             await voice.move_to(channel)
         else:

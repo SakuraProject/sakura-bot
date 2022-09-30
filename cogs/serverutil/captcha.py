@@ -1,12 +1,15 @@
+from typing import Sequence
+
 import discord
 from discord.ext import commands
 import random
 from hashids import Hashids
-from ujson import loads, dumps
+
+from utils import Bot, dumps
 
 
 class captcha(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: Bot):
         self.bot = bot
 
     async def cog_load(self):
@@ -21,7 +24,7 @@ class captcha(commands.Cog):
             await ctx.reply("使用方法が違います")
 
     @captcha.command()
-    async def web(self, ctx, role: discord.Role):
+    async def web(self, ctx: commands.Context, role: discord.Role):
         """
         NLang ja Web認証用パネル作成コマンドです
         Web認証用のパネルを送信します
@@ -53,7 +56,7 @@ class captcha(commands.Cog):
                 await ctx.send(embeds=[embed], view=views)
 
     @captcha.command()
-    async def password(self, ctx, role: discord.Role, password):
+    async def password(self, ctx: commands.Context, role: discord.Role, password: str):
         """
         NLang ja パスワード認証用パネル作成コマンドです
         パスワード認証用のパネルを送信します
@@ -109,16 +112,16 @@ class captcha(commands.Cog):
             button = discord.ui.Button(
                 label="Web Captchaページへ", url="https://sakura-bot.net/captcha?reqkey=" + args["id"])
             bts.append(button)
-            lis = NList(option)
+            lis = NList(self.bot, option)
             bts.append(lis)
             await interaction.response.send_message(content="認証を開始します。下のボタンを押してWebページからCaptchaを完了してください。完了後認証用コードが表示されるのでセレクトボタンから同じものを選んでください", ephemeral=True, view=MainView(bts))
         if interaction.data.get("custom_id", "") == "sakurapasscaptcha":
-            m = PM()
+            m = PM(self.bot)
             await interaction.response.send_modal(m)
 
 
 class MainView(discord.ui.View):
-    def __init__(self, args):
+    def __init__(self, args: Sequence[discord.ui.Item]):
         super().__init__(timeout=None)
 
         for txt in args:
@@ -126,12 +129,13 @@ class MainView(discord.ui.View):
 
 
 class NList(discord.ui.Select):
-    def __init__(self, args):
+    def __init__(self, bot: Bot, args: list[discord.SelectOption]):
+        self.bot = bot
         super().__init__(placeholder='', min_values=1, max_values=1, options=args)
 
     async def callback(self, interaction: discord.Interaction):
         if self.values[0] == "vcode":
-            async with bot.pool.acquire() as conn:
+            async with self.bot.pool.acquire() as conn:
                 async with conn.cursor() as cur:
                     await cur.execute("SELECT * FROM `captcha` where `gid`=%s and `cid`=%s", (interaction.guild.id, interaction.channel.id))
                     res = await cur.fetchall()
@@ -149,13 +153,14 @@ class PassInput(discord.ui.TextInput):
 
 
 class PM(discord.ui.Modal):
-    def __init__(self):
+    def __init__(self, bot: Bot):
         super().__init__(title="認証を開始します。パスワードを入力してください", timeout=None)
         self.iv = PassInput()
+        self.bot = bot
         self.add_item(self.iv)
 
     async def on_submit(self, interaction: discord.Interaction):
-        async with bot.pool.acquire() as conn:
+        async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
                 await cur.execute("SELECT * FROM `captcha` where `gid`=%s and `cid`=%s", (interaction.guild.id, interaction.channel.id))
                 res = await cur.fetchall()
@@ -168,7 +173,5 @@ class PM(discord.ui.Modal):
                     await interaction.response.send_message(content="パスワードが違います", view=discord.ui.View(), ephemeral=True)
 
 
-async def setup(_bot):
-    global bot
-    bot = _bot
+async def setup(bot):
     await bot.add_cog(captcha(bot))

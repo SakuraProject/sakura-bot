@@ -72,14 +72,14 @@ class SakuraPoint(commands.Cog):
                 or self.url.search(message.content)):
             return
         content = "宣伝ありがとうございます！"
-        if not message.guild.id in self.ad_cache:
-            content += "\n1000ポイントを獲得しました！"
+        if message.guild.id not in self.ad_cache:
+            content += "\n300ポイントを獲得しました！"
             await self.bot.execute_sql(
                 """INSERT INTO SakuraPoint (UserId, Point) VALUES (%s, %s)
                     ON DUPLICATE KEY UPDATE Point = VALUES(Point) + %s;""",
-                (message.author.id, 1000, 1000)
+                (message.author.id, 300, 300)
             )
-            self.cache[message.author.id] += 1000
+            self.cache[message.author.id] += 300
         try:
             await message.channel.send(content, delete_after=3)
         except Exception:

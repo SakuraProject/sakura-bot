@@ -1,10 +1,12 @@
 import discord
 from discord.ext import commands
 
+from utils import Bot
+
 
 class Afk(commands.Cog):
-    def __init__(self, bot):
-        self.bot, self.before = bot, ""
+    def __init__(self, bot: Bot):
+        self.bot = bot
 
     async def cog_load(self):
         ctsql = "create table if not exists afk (userid BIGINT, vl TEXT);"
@@ -18,7 +20,7 @@ class Afk(commands.Cog):
             await ctx.reply("使用方法が違います。")
 
     @afk.command()
-    async def set(self, ctx, *, reason):
+    async def set(self, ctx: commands.Context, *, reason):
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
                 sql = "select * from afk where userid='%s';"

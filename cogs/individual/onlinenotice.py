@@ -5,9 +5,9 @@ from discord import app_commands
 import discord
 
 import asyncio
-from orjson import loads, dumps
+from orjson import loads
 
-from utils import Bot, TryConverter
+from utils import Bot, TryConverter, dumps
 
 
 class OnlineNotice(commands.Cog):
