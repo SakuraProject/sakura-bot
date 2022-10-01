@@ -20,7 +20,6 @@ class GlobalChat(commands.Cog):
         ids = await self.bot.execute_sql(
             "SELECT ChannelId FROM GlobalChat2;", _return_type="fetchall"
         )
-        assert isinstance(ids, tuple)
         self.channels_cache = list(ids)
 
     @commands.hybrid_group(
@@ -104,7 +103,6 @@ class GlobalChat(commands.Cog):
                 (message.channel.id,)
             )
             response = await cursor.fetchone()
-            assert isinstance(response, tuple)
             response: str = response[0][0]
             await cursor.execute(
                 "SELECT ChannelId FROM GlobalChat2 WHERE Name = %s;", (response,)

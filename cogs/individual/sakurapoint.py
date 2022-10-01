@@ -33,7 +33,6 @@ class SakuraPoint(commands.Cog):
         data = await self.bot.execute_sql(
             "SELECT * FROM SakuraPoint;", _return_type="fetchall"
         )
-        assert isinstance(data, tuple)
         for i in data:
             self.cache[i[0]] = i[1]
 

@@ -1,6 +1,6 @@
 # Sakura Utils - Bot
 
-from typing import Callable
+from typing import Callable, Any, TypeVar
 
 from inspect import iscoroutinefunction
 
@@ -8,6 +8,7 @@ from discord.ext import commands
 from aiohttp import ClientSession
 from aiomysql import Pool
 
+reT = TypeVar("reT")
 
 class Bot(commands.Bot):
     "SakuraBotのコアです。"
@@ -19,10 +20,10 @@ class Bot(commands.Bot):
     Color = 0xffbdde
 
     async def execute_sql(
-        self, sql: str | Callable,
+        self, sql: str | Callable[..., reT],
         _injects: tuple | None = None, _return_type: str = "",
         **kwargs
-    ):
+    ) -> reT | tuple:
         "SQL文を実行します。"
         async with self.pool.acquire() as conn:
             async with conn.cursor() as cursor:
@@ -35,3 +36,4 @@ class Bot(commands.Bot):
                     return await cursor.fetchall()
                 elif _return_type == "fetchone":
                     return await cursor.fetchone()
+                return ()

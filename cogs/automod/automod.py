@@ -660,6 +660,8 @@ class AutoMod(commands.Cog):
         )
 
         async def sqler(cursor):
+            if not self.punishments[str(guild_id)]:
+                return
             await cursor.executemany(
                 """INSERT INTO AutoModPunishments VALUES (
                     %s, %s, %s
