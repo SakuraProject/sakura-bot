@@ -3,7 +3,7 @@ FROM python:3
 WORKDIR /usr/src/app
 
 RUN apt-get update && apt-get -y upgrade
-RUN apt-get install -y ffmpeg cmake gcc open_jtalk
+RUN apt-get install -y ffmpeg cmake gcc open-jtalk
 
 RUN pip install pipenv
 COPY Pipfile .
