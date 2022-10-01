@@ -8,8 +8,10 @@ RUN apt-get install -y ffmpeg cmake gcc open-jtalk
 RUN pip install pipenv
 COPY Pipfile .
 COPY Pipfile.lock .
+COPY tts-requirements.txt .
 
 RUN pipenv install
+RUN pipenv install -r tts-requirements.txt
 
 COPY . /usr/src/app
 
