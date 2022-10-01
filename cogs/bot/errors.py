@@ -117,9 +117,9 @@ class ErrorQuery(commands.Cog):
             embed.description = "コマンドの実行に対してBotに必要なロールを一つも持っていません。"
         if isinstance(error, commands.NSFWChannelRequired):
             embed.description = "このコマンドはNSFWチャンネル専用です。"
-        if isinstance(error, commands.CommandInvokeError):
+        if not embed.description:
             embed.description = (
-                f"なんらかのエラーが発生しました。\n`{error.original}`\n"
+                f"なんらかのエラーが発生しました。\n`{error}`\n"
                 "このエラーは開発者側の問題である可能性が高いです。サポートサーバーにて報告いただけると嬉しいです。"
             )
             channel = self.bot.get_channel(1012623774014783598)
