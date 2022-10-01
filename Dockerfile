@@ -5,10 +5,10 @@ WORKDIR /usr/src/app
 RUN apt-get update && apt-get -y upgrade
 RUN apt-get install -y ffmpeg
 
+RUN pip install pipenv
 COPY Pipfile .
 COPY Pipfile.lock .
 
-RUN pip install pipenv
 RUN pipenv install
 
 COPY . /usr/src/app
