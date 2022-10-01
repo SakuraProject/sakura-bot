@@ -17,7 +17,7 @@ youtube-dl = "*"
 jishaku = "*"
 opencv-python = "*"
 websockets = "*"
-speedtest = "*"
+speedtest-cli = "*"
 aiofiles = "*"
 hashids = "*"
 
