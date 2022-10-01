@@ -19,7 +19,7 @@ Pillow>=9.0.0
 pooch==1.5.2
 pycparser==2.21
 pyparsing==3.0.6
-git+https://github.com/yaakiyu/pyopenjtalk#egg=pyopenjtalk
+git+https://github.com/yaakiyu/pyopenjtalk.git#egg=pyopenjtalk
 python-dateutil==2.8.2
 requests==2.27.1
 resampy==0.2.2
