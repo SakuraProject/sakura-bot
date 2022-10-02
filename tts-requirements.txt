@@ -35,3 +35,4 @@ typing_extensions==4.0.1
 urllib3==1.26.7
 orjson
 aiofiles
+git+https://github.com/yaakiyu/pyopenjtalk.git
