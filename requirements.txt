@@ -1,11 +1,11 @@
-discord.py
+discord.py[voice]
 python-dotenv
 ujson
 pytimeparse
 aiomysql
 stripe
 orjson
-tweepy
+tweepy[async]
 niconico.py
 youtube_dl
 jishaku
