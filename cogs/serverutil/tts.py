@@ -185,9 +185,9 @@ class tts(commands.Cog):
                 self.dic.setdefault(str(ctx.guild.id), dict())
                 self.dic[str(ctx.guild.id)][text] = replased
                 if len(res) == 0:
-                    await cur.execute("INSERT INTO `tts` (`gid`, `voice`, `dic`) VALUES (%s,%s,%s);", (ctx.guild.id, self.values[0], dumps(self.dic[str(ctx.guild.id)])))
+                    await cur.execute("INSERT INTO `tts` (`gid`, `voice`, `dic`) VALUES (%s,%s,%s);", (ctx.guild.id, self.values[0], dumps(self.dic[str(ctx.guild.id)]).decode()))
                 else:
-                    await cur.execute("UPDATE `tts` SET `dic` = %s where `gid` = %s;", (dumps(self.dic[str(ctx.guild.id)]), ctx.guild.id))
+                    await cur.execute("UPDATE `tts` SET `dic` = %s where `gid` = %s;", (dumps(self.dic[str(ctx.guild.id)]).decode(), ctx.guild.id))
                 await ctx.send("登録しました")
 
     @tts.command()
@@ -199,9 +199,9 @@ class tts(commands.Cog):
                 self.dic.setdefault(str(ctx.guild.id), dict())
                 self.dic[str(ctx.guild.id)].pop(text)
                 if len(res) == 0:
-                    await cur.execute("INSERT INTO `tts` (`gid`, `voice`, `dic`) VALUES (%s,%s,%s);", (ctx.guild.id, self.values[0], dumps(self.dic[str(ctx.guild.id)])))
+                    await cur.execute("INSERT INTO `tts` (`gid`, `voice`, `dic`) VALUES (%s,%s,%s);", (ctx.guild.id, self.values[0], dumps(self.dic[str(ctx.guild.id)]).decode()))
                 else:
-                    await cur.execute("UPDATE `tts` SET `dic` = %s where `gid` = %s;", (dumps(self.dic[str(ctx.guild.id)]), ctx.guild.id))
+                    await cur.execute("UPDATE `tts` SET `dic` = %s where `gid` = %s;", (dumps(self.dic[str(ctx.guild.id)]).decode(), ctx.guild.id))
                 await ctx.send("削除しました")
 
 
@@ -220,7 +220,7 @@ class VoiceList(discord.ui.Select):
                 await conn.commit()
                 self.cog.voice[str(interaction.guild.id)] = self.values[0]
                 if len(res) == 0:
-                    await cur.execute("INSERT INTO `tts` (`gid`, `voice`, `dic`) VALUES (%s,%s,%s);", (interaction.guild.id, self.values[0], dumps(dict())))
+                    await cur.execute("INSERT INTO `tts` (`gid`, `voice`, `dic`) VALUES (%s,%s,%s);", (interaction.guild.id, self.values[0], dumps(dict()).decode()))
                 else:
                     await cur.execute("UPDATE `tts` SET `voice` = %s where `gid` = %s;", (self.values[0], interaction.guild.id))
                 await interaction.response.send_message("音声を設定しました")
