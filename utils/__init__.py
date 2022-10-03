@@ -3,7 +3,7 @@
 from orjson import dumps as _dumps_default
 
 from .bot import Bot
-from .views import EmbedSelect, EmbedsView, TimeoutView
+from .views import EmbedSelect, EmbedsView, TimeoutView, EmbedsButtonView
 from .converters import TryConverter
 from .webhooks import get_webhook
 
@@ -11,7 +11,7 @@ __all__ = (
     "Bot", "TryConverter",
     "EmbedSelect", "EmbedsView",
     "TimeoutView", "dumps",
-    "get_webhook"
+    "get_webhook", "EmbedsButtonView"
 )
 
 
