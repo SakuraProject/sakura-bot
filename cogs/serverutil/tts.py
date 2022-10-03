@@ -116,7 +116,8 @@ class tts(commands.Cog):
                     sid = self.voice[str(message.guild.id)].replace(".tsv", "")
                     req = dict()
                     req["talktext"] = sc
-                    async with self.bot.session.post(f"http://{self.basicuser}:{self.basicpass}@{self.ttsserverurl}/SAVE2/{sid}", json=req) as resp:
+                    headers = {'content-type': 'application/json'}
+                    async with self.bot.session.post(f"http://{self.basicuser}:{self.basicpass}@{self.ttsserverurl}/SAVE2/{sid}", data=dumps(req),headers=headers) as resp:
                         async with aiofiles.open(swav, "wb") as fp:
                             await fp.write(await resp.read())
                 if not voice.is_playing():
