@@ -95,7 +95,7 @@ class captcha(commands.Cog):
             option.append(discord.SelectOption(
                 label=str(vcode), value="vcode"))
             random.shuffle(option)
-            ws = self.bot.cogs["websocket"]
+            ws = self.bot.cogs["ebsocket"]
             sen = dict()
             sen["cmd"] = "captcha"
             args = dict()
