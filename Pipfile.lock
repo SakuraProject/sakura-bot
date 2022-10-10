@@ -499,14 +499,6 @@
             "index": "pypi",
             "version": "==1.2.3"
         },
-        "niconico.py": {
-            "hashes": [
-                "sha256:9ff182b5199cbac97866bfd6aa5955a39ed20b8f4fd52866e0bc0ba0cdde2e7c",
-                "sha256:bf7248e184922351b0fa1a8d985eabc2c0b39c54ef06032c602898eced9a4679"
-            ],
-            "index": "pypi",
-            "version": "==1.2.3"
-        },
         "numpy": {
             "hashes": [
                 "sha256:004f0efcb2fe1c0bd6ae1fcfc69cc8b6bf2407e0f18be308612007a0762b4089",
@@ -664,8 +656,8 @@
                 "sha256:1b2812775fa6ff5c527977c4cd2ccb07051ca7d0bc0aecf937a43864abe5eff6",
                 "sha256:fdbf7634733e56b72e27f9bce46e4550b75a3a2c420414035cae9d9d26b234d5"
             ],
-            "index": "pypi",
-            "version": "==1.2.1"
+            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'",
+            "version": "==2.8.2"
         },
         "python-dotenv": {
             "hashes": [
