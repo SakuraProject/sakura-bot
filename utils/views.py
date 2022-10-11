@@ -8,9 +8,6 @@ from discord.ext import commands
 import discord
 
 
-__all__ = ("EmbedSelect", "EmbedsView", "TimeoutView")
-
-
 class EmbedSelect(discord.ui.Select):
     "embed選択用のセレクトメニュー。"
 
@@ -34,7 +31,6 @@ class EmbedSelect(discord.ui.Select):
         )
 
     async def callback(self, interaction: discord.Interaction):
-        assert interaction.message is not None
         if self.parent and self.parent.author_id:
             if self.parent.author_id != interaction.user.id:
                 return await interaction.response.send_message(
@@ -51,7 +47,8 @@ class TimeoutView(discord.ui.View):
     Inspiration by: RextTeam 2022
     """
 
-    message: discord.Message | None
+    message: discord.Message | None = None
+    author_id: int | None = None
 
     def __init__(self, children: Sequence[discord.ui.Item] | None = None):
         super().__init__()
@@ -59,8 +56,23 @@ class TimeoutView(discord.ui.View):
             for child in children:
                 self.add_item(child)
 
+    async def check(self, interaction: discord.Interaction) -> bool:
+        "ユーザーが操作できないかどうか調べます。"
+        if self.author_id and self.author_id != interaction.user.id:
+            await interaction.response.send_message(
+                'あなたはこの操作をすることができません。', ephemeral=True
+            )
+            return True
+        elif self.message and self.message.author != interaction.user:
+            await interaction.response.send_message(
+                'あなたはこの操作をすることができません。', ephemeral=True
+            )
+            return True
+        return False
+
     async def send(self, ctx: commands.Context, *args, **kwargs) -> discord.Message:
         "送信した後にmessageをセットします。"
+        self.author_id = ctx.author.id
         message = await ctx.send(*args, **kwargs)
         self.message = message
         return message
@@ -77,8 +89,6 @@ class TimeoutView(discord.ui.View):
 class EmbedsView(TimeoutView):
     "Embedsビュー。初期化時にembedのリストを渡す。"
 
-    author_id: int | None
-    message: discord.Message | None
     children: list[EmbedSelect]
 
     def __init__(
@@ -92,10 +102,58 @@ class EmbedsView(TimeoutView):
         self.add_item(EmbedSelect(embeds, extras, self))
 
     async def send(self, ctx: commands.Context):
-        "Sendして、author_idのセットもします。"
-        self.author_id = ctx.author.id
+        "Sendします。"
         if len(self.embeds) == 1:
-            msg = await ctx.send(embed=self.embeds[0])
+            await super().send(ctx, embed=self.embeds[0])
         else:
-            msg = await ctx.send(embed=self.embeds[0], view=self)
-        self.message = msg
+            await super().send(ctx, embed=self.embeds[0], view=self)
+
+
+class EmbedsButtonView(TimeoutView):
+    "Embedsビューのボタンバージョン。"
+
+    def __init__(self, embeds: Sequence[discord.Embed]):
+        self.embeds = embeds
+        self.page = 0
+        super().__init__()
+
+    async def check(self, interaction: discord.Interaction) -> bool:
+        "ユーザーが操作できないかどうか調べます。"
+        if self.author_id and self.author_id != interaction.user.id:
+            await interaction.response.send_message(
+                'あなたはこの操作をすることができません。', ephemeral=True
+            )
+            return True
+        elif self.message and self.message.author != interaction.user:
+            await interaction.response.send_message(
+                'あなたはこの操作をすることができません。', ephemeral=True
+            )
+            return True
+        return False
+
+    @discord.ui.button(label="<")
+    async def left(self, interaction: discord.Interaction, _):
+        if self.check(interaction):
+            return
+        if self.page != 0:
+            self.page -= 1
+            await interaction.response.edit_message(embed=self.embeds[self.page], view=self)
+        else:
+            return await interaction.response.send_message("このページが最初です", ephemeral=True)
+
+    @discord.ui.button(label=">")
+    async def right(self, interaction: discord.Interaction, _):
+        if self.check(interaction):
+            return
+        if self.page != len(self.embeds) - 1:
+            self.page += 1
+            await interaction.response.edit_message(embed=self.embeds[self.page], view=self)
+        else:
+            return await interaction.response.send_message("次のページはありません", ephemeral=True)
+
+    async def send(self, ctx: commands.Context):
+        "Sendします。"
+        if len(self.embeds) == 1:
+            await super().send(ctx, embed=self.embeds[0])
+        else:
+            await super().send(ctx, embed=self.embeds[0], view=self)

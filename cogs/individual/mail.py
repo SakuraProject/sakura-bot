@@ -1,4 +1,8 @@
-from orjson import loads, dumps
+# Sakura bot - mail
+
+from __future__ import annotations
+
+from orjson import loads
 import discord
 from discord.ext import commands, tasks
 from datetime import datetime
@@ -9,10 +13,12 @@ import re
 from email.header import decode_header
 import asyncio
 
+from utils import Bot, dumps
+
 
 class PM(discord.ui.Modal):
 
-    def __init__(self, cog):
+    def __init__(self, cog: "Mail"):
         super().__init__(title="登録するメールアカウントの情報を入力してください", timeout=None)
         self.cog = cog
         self.mname = discord.ui.TextInput(label="登録するメールアドレスを入力してください")
@@ -28,11 +34,11 @@ class PM(discord.ui.Modal):
 
     async def on_submit(self, interaction: discord.Interaction):
         assert interaction.channel and interaction.guild
-        mes = await interaction.response.send_message(content="接続を確認中です", view=discord.utils.MISSING, ephemeral=True)
+        mes = await interaction.response.send_message(content="接続を確認中です", ephemeral=True)
         try:
             try:
                 m = imaplib.IMAP4(self.s.value, int(self.port.value))
-            except BaseException:
+            except Exception:
                 m = imaplib.IMAP4_SSL(self.s.value, int(self.port.value))
             m.login(self.user.value, self.pas.value)
             m.user = self.user.value
@@ -52,13 +58,13 @@ class PM(discord.ui.Modal):
                     }
                     await cur.execute("INSERT INTO `mailnof` (`gid`, `cid`, `mname`, `data`) VALUES (%s,%s,%s,%s);", (interaction.guild.id, interaction.channel.id, self.mname.value, dumps(d)))
             await mes.edit(content="登録完了しました")
-        except BaseException:
+        except Exception:
             await mes.edit(content="接続確認に失敗しました")
 
 
 class Mail(commands.Cog):
 
-    def __init__(self, bot):
+    def __init__(self, bot: Bot):
         self.bot = bot
         self.nlis = []
         self.chl = {}
@@ -78,7 +84,7 @@ class Mail(commands.Cog):
                             d = loads(row[3])
                             try:
                                 m = imaplib.IMAP4(d["s"], int(d["port"]))
-                            except BaseException:
+                            except Exception:
                                 m = imaplib.IMAP4_SSL(d["s"], int(d["port"]))
                             m.user = d["user"]
                             m.pas = d["pas"]
@@ -88,7 +94,7 @@ class Mail(commands.Cog):
                             self.nlis.append(m)
                             self.chl.setdefault(ch.id, dict())
                             self.chl[ch.id][row[2]] = m
-                        except BaseException:
+                        except Exception:
                             continue
 
     @tasks.loop(seconds=180)
@@ -106,7 +112,7 @@ class Mail(commands.Cog):
                     try:
                         dtmt = datetime.strptime(
                             dte, "%a, %d %b %Y %X %z").timestamp()
-                    except BaseException:
+                    except Exception:
                         dtmt = datetime.strptime(
                             dte, "%d %b %Y %X %z").timestamp()
                     if m.lt < dtmt:
@@ -154,7 +160,7 @@ class Mail(commands.Cog):
             await ctx.reply("使用方法が違います")
 
     @mail.command()
-    async def remove(self, ctx):
+    async def remove(self, ctx: commands.Context):
         """
         NLang ja mail通知を解除するコマンドです
         新着メールをdiscordに送信する機能を解除します
@@ -188,7 +194,7 @@ class Mail(commands.Cog):
                 await ctx.send("解除しました")
 
     @mail.command()
-    async def set(self, ctx):
+    async def set(self, ctx: commands.Context):
         """
         NLang ja mail通知を設定するコマンドです
         新着メールをdiscordに送信する機能を設定します
@@ -250,7 +256,7 @@ class Mail(commands.Cog):
             try:
                 try:
                     m = imaplib.IMAP4(s, int(port))
-                except BaseException:
+                except Exception:
                     m = imaplib.IMAP4_SSL(s, int(port))
                 m.login(user, pas)
                 m.user = user
@@ -270,11 +276,11 @@ class Mail(commands.Cog):
                         }
                         await cur.execute("INSERT INTO `mailnof` (`gid`, `cid`, `mname`, `data`) VALUES (%s,%s,%s,%s);", (ctx.guild.id, ctx.channel.id, mname, dumps(d)))
                 await mes.edit(content="登録完了しました")
-            except BaseException:
+            except Exception:
                 await mes.edit(content="接続確認に失敗しました")
         else:
-            ctx.interaction.response.send_modal(PM(self))
+            await ctx.interaction.response.send_modal(PM(self))
 
 
-async def setup(bot):
+async def setup(bot: Bot):
     await bot.add_cog(Mail(bot))

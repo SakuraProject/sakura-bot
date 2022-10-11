@@ -8,6 +8,8 @@ from math import inf
 import os
 from aiohttp import ClientSession, ClientTimeout
 
+from utils import Bot
+
 
 class Tweet(commands.Cog, AsyncStreamingClient):
     @property
@@ -16,15 +18,17 @@ class Tweet(commands.Cog, AsyncStreamingClient):
             self._session = ClientSession(timeout=self.timeout)
         return self._session
 
-    def __init__(self, bot):
+    def __init__(self, bot: Bot):
         self.bot = bot
         self.task = None
         handler = OAuth1UserHandler(
             os.environ["TWITTERAPIKEY"], os.environ["TWITTERSECRET"])
         handler.set_access_token(
             os.environ["TWITTERTOKEN"], os.environ["TWITTERTOKENSEC"])
-        self.twicon = Client(bearer_token=os.environ["TWITTERBEAR"], consumer_key=os.environ["TWITTERAPIKEY"], consumer_secret=os.environ["TWITTERSECRET"],
-                             access_token=os.environ["TWITTERTOKEN"], access_token_secret=os.environ["TWITTERTOKENSEC"])  # API(handler)
+        self.twicon = Client(
+            bearer_token=os.environ["TWITTERBEAR"], consumer_key=os.environ["TWITTERAPIKEY"],
+            consumer_secret=os.environ["TWITTERSECRET"], access_token=os.environ["TWITTERTOKEN"],
+            access_token_secret=os.environ["TWITTERTOKENSEC"])  # API(handler)
         self.api = self.twicon
         self.fil = None
         self.bearer_token = os.environ["TWITTERBEAR"]
@@ -143,7 +147,7 @@ class Tweet(commands.Cog, AsyncStreamingClient):
                             wh = await self.getwebhook(ch)
                             await wh.send(status.text, username=status.user.screen_name,
                                           avatar_url=status.user.default_profile_image)
-                        except BaseException:
+                        except Exception:
                             continue
 
     async def getwebhook(self, channel: discord.TextChannel) -> discord.Webhook:
@@ -160,7 +164,7 @@ class Tweet(commands.Cog, AsyncStreamingClient):
 
     @commands.has_permissions(manage_channels=True, manage_webhooks=True)
     @tweet.command()
-    async def set(self, ctx, *, name):
+    async def set(self, ctx: commands.Context, *, name):
         """
         NLang ja twitter通知を設定するコマンドです
         Twitterのツイートをdiscordに送信する機能を設定します
@@ -194,7 +198,7 @@ class Tweet(commands.Cog, AsyncStreamingClient):
 
     @commands.has_permissions(manage_channels=True, manage_webhooks=True)
     @tweet.command()
-    async def remove(self, ctx, *, name):
+    async def remove(self, ctx: commands.Context, *, name):
         """
         NLang ja twitter通知を解除するコマンドです
         Twitterのツイートをdiscordに送信する機能を解除します
@@ -221,5 +225,5 @@ class Tweet(commands.Cog, AsyncStreamingClient):
                 await self.setfilter()
 
 
-async def setup(bot):
+async def setup(bot: Bot):
     await bot.add_cog(Tweet(bot))

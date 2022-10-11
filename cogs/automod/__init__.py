@@ -10,7 +10,7 @@ async def setup(bot):
         if not name.startswith(("_", ".")):
             try:
                 await bot.load_extension("cogs.automod." + name.replace(".py", ""))
-            except BaseException:
+            except Exception:
                 logging.exception("Error on automod.%s", name)
             else:
                 print("[Log][load]" + name)

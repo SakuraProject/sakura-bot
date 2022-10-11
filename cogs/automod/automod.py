@@ -10,17 +10,13 @@ from discord.ext import commands, tasks
 import discord
 from pytimeparse.timeparse import timeparse
 from datetime import timedelta
-from orjson import loads, dumps as dumps_default
+from orjson import loads
 import time
 import re
 
-from utils import Bot, TryConverter
+from utils import Bot, TryConverter, dumps
 
 from ._types import Setting, Actions, MutedUser
-
-
-def dumps(*args, **kwargs):
-    return dumps_default(*args, **kwargs).decode()
 
 
 def arrayinarray(list1, list2) -> bool:
@@ -123,7 +119,7 @@ class AutoMod(commands.Cog):
             self.sendcount[str(guild_id)].setdefault(str(author_id), '')
             self.punishments[str(guild_id)].setdefault(str(author_id), 0)
 
-    @commands.hybrid_group()
+    @commands.hybrid_group(description="自動モデレーション機能です。")
     @commands.guild_only()
     async def automod(self, ctx: commands.Context):
         if ctx.invoked_subcommand:
@@ -179,10 +175,10 @@ class AutoMod(commands.Cog):
                                 del self.muteds[gid][uid]
                                 continue
                             await member.remove_roles(discord.Object(self.settings[str(gid)]["muterole"]))
-                    except BaseException:
+                    except Exception:
                         pass
 
-    @automod.command()
+    @automod.command(description="ミュートロールの初期設定をします。")
     @commands.bot_has_guild_permissions(manage_channels=True)
     async def muterolesetup(self, ctx: commands.Context, role: discord.Role | None = None):
         await self.check_permissions("admin", ctx)
@@ -286,12 +282,12 @@ class AutoMod(commands.Cog):
 
         self.punishments[str(member.guild.id)][str(member.id)] = before
 
-    @automod.group()
+    @automod.group(description="NGワード機能です。")
     async def ngword(self, ctx):
         if not ctx.invoked_subcommand:
             await ctx.reply("使用方法が違います")
 
-    @ngword.command()
+    @ngword.command(description="NGワードを追加します。")
     async def set(self, ctx: commands.Context, *, word):
         assert ctx.guild
         await self.check_permissions("admin", ctx)
@@ -303,7 +299,10 @@ class AutoMod(commands.Cog):
             await ctx.send("設定しました")
             await self.save(ctx.guild.id)
 
-    @ngword.command()
+    @ngword.command(
+        description="NGワードを削除します。",
+        aliases=("del", "rm", "delete", "削除", "排除")
+    )
     async def remove(self, ctx: commands.Context, *, word: str):
         await self.check_permissions("admin", ctx)
         assert ctx.guild
@@ -315,7 +314,7 @@ class AutoMod(commands.Cog):
         else:
             await ctx.send("その言葉は設定されていません。")
 
-    @automod.command()
+    @automod.command(description="レイド防止機能です。")
     async def antiraid(
         self, ctx: commands.Context, joincount: int,
         action: Actions = 'kick', time: str = ""
@@ -336,11 +335,12 @@ class AutoMod(commands.Cog):
             await ctx.send("設定をoffにしました")
         await self.save(ctx.guild.id)
 
-    @automod.command()
+    @automod.command(description="例外を登録します。")
     async def ignore(
         self, ctx: commands.Context, mode: Literal["channel", "role"],
-        target: TryConverter[discord.TextChannel,
-                             discord.Role] = commands.CurrentChannel
+        target: TryConverter[
+            discord.TextChannel, discord.Role
+        ] = commands.CurrentChannel
     ):
         await self.check_permissions("admin", ctx)
         assert ctx.guild
@@ -366,7 +366,7 @@ class AutoMod(commands.Cog):
             self.settings[str(msg.guild.id)]["ignore_role"]
         )
 
-    @automod.command()
+    @automod.command(desctiption="トークン保護のオンオフです。")
     async def antitokens(self, ctx: commands.Context, onoff: bool):
         await self.check_permissions("admin", ctx)
         assert ctx.guild
@@ -376,7 +376,7 @@ class AutoMod(commands.Cog):
         await self.save(ctx.guild.id)
         await ctx.send(f'antitokenモードを{is_onoff}にしました')
 
-    @automod.command()
+    @automod.command(description="ストライクによる刑罰を指定します。")
     async def punishment(
         self, ctx: commands.Context,
         strike: int, modaction: Actions, sec=None
@@ -389,10 +389,7 @@ class AutoMod(commands.Cog):
             return await ctx.send("タイムアウトの場合は時間を指定しなければいけません！")
         await self.check_permissions("manage-guild", ctx)
         assert ctx.guild
-        if sec is not None:
-            sec2 = timeparse(sec)
-        else:
-            sec2 = None
+        sec2 = timeparse(sec or 0) or None
 
         self.settings[str(ctx.guild.id)]["action"][str(strike)] = modaction
         if sec2 is not None:
@@ -402,7 +399,7 @@ class AutoMod(commands.Cog):
         await self.save(ctx.guild.id)
         await ctx.send(f"{strike}ストライクで{modaction}をするように設定しました。")
 
-    @automod.command()
+    @automod.command(description="スパム防止機能です。")
     async def antispam(self, ctx: commands.Context, spamcount: int):
         await self.check_permissions("admin", ctx)
         assert ctx.guild
@@ -411,7 +408,7 @@ class AutoMod(commands.Cog):
         await self.save(ctx.guild.id)
         await ctx.send(f"{spamcount}回連投で1Strike付与します")
 
-    @automod.command()
+    @automod.command(description="ストライクポイントを減らします。")
     @commands.has_permissions(ban_members=True)
     async def pardon(
         self, ctx: commands.Context,
@@ -421,13 +418,13 @@ class AutoMod(commands.Cog):
         await self.check_permissions("manage-guild", ctx)
         assert ctx.guild
 
-        if not target.id in self.punishments[str(ctx.guild.id)]:
+        if target.id not in self.punishments[str(ctx.guild.id)]:
             return await ctx.send("ユーザーは処罰されたことがありません。")
         self.punishments[str(ctx.guild.id)][str(target.id)] -= strikes
         await ctx.send(f"pardoned {strikes}strikes on <@{target.id}>")
         await self.save(ctx.guild.id)
 
-    @automod.command()
+    @automod.command(description="ユーザーのストライク数を調べます。")
     async def check(
         self, ctx: commands.Context,
         user: TryConverter[discord.Member, discord.User, discord.Object]
@@ -440,7 +437,7 @@ class AutoMod(commands.Cog):
             f"<@{user.id}>は{g_punish.get(str(user.id), 0)}strikeです。"
         )
 
-    @commands.command()
+    @commands.hybrid_command(description="ユーザーをミュートします。")
     @commands.guild_only()
     async def mute(self, ctx: commands.Context, member: discord.Member):
         await self.check_permissions("manage-guild", ctx)
@@ -450,7 +447,7 @@ class AutoMod(commands.Cog):
         )
         await ctx.send(f"{member.mention}をミュートしました。")
 
-    @commands.command()
+    @commands.hybrid_command(description="ユーザーのミュートを解除します。")
     @commands.guild_only()
     async def unmute(self, ctx: commands.Context, member: discord.Member):
         await self.check_permissions("manage-guild", ctx)
@@ -570,7 +567,7 @@ class AutoMod(commands.Cog):
                 await msg.delete()
                 await self.do_punish(g_setting, msg.author, msg.channel)
 
-    @automod.command("settings")
+    @automod.command("settings", description="設定を確認します。")
     @commands.has_permissions(manage_guild=True)
     async def _settings(self, ctx: commands.Context):
         assert ctx.guild
@@ -608,7 +605,7 @@ class AutoMod(commands.Cog):
         )
         await ctx.send(embeds=[embed, ngembed])
 
-    @automod.command()
+    @automod.command(description="管理ロールを設定します。")
     async def role(
         self, ctx: commands.Context, type_: Literal["admin", "mod"],
         mode: Literal["add", "remove"], role: TryConverter[discord.Role, discord.Object]
@@ -663,6 +660,8 @@ class AutoMod(commands.Cog):
         )
 
         async def sqler(cursor):
+            if not self.punishments[str(guild_id)]:
+                return
             await cursor.executemany(
                 """INSERT INTO AutoModPunishments VALUES (
                     %s, %s, %s

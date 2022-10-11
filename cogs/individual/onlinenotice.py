@@ -5,9 +5,9 @@ from discord import app_commands
 import discord
 
 import asyncio
-from orjson import loads, dumps
+from orjson import loads
 
-from utils import Bot, TryConverter
+from utils import Bot, TryConverter, dumps
 
 
 class OnlineNotice(commands.Cog):
@@ -26,7 +26,6 @@ class OnlineNotice(commands.Cog):
         cache = await self.bot.execute_sql(
             "SELECT * FROM OnlineNotice;", _return_type="fetchall"
         )
-        assert isinstance(cache, tuple)
         self.cache = {c[0]: loads(c[1]) for c in cache}
 
     @commands.hybrid_group()

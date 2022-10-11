@@ -2,14 +2,16 @@ import asyncio
 from hashids import Hashids
 from discord.ext import commands
 import discord
-from ujson import loads, dumps
+from ujson import loads
 import datetime
 import random
 
+from utils import Bot, dumps
+
 
 class giveaway(commands.Cog):
-    def __init__(self, bot):
-        self.bot, self.before = bot, ""
+    def __init__(self, bot: Bot):
+        self.bot = bot
 
     async def cog_load(self):
         ctsql = "CREATE TABLE if not exists `giveaway` (`id` VARCHAR(100) NOT NULL,`cid` JSON NOT NULL,`mid` JSON NOT NULL,`end` VARCHAR(200) NOT NULL,`price` VARCHAR(1000) NOT NULL,`author` VARCHAR(100) NOT NULL,`win` VARCHAR(100) NOT NULL,PRIMARY KEY (`id`)) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin;"
@@ -59,7 +61,7 @@ class giveaway(commands.Cog):
                                     try:
                                         userstemp.pop(
                                             users.index(self.bot.user))
-                                    except BaseException:
+                                    except Exception:
                                         str('poperror')
                                         users.extend(userstemp)
                                 ufc = 0
@@ -147,7 +149,7 @@ class giveaway(commands.Cog):
                 giveaway_answers.append(message.content)
         try:
             c_id = int(giveaway_answers[0][2:-1])
-        except BaseException:
+        except Exception:
             await ctx.channel.send(f'チャンネルメンションが無効だよ。このように入力してね: {ctx.channel.mention}')
             return
         channel = self.bot.get_channel(c_id)
@@ -191,7 +193,7 @@ class giveaway(commands.Cog):
                 giveaway_answers.append(message.content)
         try:
             c_id = int(giveaway_answers[0][2:-1])
-        except BaseException:
+        except Exception:
             await ctx.channel.send(f'チャンネルメンションが無効だよ。このように入力してね: {ctx.channel.mention}')
             return
         channel = self.bot.get_channel(c_id)
