@@ -1,109 +1,119 @@
 from discord.ext import commands
 import discord
-import asyncio
+
+from utils import Bot, get_webhook
 
 
-class globalchat(commands.Cog):
-    def __init__(self, bot):
-        self.bot, self.before = bot, ""
+class GlobalChat(commands.Cog):
+    def __init__(self, bot: Bot):
+        self.bot = bot
+        self.channels_cache = []
 
     async def cog_load(self):
-        ctsql = "CREATE TABLE if not exists `globalchat` (`chid` BIGINT NOT NULL, `gcname` VARCHAR(100) NOT NULL DEFAULT 'main') ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin;"
-        async with self.bot.pool.acquire() as conn:
-            async with conn.cursor() as cur:
-                await cur.execute(ctsql)
+        await self.bot.execute_sql(
+            """CREATE TABLE IF NOT EXISTS GlobalChat2 (
+                ChannelId BIGINT PRIMARY KEY NOT NULL,
+                Name VARCHAR(100) NOT NULL DEFAULT 'main'
+            ) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4
+            COLLATE = utf8mb4_bin;"""
+        )
+        ids = await self.bot.execute_sql(
+            "SELECT ChannelId FROM GlobalChat2;", _return_type="fetchall"
+        )
+        self.channels_cache = list(ids)
 
-    @commands.group(
+    @commands.hybrid_group(
+        description="グローバルチャットです。",
         aliases=["グローバルチャット", "gc"]
     )
     async def globalchat(self, ctx: commands.Context):
         if not ctx.invoked_subcommand:
             await ctx.reply("使用方法が違います。")
 
-    @globalchat.command()
-    async def create(self, ctx, name="main"):
-        async with self.bot.pool.acquire() as conn:
-            async with conn.cursor() as cur:
-                await cur.execute("INSERT INTO `globalchat` (`chid`, `gcname`) VALUES (%s, %s);", (str(ctx.channel.id), name))
-                await conn.commit()
-                await ctx.reply("グローバルチャットに接続しました")
+    @globalchat.command(
+        description="グローバルチャットに接続します。"
+    )
+    async def create(self, ctx: commands.Context, name: str = "main"):
+        try:
+            await self.bot.execute_sql(
+                "INSERT INTO GlobalChat2 VALUES (%s, %s);",
+                (ctx.channel.id, name)
+            )
+            self.channels_cache.append(ctx.channel.id)
+        except:
+            return await ctx.reply("すでにグローバルチャットに接続しています！")
+        await ctx.reply("グローバルチャットに接続しました。")
 
-    @globalchat.command()
-    async def remove(self, ctx, name="main"):
-        async with self.bot.pool.acquire() as conn:
-            async with conn.cursor() as cur:
-                await cur.execute("delete from globalchat where chid=%s and gcname=%s", (str(ctx.channel.id), name))
-                await conn.commit()
-                await ctx.reply("グローバルチャットから切断しました")
+    @globalchat.command(
+        description="グローバルチャットから切断します。"
+    )
+    async def remove(self, ctx: commands.Context):
+        try:
+            await self.bot.execute_sql(
+                "DELETE FROM GlobalChat2 WHERE ChannelId = %s;",
+                (ctx.channel.id,)
+            )
+            self.channels_cache.remove(ctx.channel.id)
+        except:
+            return await ctx.reply("グローバルチャットに接続していません。")
+        await ctx.reply("グローバルチャットから切断しました。")
 
-    async def gcsend(self, id, message):
-        channel = self.bot.get_channel(int(id))
-        if channel is not None:
-            webhook = await self.getwebhook(channel)
-            if channel.guild.id != message.guild.id and message.author.discriminator != '0000':
-                flfl = None
-                for atc in message.attachments:
-                    if flfl is None:
-                        flfl = list()
-                    flfl.append(await atc.to_file())
-                embeds = message.embeds
-                if message.reference:
-                    if message.reference.cached_message:
-                        ref = message.reference.cached_message
-                    else:
-                        rch = message.channel
-                        ref = await rch.fetch_message(message.reference.message_id)
-                    reb = discord.Embed(
-                        description=ref.clean_content, title="返信先")
-                    if embeds is None:
-                        embeds = list()
-                    else:
-                        embeds = message.embeds.copy()
-                    embeds.append(reb)
-                vie = None
-                for c in message.components:
-                    if vie is None:
-                        vie = discord.ui.View()
-                    vie.add_item(c)
-                alm = discord.AllowedMentions.none()
-                if vie is not None:
-                    if flfl is None:
-                        await webhook.send(content=message.content.replace('@here', '[here]').replace('@everyone', '[everyone]'), username=message.author.name + '#' + message.author.discriminator, avatar_url=message.author.avatar, embeds=embeds, view=vie, allowed_mentions=alm)
-                    else:
-                        await webhook.send(content=message.content.replace('@here', '[here]').replace('@everyone', '[everyone]'), username=message.author.name + '#' + message.author.discriminator, avatar_url=message.author.avatar, files=flfl, embeds=embeds, view=vie, allowed_mentions=alm)
+    async def gc_send(self, channel_id: int, message: discord.Message):
+        channel = self.bot.get_channel(channel_id)
+        if not channel or not isinstance(channel, discord.TextChannel):
+            return
+        webhook = await get_webhook(channel)
+        if channel.guild == message.guild or message.author.discriminator == '0000':
+            return
+
+        flfl = [(await attachment.to_file()) for attachment in message.attachments]
+        embeds = message.embeds
+        if message.reference:
+            ref = None
+            if message.reference.cached_message:
+                ref = message.reference.cached_message
+            elif message.reference.message_id:
+                rch = message.channel
+                ref = await rch.fetch_message(message.reference.message_id)
+            if ref:
+                reb = discord.Embed(
+                    description=ref.clean_content, title="返信先")
+                if embeds is None:
+                    embeds = list()
                 else:
-                    if flfl is None:
-                        await webhook.send(content=message.content.replace('@here', '[here]').replace('@everyone', '[everyone]'), username=message.author.name + '#' + message.author.discriminator, avatar_url=message.author.avatar, embeds=embeds, allowed_mentions=alm)
-                    else:
-                        await webhook.send(content=message.content.replace('@here', '[here]').replace('@everyone', '[everyone]'), username=message.author.name + '#' + message.author.discriminator, avatar_url=message.author.avatar, files=flfl, embeds=embeds, allowed_mentions=alm)
+                    embeds = message.embeds.copy()
+                embeds.append(reb)
+
+        await webhook.send(
+            content=message.content, username=str(message.author),
+            avatar_url=message.author.avatar, files=flfl or discord.utils.MISSING,
+            embeds=embeds, allowed_mentions=discord.AllowedMentions.none()
+        )
 
     @commands.Cog.listener()
-    async def on_message(self, message):
-        gns = "select gcname from globalchat where chid='" + \
-            str(message.channel.id) + "'"
-        async with self.bot.pool.acquire() as conn:
-            async with conn.cursor() as cur:
-                await cur.execute(gns)
-                res = await cur.fetchall()
-                await conn.commit()
-                if len(res) == 0:
-                    return
-                for row in res:
-                    gcname = row[0]
-                    chs = "select chid from globalchat where gcname='" + \
-                        str(gcname) + "'"
-                    await cur.execute(chs)
-                    res1 = await cur.fetchall()
-                    for cr in res1:
-                        asyncio.ensure_future(self.gcsend(cr[0], message))
+    async def on_message(self, message: discord.Message):
+        if message.channel.id not in self.channels_cache:
+            return
+        if message.author.bot:
+            return
 
-    async def getwebhook(self, channel: discord.TextChannel):
-        webhooks = await channel.webhooks()
-        webhook = discord.utils.get(webhooks, name='sakuraglobal')
-        if webhook is None:
-            webhook = await channel.create_webhook(name='sakuraglobal')
-        return webhook
+        async def sqler(cursor):
+            await cursor.execute(
+                "SELECT Name FROM GlobalChat2 WHERE ChannelId = %s;",
+                (message.channel.id,)
+            )
+            response = await cursor.fetchone()
+            response: str = response[0][0]
+            await cursor.execute(
+                "SELECT ChannelId FROM GlobalChat2 WHERE Name = %s;", (response,)
+            )
+            return await cursor.fetchall()
+        response = await self.bot.execute_sql(sqler)
+
+        assert isinstance(response, tuple)
+        for resp in response:
+            self.bot.loop.create_task(self.gc_send(resp[0], message))
 
 
-async def setup(bot):
-    await bot.add_cog(globalchat(bot))
+async def setup(bot: Bot):
+    await bot.add_cog(GlobalChat(bot))

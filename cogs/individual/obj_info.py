@@ -147,6 +147,9 @@ class ObjectInfo(commands.Cog):
             title=f"{target}の共通サーバー一覧",
             description="(管理者専用)"
         )
+        if isinstance(target, discord.ClientUser):
+            embed.add_field(name="** **", value="全サーバー")
+            return embed
         embed.add_field(
             name="** **",
             value="\n".join(
@@ -247,10 +250,9 @@ class ObjectInfo(commands.Cog):
     def create_si_embed_3(self, target: discord.Guild) -> discord.Embed:
         "古参ランキング(そのサーバー限定)"
         desc = "\n".join(
-            f"{m.mention}: {discord.utils.format_dt(m.joined_at)}"
-            f"({(discord.utils.utcnow() - m.joined_at).days}日前)"
-            # type: ignore
-            for m in sorted(target.members, key=lambda m: m.joined_at)
+            f"{m.mention}: {discord.utils.format_dt(m.joined_at or discord.utils.utcnow())}"
+            f"({(discord.utils.utcnow() - (m.joined_at or discord.utils.utcnow())).days}日前)"
+            for m in sorted(target.members, key=lambda m: m.joined_at or discord.utils.utcnow())
         )
         embed = discord.Embed(
             title="古参メンバーランキング",

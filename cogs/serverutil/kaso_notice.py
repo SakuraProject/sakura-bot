@@ -22,7 +22,6 @@ class KasoNotice(commands.Cog):
         cache = await self.bot.execute_sql(
             "SELECT * FROM KasoNotice;", _return_type="fetchall"
         )
-        assert isinstance(cache, tuple)
         self.cache = {c[0]: c[1] for c in cache}
 
     @commands.hybrid_command(

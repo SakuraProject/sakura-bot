@@ -1,6 +1,7 @@
 # Sakura Utils - Bot
 
-from typing import Callable
+from typing import TypeVar, Any, Callable, Literal, overload
+from collections.abc import Coroutine
 
 from inspect import iscoroutinefunction
 
@@ -9,7 +10,7 @@ from aiohttp import ClientSession
 from aiomysql import Pool
 
 
-__all__ = ["Bot"]
+reT = TypeVar("reT")
 
 
 class Bot(commands.Bot):
@@ -21,11 +22,31 @@ class Bot(commands.Bot):
 
     Color = 0xffbdde
 
+    @overload
     async def execute_sql(
-        self, sql: str | Callable,
-        _injects: tuple | None = None, _return_type: str = "",
+        self, sql: str, _injects: tuple | None = None,
+        _return_type: Literal["fetchall", "fetchone", ""] = ""
+    ) -> tuple[tuple, ...]:
+        ...
+    @overload
+    async def execute_sql(
+        self, sql: str, _injects: tuple | None = None,
+        _return_type: Literal[""] = ""
+    ) -> tuple:
+        ...
+    @overload
+    async def execute_sql(
+        self, sql: Callable[..., Coroutine[Any, Any, reT]],
+        _injects: None = None, _return_type: Literal[""] = "", **kwargs
+    ) -> reT:
+        ...
+
+    async def execute_sql(
+        self, sql: str | Callable[..., Coroutine[Any, Any, reT]],
+        _injects: tuple | None = None,
+        _return_type: Literal["fetchall", "fetchone", ""] = "",
         **kwargs
-    ):
+    ) -> reT | tuple:
         "SQL文を実行します。"
         async with self.pool.acquire() as conn:
             async with conn.cursor() as cursor:
@@ -38,3 +59,4 @@ class Bot(commands.Bot):
                     return await cursor.fetchall()
                 elif _return_type == "fetchone":
                     return await cursor.fetchone()
+                return ()

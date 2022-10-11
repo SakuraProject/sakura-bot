@@ -7,7 +7,7 @@ class purge(commands.Cog):
         self.bot = bot
 
     @commands.command()
-    async def purge(self, ctx, length=0, member: discord.User = None):
+    async def purge(self, ctx, length=0, member: discord.User | None = None):
         if length == 0:
             mlis = list()
             inn = False

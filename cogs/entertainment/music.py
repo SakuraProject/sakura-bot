@@ -1,18 +1,19 @@
-from types import NoneType
-from niconico import NicoNico
-import requests
+import asyncio
+import audioop
+import copy
+import re
 import urllib.parse
 import urllib.request
-from youtube_dl import YoutubeDL
-import discord
-from discord.ext import commands
-from discord.utils import get
-import re
-import asyncio
-from discord import FFmpegPCMAudio
-import copy
 from time import time
-import audioop
+
+import discord
+import requests
+from discord import FFmpegPCMAudio
+from discord.ext import commands
+from niconico.niconico import NicoNico
+from youtube_dl import YoutubeDL
+
+from utils import Bot
 
 
 def yf_gettitle(id):
@@ -46,7 +47,7 @@ def restore(sid):
         "yt:", "https://youtube.com/watch?v=").replace("nico:", "https://www.nicovideo.jp/watch/").replace("yf:", "https://ysmfilm.net/view.php?id=")
 
 
-class Queue():
+class Queue:
     def __init__(self, url):
         self.url = url
         self.video = None
@@ -57,7 +58,9 @@ class Queue():
         BILIBILI_OPTIONS = {'noplaylist': 'True', "ignoreerrors": True,
                             "cookiefile": "data/youtube.com_cookies.txt"}
         FFMPEG_OPTIONS = {
-            'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
+            'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
+            'options': '-vn'
+        }
         try:
             if "nicovideo.jp" in self.url or "nico.ms" in self.url:
                 if self.video is not None:
@@ -128,7 +131,7 @@ class Queue():
 
 
 class music(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: Bot):
         self.bot, self.before = bot, ""
 
     async def cog_load(self):
@@ -181,14 +184,17 @@ class music(commands.Cog):
             return
         await self.pl(ctx, url)
 
-    async def pl(self, ctx, url):
+    async def pl(self, ctx: commands.Context, url):
+        assert ctx.guild
         YDL_OPTIONS = {'format': 'bestaudio', "ignoreerrors": True,
                        "cookiefile": "data/youtube.com_cookies.txt"}
         FFMPEG_OPTIONS = {
-            'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
+            'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
+            'options': '-vn'
+        }
         loop = asyncio.get_event_loop()
-        channel = ctx.message.author.voice.channel
-        voice = get(self.bot.voice_clients, guild=ctx.guild)
+        channel = ctx.author.voice.channel
+        voice = discord.utils.get(self.bot.voice_clients, guild=ctx.guild)
         if voice and voice.is_connected():
             await voice.move_to(channel)
         else:
@@ -326,27 +332,15 @@ class music(commands.Cog):
                 voice.source.music = True
                 await self.addc(qp)
 
-    @commands.command()
+    @commands.command(description="音楽を再生します。")
     async def playlist(self, ctx, *, name):
-        """
-        NLang ja 音楽を再生します
-        プレイリストの音楽を再生します。このコマンドを使用する際は先にボイスチャンネルに接続してください。
-        **使いかた：**
-        EVAL self.bot.command_prefix+'playlist プレイリスト名'
-        ELang ja
-        NLang default It is the command to play a playlist music
-        It is the command to play a playlist music.you must join the voice channel if you use
-        **how to use：**
-        EVAL self.bot.command_prefix+'playlist playlist name'
-        ELang default
-        """
         YDL_OPTIONS = {'format': 'bestaudio', "ignoreerrors": True,
                        "cookiefile": "data/youtube.com_cookies.txt"}
         FFMPEG_OPTIONS = {
             'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
         loop = asyncio.get_event_loop()
         channel = ctx.message.author.voice.channel
-        voice = get(self.bot.voice_clients, guild=ctx.guild)
+        voice = discord.utils.get(self.bot.voice_clients, guild=ctx.guild)
         if voice and voice.is_connected():
             await voice.move_to(channel)
         else:
@@ -403,7 +397,7 @@ class music(commands.Cog):
 
     @commands.command()
     async def pause(self, ctx):
-        voice = get(self.bot.voice_clients, guild=ctx.guild)
+        voice = discord.utils.get(self.bot.voice_clients, guild=ctx.guild)
         self.stopt = time() - self.start
         if voice.is_playing():
             voice.pause()
@@ -424,7 +418,7 @@ class music(commands.Cog):
         EVAL self.bot.command_prefix+'stop'
         ELang default
         """
-        voice = get(self.bot.voice_clients, guild=ctx.guild)
+        voice = discord.utils.get(self.bot.voice_clients, guild=ctx.guild)
 
         if voice.is_playing():
             await ctx.send('キューを削除し一時停止しました')
@@ -436,8 +430,8 @@ class music(commands.Cog):
             voice.stop()
 
     @commands.command()
-    async def resume(self, ctx):
-        voice = get(self.bot.voice_clients, guild=ctx.guild)
+    async def resume(self, ctx: commands.Context):
+        voice = discord.utils.get(self.bot.voice_clients, guild=ctx.guild)
         self.start = time() - self.stopt
         if not voice.is_playing():
             voice.resume()
@@ -485,8 +479,8 @@ class music(commands.Cog):
                 await ctx.send(embeds=[embed])
 
     @commands.command()
-    async def disconnect(self, ctx):
-        voice = get(self.bot.voice_clients, guild=ctx.guild)
+    async def disconnect(self, ctx: commands.Context):
+        voice = discord.utils.get(self.bot.voice_clients, guild=ctx.guild)
         await voice.disconnect()
         self.queues[ctx.guild.id] = list()
         for qp in self.queues[ctx.guild.id]:
@@ -496,7 +490,7 @@ class music(commands.Cog):
         await ctx.send('キューを削除し切断しました')
 
     @commands.command()
-    async def nowplaying(self, ctx):
+    async def nowplaying(self, ctx: commands.Context):
         ebd = discord.Embed(title="Now", color=self.bot.Color)
         qp = self.queues[ctx.guild.id][0]
         ebd.add_field(name="Title", value="[" + qp.title + "](" + qp.url + ")")
@@ -507,7 +501,7 @@ class music(commands.Cog):
         await ctx.send(embeds=[ebd], view=view)
 
     @commands.command()
-    async def editplaylist(self, ctx, name):
+    async def editplaylist(self, ctx: commands.Context, name):
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
                 await cur.execute("SELECT * FROM `musiclist` where `userid` = %s and `lname` = %s", (ctx.author.id, name))
@@ -538,7 +532,7 @@ class music(commands.Cog):
                 except SyntaxError:
                     await ctx.send("キャンセルしました")
 
-    async def input(self, ctx, q):
+    async def input(self, ctx: commands.Context, q):
         def check(m):
             return m.author == ctx.author and m.channel == ctx.channel
         await ctx.send(q)
@@ -565,7 +559,7 @@ class music(commands.Cog):
 
 
 class SearchList(discord.ui.Select):
-    def __init__(self, ctx, cog, query):
+    def __init__(self, ctx: commands.Context, cog: music, query: str):
         YDL_OPTIONS = {'format': 'bestaudio', "ignoreerrors": True,
                        "cookiefile": "data/youtube.com_cookies.txt"}
         FFMPEG_OPTIONS = {
@@ -588,7 +582,7 @@ class SearchList(discord.ui.Select):
 
 
 class AplButton(discord.ui.Button):
-    def __init__(self, it, bot):
+    def __init__(self, it, bot: Bot):
         self.it = it
         self.bot = bot
         super().__init__(label="プレイリストに追加", style=discord.ButtonStyle.green)
@@ -606,7 +600,7 @@ class AplButton(discord.ui.Button):
             async with self.bot.pool.acquire() as conn:
                 async with conn.cursor() as cur:
                     await cur.execute("INSERT INTO `musiclist` (`userid`,`vid`,`lname`) VALUES (%s,%s,%s);", (interaction.user.id, self.it.sid, message.content))
-                    await interaction.channel.send('追加完了しました')
+                    await message.channel.send('追加完了しました')
 
 
 class AudioMixer(discord.AudioSource):
@@ -634,5 +628,5 @@ class AudioMixer(discord.AudioSource):
             return data
 
 
-async def setup(bot):
+async def setup(bot: Bot):
     await bot.add_cog(music(bot))

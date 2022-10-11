@@ -5,14 +5,16 @@ import urllib.parse
 import discord
 import stripe
 from discord.ext import commands
-from orjson import dumps, loads
+from orjson import loads
+
+from utils import Bot, dumps
 
 secretkey = os.environ["YMARTKEY"]
 
 
 class shopping(commands.Cog):
-    def __init__(self, bot):
-        self.bot, self.before = bot, ""
+    def __init__(self, bot: Bot):
+        self.bot = bot
 
     @commands.group(aliases=["買い物"])
     async def shopping(self, ctx: commands.Context):
@@ -21,7 +23,14 @@ class shopping(commands.Cog):
 
     @shopping.command()
     async def cart(self, ctx):
-        async with self.bot.session.get("https://ystore.jp/api/cart.php?secret=" + urllib.parse.quote_plus(secretkey, encoding='utf-8') + "&disid=" + str(ctx.author.id) + "&distag=" + urllib.parse.quote_plus(ctx.author.name + '#' + ctx.author.discriminator)) as resp:
+        async with self.bot.session.get(
+            "https://ystore.jp/api/cart.php?secret="
+            + urllib.parse.quote_plus(secretkey, encoding='utf-8')
+            + "&disid=" + str(ctx.author.id) + "&distag="
+            + urllib.parse.quote_plus(
+                ctx.author.name + '#' + ctx.author.discriminator
+            )
+        ) as resp:
             rpt = await resp.text()
             if rpt == "[]":
                 await ctx.reply("カートに商品がありません")
@@ -47,7 +56,7 @@ class shopping(commands.Cog):
                 await ctx.send(embeds=[ebd])
 
     @shopping.command()
-    async def search(self, ctx, word):
+    async def search(self, ctx: commands.Context, word):
         async with self.bot.session.get("https://ystore.jp/api/search.php?q=" + urllib.parse.quote_plus(word, encoding='utf-8')) as resp:
             rpt = await resp.text()
             if rpt == "[]":
@@ -131,7 +140,14 @@ class shopping(commands.Cog):
     @shopping.command()
     @commands.dm_only()
     async def ticket(self, ctx):
-        async with self.bot.session.get("https://ystore.jp/api/cart.php?secret=" + urllib.parse.quote_plus(secretkey, encoding='utf-8') + "&disid=" + str(ctx.author.id) + "&distag=" + urllib.parse.quote_plus(ctx.author.name + '#' + ctx.author.discriminator)) as resp:
+        async with self.bot.session.get(
+            "https://ystore.jp/api/cart.php?secret="
+            + urllib.parse.quote_plus(secretkey, encoding='utf-8')
+            + "&disid=" + str(ctx.author.id) + "&distag="
+            + urllib.parse.quote_plus(
+                ctx.author.name + '#' + ctx.author.discriminator
+            )
+        ) as resp:
             rpt = await resp.text()
             if rpt == "[]":
                 await ctx.reply("まだ注文はありません")
@@ -166,7 +182,7 @@ class shopping(commands.Cog):
                 async with self.bot.session.post("http://ystore.jp/api/copyimg.php", data=req1) as resp1:
                     rpt = await resp1.text()
                     imgj.append(rpt)
-            req["imgs"] = dumps(imgj).decode()
+            req["imgs"] = dumps(imgj)
             req["price"] = (await self.input(ctx, "金額を数字で入力してください")).content
             req["lotof"] = (await self.input(ctx, "在庫を数字で入力してください")).content
             async with self.bot.session.get("https://ystore.jp/api/cats.php") as resp:
@@ -201,7 +217,14 @@ class shopping(commands.Cog):
     @shopping.command()
     async def edit(self, ctx):
         req = dict()
-        async with self.bot.session.get("https://ystore.jp/api/items.php?secret=" + urllib.parse.quote_plus(secretkey, encoding='utf-8') + "&disid=" + str(ctx.author.id) + "&distag=" + urllib.parse.quote_plus(ctx.author.name + '#' + ctx.author.discriminator)) as resp:
+        async with self.bot.session.get(
+            "https://ystore.jp/api/items.php?secret="
+            + urllib.parse.quote_plus(secretkey, encoding='utf-8')
+            + "&disid=" + str(ctx.author.id) + "&distag="
+            + urllib.parse.quote_plus(
+                ctx.author.name + '#' + ctx.author.discriminator
+            )
+        ) as resp:
             rpt = await resp.text()
             if rpt == "[]" or rpt == "null":
                 await ctx.reply("出品した商品がありません")
@@ -237,7 +260,7 @@ class shopping(commands.Cog):
                 async with self.bot.session.post("http://ystore.jp/api/copyimg.php", data=req1) as resp1:
                     rpt = await resp1.text()
                     imgj.append(rpt)
-            req["imgs"] = dumps(imgj).decode()
+            req["imgs"] = dumps(imgj)
             req["price"] = (await self.input(ctx, "金額を数字で入力してください")).content
             req["lotof"] = (await self.input(ctx, "在庫を数字で入力してください")).content
             async with self.bot.session.get("https://ystore.jp/api/cats.php") as resp:
@@ -451,7 +474,14 @@ class CartButton(discord.ui.Button):
             await interaction.response.send_message('タイムアウトしました.  再度操作をやり直してね')
             return
         else:
-            async with self.bot.session.get("https://ystore.jp/api/addcart.php?secret=" + urllib.parse.quote_plus(secretkey, encoding='utf-8') + "&disid=" + str(interaction.user.id) + "&distag=" + urllib.parse.quote_plus(interaction.user.name + '#' + interaction.user.discriminator) + "&lof=" + message.content + "&i=" + self.it["itemid"]) as resp:
+            async with self.bot.session.get(
+                "https://ystore.jp/api/addcart.php?secret="
+                + urllib.parse.quote_plus(secretkey, encoding='utf-8')
+                + "&disid=" + str(interaction.user.id) + "&distag="
+                + urllib.parse.quote_plus(
+                    interaction.user.name + '#' + interaction.user.discriminator
+                ) + "&lof=" + message.content + "&i=" + self.it["itemid"]
+            ) as resp:
                 rpt = await resp.text()
                 await interaction.response.send_message(rpt)
 

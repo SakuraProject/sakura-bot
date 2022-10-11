@@ -4,10 +4,12 @@ from time import time
 import discord
 import asyncio
 
+from utils import Bot
+
 
 class bump(commands.Cog):
-    def __init__(self, bot):
-        self.bot, self.before = bot, ""
+    def __init__(self, bot: Bot):
+        self.bot = bot
         self.notifi.start()
 
     async def cog_load(self):
@@ -19,7 +21,7 @@ class bump(commands.Cog):
                 await cur.execute(ctsql1)
 
     @commands.Cog.listener()
-    async def on_message(self, message):
+    async def on_message(self, message: discord.Message):
         if message.author.id == 832614051514417202:
             if message.embeds[0].title == "GlowBoard - 色々できるサーバー掲示板":
                 if message.embeds[0].description.find(
@@ -149,15 +151,20 @@ class bump(commands.Cog):
                                     await channel.send(embeds=[ebd])
                             await cur.execute("DELETE FROM `bump` where `gid`=%s and `type`=%s", (row[3], typ))
 
-    async def save(self, message, type, nof):
+    async def save(self, message: discord.Message, type, nof):
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
-                await cur.execute("INSERT INTO `bump` (`chid`, `noftime`, `type`, `gid`) VALUES (%s, %s, %s, %s);", (message.channel.id, str(nof), type, message.guild.id))
+                await cur.execute(
+                    "INSERT INTO `bump` (`chid`, `noftime`, `type`, `gid`) VALUES (%s, %s, %s, %s);",
+                    (message.channel.id, str(nof), type, message.guild.id)
+                )
                 await conn.commit()
 
     @commands.command()
     @commands.has_guild_permissions(administrator=True)
-    async def frrtraiseonoff(self, ctx, onoff, role: discord.Role = None):
+    async def frrtraiseonoff(
+        self, ctx: commands.Context, onoff, role: discord.Role | None = None
+    ):
         if role is None:
             roleid = 0
         else:
@@ -175,7 +182,9 @@ class bump(commands.Cog):
 
     @commands.command()
     @commands.has_guild_permissions(administrator=True)
-    async def raiseonoff(self, ctx, onoff, role: discord.Role = None):
+    async def raiseonoff(
+        self, ctx: commands.Context, onoff, role: discord.Role | None = None
+    ):
         if role is None:
             roleid = 0
         else:
@@ -193,7 +202,9 @@ class bump(commands.Cog):
 
     @commands.command()
     @commands.has_guild_permissions(administrator=True)
-    async def bumponoff(self, ctx, onoff, role: discord.Role = None):
+    async def bumponoff(
+        self, ctx: commands.Context, onoff, role: discord.Role | None = None
+    ):
         if role is None:
             roleid = 0
         else:
@@ -211,7 +222,9 @@ class bump(commands.Cog):
 
     @commands.command()
     @commands.has_guild_permissions(administrator=True)
-    async def tossonoff(self, ctx, onoff, role: discord.Role = None):
+    async def tossonoff(
+        self, ctx: commands.Context, onoff, role: discord.Role | None = None
+    ):
         if role is None:
             roleid = 0
         else:
@@ -229,7 +242,9 @@ class bump(commands.Cog):
 
     @commands.command()
     @commands.has_guild_permissions(administrator=True)
-    async def uponoff(self, ctx, onoff, role: discord.Role = None):
+    async def uponoff(
+        self, ctx: commands.Context, onoff, role: discord.Role | None = None
+    ):
         if role is None:
             roleid = 0
         else:
@@ -246,5 +261,5 @@ class bump(commands.Cog):
                 await ctx.reply("設定しました")
 
 
-async def setup(bot):
+async def setup(bot: Bot):
     await bot.add_cog(bump(bot))

@@ -3,13 +3,13 @@ from typing import Union, Optional, Sequence, Any
 import asyncio
 
 import websockets
-from ujson import loads, dumps
+from orjson import loads
 from websockets.exceptions import ConnectionClosed
 
 import discord
 from discord.ext import commands
 
-from utils import Bot
+from utils import Bot, dumps
 from data.help import HELP
 from .help import Help
 

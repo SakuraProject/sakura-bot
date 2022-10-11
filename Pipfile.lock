@@ -168,7 +168,7 @@
                 "sha256:58d5c3d29f5a36ffeb94f02f0d786cd53014cf9b3b3951d42e0080d8a9498d30",
                 "sha256:ad9aa55b65ef2808eb405f46cf74df7fcb7044d5cbc26487f96eb2ef2e436693"
             ],
-            "markers": "python_version >= '3.6'",
+            "markers": "python_full_version >= '3.6.0'",
             "version": "==4.11.1"
         },
         "braceexpand": {
@@ -197,7 +197,7 @@
                 "sha256:5a3d016c7c547f69d6f81fb0db9449ce888b418b5b9952cc5e6e66843e9dd845",
                 "sha256:83e9a75d1911279afd89352c68b45348559d1fc0506b054b346651b5e7fee29f"
             ],
-            "markers": "python_version >= '3.6'",
+            "markers": "python_full_version >= '3.6.0'",
             "version": "==2.1.1"
         },
         "click": {
@@ -470,7 +470,7 @@
                 "sha256:f8c02ec3c4c4fcb718fdf89a6c6f709b14949408e8cf2a2be5bfa9c49548fd85",
                 "sha256:ffcf105ecdd9396e05a8e58e81faaaf34d3f9875f137c7372450baa5d77c9a54"
             ],
-            "markers": "python_full_version >= '3.8.0'",
+            "markers": "python_version >= '3.9'",
             "version": "==1.23.3"
         },
         "oauthlib": {
@@ -616,11 +616,11 @@
         },
         "stripe": {
             "hashes": [
-                "sha256:8c6f62788b1447854109b1c26cdeb4236c3adb46d7e5971745b0956ee6b95e3e",
-                "sha256:dc0344ef78a486ecfa3d6b8d259425b97a4c4aa745f862dd53e41270f4b991b3"
+                "sha256:b640bebb9983fef0f47228ebd032fc3b4fad004c76d8474d89da422379d92378",
+                "sha256:e54314ff058e6f8845be60eaa8462df4a84938fc67d2489a102aa8ad00110e64"
             ],
             "index": "pypi",
-            "version": "==4.3.0b1"
+            "version": "==4.3.0b2"
         },
         "tweepy": {
             "extras": [
@@ -988,7 +988,7 @@
                 "sha256:5a3d016c7c547f69d6f81fb0db9449ce888b418b5b9952cc5e6e66843e9dd845",
                 "sha256:83e9a75d1911279afd89352c68b45348559d1fc0506b054b346651b5e7fee29f"
             ],
-            "markers": "python_version >= '3.6'",
+            "markers": "python_full_version >= '3.6.0'",
             "version": "==2.1.1"
         },
         "discord-test": {

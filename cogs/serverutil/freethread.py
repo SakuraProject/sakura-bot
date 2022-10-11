@@ -3,22 +3,23 @@
 import discord
 from discord.ext import commands
 
+from utils import Bot
+
 
 class FreeThread(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: Bot):
         self.bot = bot
 
-    @commands.group(
+    @commands.command(
         aliases=["フリスレ", "ft"]
     )
     async def freethread(self, ctx: commands.Context):
-        if not ctx.invoked_subcommand:
-            await ctx.reply(
-                "この機能を有効にするにはチャンネルトピックに`sk>freethread`と書いてください"
-            )
+        await ctx.reply(
+            "この機能を有効にするにはチャンネルトピックに`sk>freethread`と書いてください"
+        )
 
     @commands.Cog.listener()
-    async def on_message(self, message):
+    async def on_message(self, message: discord.Message):
         if isinstance(message.channel, discord.TextChannel):
             if message.channel.topic is not None:
                 if "sk>freethread" in message.channel.topic:

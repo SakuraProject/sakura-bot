@@ -4,13 +4,15 @@ from speedtest import Speedtest
 import asyncio
 import time
 
+from utils import Bot
+
 
 class speedtest(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: Bot):
         self.bot = bot
 
     @commands.command()
-    async def speedtest(self, ctx):
+    async def speedtest(self, ctx: commands.Context):
         """
         NLang ja botサーバーのスピードテスト
         botを動かしているサーバーのスピードテストを実行します
@@ -33,7 +35,7 @@ class speedtest(commands.Cog):
         await msg.edit(content="", embeds=[ebd])
 
     @commands.command()
-    async def ping(self, ctx):
+    async def ping(self, ctx: commands.Context):
         """
         NLang ja botのpingを取得します
         botのpingを取得します
@@ -52,10 +54,10 @@ class speedtest(commands.Cog):
         while not f.done():
             await asyncio.sleep(1 / 1000)
         p2 = int((time.time() - t) * 1000)
-        ebd = discord.Embed(title="ping", description="**Discordとの接続速度**:\n" +
+        embed = discord.Embed(title="ping", description="**Discordとの接続速度**:\n" +
                             str(p1) + "ms\n**バックエンドとの通信速度**:\n" + str(p2) + "ms")
-        await ctx.send(embeds=[ebd])
+        await ctx.send(embed=embed)
 
 
-async def setup(bot):
+async def setup(bot: Bot):
     await bot.add_cog(speedtest(bot))
