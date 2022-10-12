@@ -5,35 +5,7 @@ import discord
 
 from utils import Bot, EmbedsView
 from data import sakurabadge
-
-
-PERMISSIONS = {
-    "administrator": "管理者",
-    "view_audit_log": "監査ログを表示",
-    "manage_guild": "サーバーの管理",
-    "manage_roles": "ロールの管理",
-    "manage_channels": "チャンネルの管理",
-    "kick_members": "メンバーをキック",
-    "ban_members": "メンバーをBAN",
-    "create_instant_invite": "招待を作成",
-    "change_nickname": "ニックネームの変更",
-    "manage_nicknames": "ニックネームの管理",
-    "manage_emojis": "絵文字の管理",
-    "manage_webhooks": "ウェブフックの管理",
-    "manage_events": "イベントの管理",
-    "manage_threads": "スレッドの管理",
-    "use_application_commands": "スラッシュコマンドの使用",
-    "view_guild_insights": "テキストチャンネルの閲覧＆ボイスチャンネルの表示",
-    "send_messages": "メッセージを送信",
-    "send_tts_messages": "TTSメッセージを送信",
-    "manage_messages": "メッセージの管理",
-    "embed_links": "埋め込みリンク",
-    "attach_files": "ファイルを添付",
-    "read_message_history": "メッセージ履歴を読む",
-    "mention_everyone": "@everyone、@here、全てのロールにメンション",
-    "external_emojis": "外部の絵文字の使用",
-    "add_reactions": "リアクションの追加"
-}
+from data.permissions import PERMISSIONS
 
 
 class ObjectInfo(commands.Cog):
