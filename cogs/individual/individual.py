@@ -34,7 +34,7 @@ class Individual(commands.Cog):
         await ctx.send(content)
 
     @commands.hybrid_command(description="サーバーにいない新しいbotを探します。")
-    @app_commands.describe(condition="探す条件です。")
+    @app_commands.describe(condition="探す条件")
     @commands.guild_only()
     async def findnewbot(
         self, ctx: commands.Context,
@@ -46,8 +46,8 @@ class Individual(commands.Cog):
             u for u in self.bot.users
             if u.bot and u not in ctx.guild.members
             and (m.status != discord.Status.offline
-                 if (m := u.mutual_guilds[0].get_member(u.id)) and condition == "online"
-                 else True)
+                 if condition == "online" and u.mutual_guilds and
+                     (m := u.mutual_guilds[0].get_member(u.id)) else True)
             and (u.id not in self.ignore_bot_cache
                  if condition != "include_ignored" else True)
         ]
