@@ -113,7 +113,7 @@ class CmdList(discord.ui.Select):
         )
         for cm in self.cmds:
             options.append(discord.SelectOption(
-                label=cm.name, value=cm.name
+                label=cm.qualified_name, value=cm.qualified_name
             ))
         super().__init__(
             placeholder='コマンドを選択...', min_values=1,
