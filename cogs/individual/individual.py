@@ -65,7 +65,7 @@ class Individual(commands.Cog):
                 return await ctx.send("もういる。")
             self.ignore_bot_cache.append(id_)
             await self.bot.execute_sql(
-                "INSERT INTO IgnoreFindBot VALUES %s",
+                "INSERT INTO IgnoreFindBot VALUES (%s);",
                 (id_,)
             )
         elif mode == "remove":
