@@ -6,6 +6,8 @@ from discord.ext import commands
 from ujson import loads, dumps
 import asyncio
 from time import time
+import importlib
+from discord import FFmpegPCMAudio
 # 既存の機能をプラグイン対応可にします
 oldrestore = music.restore
 def restore(sid):
@@ -129,10 +131,10 @@ class Music(music.music):
                                     color=self.bot.Color)
                 ebd.add_field(
                     name="Title", value="[" + qp.title + "](" + qp.url + ")")
-                ebd.add_field(name="Time", value=fmt_time(
-                    0) + "/" + fmt_time(qp.duration))
+                ebd.add_field(name="Time", value=music.fmt_time(
+                    0) + "/" + music.fmt_time(qp.duration))
                 view = discord.ui.View()
-                view.add_item(AplButton(qp, self.bot))
+                view.add_item(music.AplButton(qp, self.bot))
                 await ctx.send(embeds=[ebd], view=view)
                 await self.addc(qp)
             else:
@@ -153,7 +155,7 @@ class Music(music.music):
                 i = 1
                 list = ""
                 for row in res:
-                    que = Queue(restore(row[1]))
+                    que = PluginQueue(restore(row[1]))
                     if que.url == "https://sakura-bot.net":
                         list = list + "No." + \
                             str(i) + "有効になってないプラグインの動画です\n"
@@ -199,7 +201,7 @@ class Music(music.music):
                 i = 1
                 list = ""
                 for row in res:
-                    que = Queue(restore(row[1]))
+                    que = PluginQueue(restore(row[1]))
                     if que.url == "https://sakura-bot.net":
                         list = list + \
                             str(i) + "位 有効になってないプラグインの動画です\n"
