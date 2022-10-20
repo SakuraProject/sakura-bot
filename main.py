@@ -40,13 +40,12 @@ async def on_ready():
                 print("[Log][err]" + str(e))
             else:
                 print("[Log][load]" + name)
-            try:
-                await bot.load_extension("cogs.bot.__plugin")
-            except Exception as e:
-                print("[Log][err]" + str(e))
-            else:
-                print("[Log][load]Plugin")
-                
+    try:
+        await bot.load_extension("cogs.bot.__plugin")
+    except Exception as e:
+        print("[Log][err]" + str(e))
+    else:
+        print("[Log][load]Plugin")    
     print(f"[Log]Complete Booting,Thank you for using {bot.user}")
 
 
