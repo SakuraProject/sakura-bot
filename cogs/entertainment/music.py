@@ -14,7 +14,8 @@ from niconico.niconico import NicoNico
 from youtube_dl import YoutubeDL
 
 from utils import Bot
-
+from nicovideo_api_client.api.v2.snapshot_search_api_v2 import SnapshotSearchAPIV2
+from nicovideo_api_client.constants import FieldType
 
 def yf_gettitle(id):
     searchurl = "https://ysmfilm.wjg.jp/view_raw.php?id=" + id
@@ -43,8 +44,7 @@ def fmt_time(time):
 
 
 def restore(sid):
-    return sid.replace("daily:", "https://www.dailymotion.com/video/").replace("bili:", "https://www.bilibili.com/video/").replace("sc:", "https://soundcloud.com/").replace(
-        "yt:", "https://youtube.com/watch?v=").replace("nico:", "https://www.nicovideo.jp/watch/").replace("yf:", "https://ysmfilm.net/view.php?id=")
+    return sid.replace("daily:", "https://www.dailymotion.com/video/").replace("bili:", "https://www.bilibili.com/video/").replace("sc:", "https://soundcloud.com/").replace("nico:", "https://www.nicovideo.jp/watch/").replace("yf:", "https://ysmfilm.net/view.php?id=")
 
 
 class Queue:
@@ -96,13 +96,6 @@ class Queue:
                 self.title = self.url
                 self.source = self.url
                 self.sid = self.url
-            elif "youtu" in self.url:
-                with YoutubeDL(YDL_OPTIONS) as ydl:
-                    info = ydl.extract_info(self.url, download=False)
-                self.source = info['url']
-                self.title = info['title']
-                self.duration = info["duration"]
-                self.sid = "yt:" + info["id"]
             elif "bilibili" in self.url:
                 with YoutubeDL(BILIBILI_OPTIONS) as ydl:
                     info = ydl.extract_info(self.url, download=False)
@@ -211,32 +204,7 @@ class music(commands.Cog):
             len(self.queues[ctx.guild.id])
         except KeyError:
             self.queues[ctx.guild.id] = list()
-        if "youtu" in url:
-            with YoutubeDL(YDL_OPTIONS) as ydl:
-                info = ydl.extract_info(url, download=False)
-            if info.get("entries"):
-                qpl = len(self.queues[ctx.guild.id])
-                for ent in info['entries']:
-                    qp = Queue("https://youtube.com/watch?v=" + ent["id"])
-                    qp.title = ent["title"]
-                    qp.source = ent['url']
-                    qp.duration = ent["duration"]
-                    qp.sid = "yt:" + ent["id"]
-                    if self.lop[ctx.guild.id]:
-                        self.lopq[ctx.guild.id].append(qp)
-                    self.queues[ctx.guild.id].append(qp)
-                if not voice.is_playing():
-                    qp = self.queues[ctx.guild.id][qpl]
-                else:
-                    await ctx.send('プレイリストをキューに追加しました')
-                    return
-            else:
-                qp = Queue(url)
-                await qp.setdata()
-                if self.lop[ctx.guild.id]:
-                    self.lopq[ctx.guild.id].append(qp)
-                self.queues[ctx.guild.id].append(qp)
-        elif ("nicovideo.jp" in url or "nico.ms" in url) and "mylist" in url:
+        if ("nicovideo.jp" in url or "nico.ms" in url) and "mylist" in url:
             qpl = len(self.queues[ctx.guild.id])
             for mylist in niconico.video.get_mylist(url):
                 for item in mylist.items:
@@ -560,20 +528,13 @@ class music(commands.Cog):
 
 class SearchList(discord.ui.Select):
     def __init__(self, ctx: commands.Context, cog: music, query: str):
-        YDL_OPTIONS = {'format': 'bestaudio', "ignoreerrors": True,
-                       "cookiefile": "data/youtube.com_cookies.txt"}
-        FFMPEG_OPTIONS = {
-            'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
-        with YoutubeDL(YDL_OPTIONS) as ydl:
-            info = ydl.extract_info("ytsearch10:" + query, download=False)
-        args = info['entries']
-        self.sq = args
+        args = SnapshotSearchAPIV2().keywords().query(query.split(" ")).field({FieldType.TITLE, FieldType.CONTENT_ID}).sort(FieldType.VIEW_COUNTER).no_filter().limit(10).user_agent("NicoApiClient", "0.5.0").request().json()["data"]
         self.cog = cog
         self.ctx = ctx
         options = []
         for item in args:
             options.append(discord.SelectOption(
-                label=item["title"], description="https://youtube.com/watch?v=" + item["id"], value="https://youtube.com/watch?v=" + item["id"]))
+                label=item["title"], description="https://www.nicovideo.jp/watch/" + item["contentId"], value="https://www.nicovideo.jp/watch/" + item["contentId"]))
         super().__init__(placeholder='', min_values=1, max_values=1, options=options)
 
     async def callback(self, interaction: discord.Interaction):
