@@ -5,6 +5,7 @@ import discord
 from discord.ext import commands
 from ujson import loads, dumps
 import asyncio
+from time import time
 # 既存の機能をプラグイン対応可にします
 oldrestore = music.restore
 def restore(sid):
@@ -65,7 +66,7 @@ class PluginSearchList(music.SearchList):
             super(discord.ui.Select, self).__init__(placeholder='', min_values=1, max_values=1, options=options)
 
 class Music(music.music):
-    async def is_playlist(self, ctx, url):
+    async def is_playlist(self, ctx: commands.Context, url: str):
         res = list()
         plugin = bot.cogs["Plugin"]
         enable = plugin.get_enable_pulgin(ctx.author,ctx.guild)
@@ -78,7 +79,7 @@ class Music(music.music):
                 continue
         return res
 
-    async def pl(self, ctx: commands.Context, url):
+    async def pl(self, ctx: commands.Context, url: str):
         assert ctx.guild
         FFMPEG_OPTIONS = {
             'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
@@ -270,7 +271,7 @@ class Plugin(commands.Cog):
         music.SearchList = PluginSearchList
         music.restore = restore
 
-    async def input(self, ctx, q) -> discord.Message:
+    async def input(self, ctx: commands.Context, q) -> discord.Message:
         def check(m):
             return m.author == ctx.author and m.channel == ctx.channel
         await ctx.send(q)
@@ -317,12 +318,12 @@ class Plugin(commands.Cog):
         return res
 
     @commands.group()
-    async def s_plugin(self, ctx):
+    async def s_plugin(self, ctx: commands.Context):
         if not ctx.invoked_subcommand:
             await ctx.reply("使用方法が違います")
 
     @s_plugin.command()
-    async def enable_server(self, ctx, code=None):
+    async def enable_server(self, ctx: commands.Context, code=None):
         if not code is None:
             args = code.split(".")
             response = await self.bot.execute_sql(
@@ -376,7 +377,7 @@ class Plugin(commands.Cog):
             await ctx.send("追加しました")
 
     @s_plugin.command()
-    async def enable_user(self, ctx, code=None):
+    async def enable_user(self, ctx: commands.Context, code=None):
         if not code is None:
             args = code.split(".")
             response = await self.bot.execute_sql(
@@ -430,7 +431,7 @@ class Plugin(commands.Cog):
             await ctx.send("追加しました")
 
     @s_plugin.command()
-    async def remove_server(self, ctx):
+    async def remove_server(self, ctx: commands.Context):
         res = await self.bot.execute_sql(
             "SELECT * FROM Plugins WHERE `type`='Public'", _return_type="fetchall"
         )
@@ -468,7 +469,7 @@ class Plugin(commands.Cog):
         await ctx.send("追加しました")
 
     @s_plugin.command()
-    async def remove_user(self, ctx):
+    async def remove_user(self, ctx: commands.Context):
         res = await self.bot.execute_sql(
             "SELECT * FROM Plugins WHERE `type`='Public'", _return_type="fetchall"
         )
