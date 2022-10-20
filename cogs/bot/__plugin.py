@@ -468,7 +468,7 @@ class Plugin(commands.Cog):
                 Plugins = VALUES(Plugins);""",
             (ctx.guild.id, dumps(self.guilds[str(ctx.guild.id)]))
         )
-        await ctx.send("追加しました")
+        await ctx.send("削除しました")
 
     @s_plugin.command()
     async def remove_user(self, ctx: commands.Context):
@@ -506,7 +506,7 @@ class Plugin(commands.Cog):
                 Plugins = VALUES(Plugins);""",
             (ctx.author.id, dumps(self.users[str(ctx.author.id)]))
         )
-        await ctx.send("追加しました")
+        await ctx.send("削除しました")
 
 async def setup(client) -> None:
     global bot
