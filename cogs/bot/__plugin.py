@@ -10,6 +10,8 @@ import importlib
 from discord import FFmpegPCMAudio
 # 既存の機能をプラグイン対応可にします
 oldrestore = music.restore
+
+
 def restore(sid):
     res = sid
     ctx = inspect.stack()[1].frame.f_locals["ctx"]
@@ -21,7 +23,7 @@ def restore(sid):
                 res = plugins["music"].restore(sid)
             else:
                 return res
-        except:
+        except Exception:
             continue
     res = oldrestore(sid)
     if res == sid:
@@ -37,10 +39,11 @@ class PluginQueue(music.Queue):
         for plugins in enable:
             try:
                 await plugins["music"].setdata(self)
-            except:
+            except Exception:
                 continue
         if not hasattr(self,"source"):
             await super().setdata()
+
 
 class PluginSearchList(music.SearchList):
     def __init__(self, ctx: commands.Context, cog: music, query: str):
@@ -66,6 +69,7 @@ class PluginSearchList(music.SearchList):
             super().__init__(ctx, cog, query)
         else:
             super(discord.ui.Select, self).__init__(placeholder='', min_values=1, max_values=1, options=options)
+
 
 class Music(music.music):
     async def is_playlist(self, ctx: commands.Context, url: str):
@@ -95,7 +99,7 @@ class Music(music.music):
         else:
             voice = await channel.connect()
 
-        def nextqueue(er):
+        def nextqueue(self):
             asyncio.run_coroutine_threadsafe(self.asyncnextqueue(
                 FFMPEG_OPTIONS, voice, ctx, nextqueue), loop)
         try:
@@ -225,7 +229,7 @@ class PluginManager:
         plugin = bot.cogs["Plugin"]
         plugin.plugins[self.id][type(cls).__name__] = cls
 
-    async def load_submodule(self, name):
+    async def load_submodule(self, name: str):
         setup = importlib.import_module(name).setup
         await setup(self.bot,self)
 
@@ -274,7 +278,7 @@ class Plugin(commands.Cog):
         music.restore = restore
 
     async def input(self, ctx: commands.Context, q) -> discord.Message:
-        def check(m):
+        def check(m: discord.Message):
             return m.author == ctx.author and m.channel == ctx.channel
         await ctx.send(q)
         while True:
