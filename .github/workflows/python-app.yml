@@ -26,8 +26,9 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install flake8 pipenv pyright
+        pip install flake8 pipenv 
         pipenv install
+        pipenv install pyright
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
@@ -36,4 +37,4 @@ jobs:
         flake8 . --count --ignore=E501 --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Check typing
       run: |
-        pyright **/*.py
+        pipenv run pyright **/*.py
