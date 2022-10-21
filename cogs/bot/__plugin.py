@@ -8,6 +8,7 @@ import asyncio
 from time import time
 import importlib
 from discord import FFmpegPCMAudio
+from utils import Bot
 # 既存の機能をプラグイン対応可にします
 oldrestore = music.restore
 
@@ -234,7 +235,7 @@ class PluginManager:
         await setup(self.bot,self)
 
 class Plugin(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: Bot):
         self.bot, self.before = bot, ""
         self.plugins = dict()
         self.users = dict()
