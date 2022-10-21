@@ -278,7 +278,7 @@ class Plugin(commands.Cog):
         music.SearchList = PluginSearchList
         music.restore = restore
 
-    async def input(self, ctx: commands.Context, q) -> discord.Message:
+    async def input(self, ctx: commands.Context, q: str) -> discord.Message:
         def check(m: discord.Message):
             return m.author == ctx.author and m.channel == ctx.channel
         await ctx.send(q)
