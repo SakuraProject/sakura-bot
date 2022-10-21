@@ -303,7 +303,7 @@ class Plugin(commands.Cog):
                         elif message1.content == "修正":
                             break
 
-    def get_enable_pulgin(self, user, guild):
+    def get_enable_pulgin(self, user: discord.User | discord.Member, guild: discord.Guild):
         added = dict()
         res = list()
         self.guilds.setdefault(str(guild.id),[])
@@ -330,8 +330,8 @@ class Plugin(commands.Cog):
             await ctx.reply("使用方法が違います")
 
     @s_plugin.command()
-    async def enable_server(self, ctx: commands.Context, code=None):
-        if not code is None:
+    async def enable_server(self, ctx: commands.Context, code: str=None):
+        if code is not None:
             args = code.split(".")
             response = await self.bot.execute_sql(
                 "SELECT * FROM Plugins WHERE `id` = %s;",
@@ -384,8 +384,8 @@ class Plugin(commands.Cog):
             await ctx.send("追加しました")
 
     @s_plugin.command()
-    async def enable_user(self, ctx: commands.Context, code=None):
-        if not code is None:
+    async def enable_user(self, ctx: commands.Context, code: str=None):
+        if code is not None:
             args = code.split(".")
             response = await self.bot.execute_sql(
                 "SELECT * FROM Plugins WHERE `id` = %s;",
