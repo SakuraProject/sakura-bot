@@ -1,13 +1,14 @@
-from cogs.entertainment import music
 import inspect
-from hashids import Hashids
-import discord
-from discord.ext import commands
-from ujson import loads, dumps
 import asyncio
-from time import time
 import importlib
+from time import time
+
+import discord
+from hashids import Hashids
+from ujson import loads, dumps
+from discord.ext import commands
 from discord import FFmpegPCMAudio
+
 from utils import Bot
 from cogs.entertainment import music
 # 既存の機能をプラグイン対応可にします
@@ -75,6 +76,7 @@ class PluginSearchList(music.SearchList):
 
 
 class Music(music.music):
+
     async def is_playlist(self, ctx: commands.Context, url: str):
         res = list()
         plugin = bot.cogs["Plugin"]
