@@ -29,8 +29,10 @@ def restore(sid):
         except Exception:
             continue
     res = oldrestore(sid)
-    if res == sid:
+    if res == sid and not sid.startswith("http"):
         return "https://sakura-bot.net"
+    else:
+        return res
 
 
 class PluginQueue(music.Queue):
