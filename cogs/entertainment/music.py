@@ -44,7 +44,11 @@ def fmt_time(time):
 
 
 def restore(sid):
-    return sid.replace("daily:", "https://www.dailymotion.com/video/").replace("bili:", "https://www.bilibili.com/video/").replace("sc:", "https://soundcloud.com/").replace("nico:", "https://www.nicovideo.jp/watch/").replace("yf:", "https://ysmfilm.net/view.php?id=")
+    return sid.replace("daily:", "https://www.dailymotion.com/video/") \
+              .replace("bili:", "https://www.bilibili.com/video/") \
+              .replace("sc:", "https://soundcloud.com/") \
+              .replace("nico:", "https://www.nicovideo.jp/watch/") \
+              .replace("yf:", "https://ysmfilm.net/view.php?id=")
 
 
 class Queue:
