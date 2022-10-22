@@ -9,6 +9,7 @@ from time import time
 import importlib
 from discord import FFmpegPCMAudio
 from utils import Bot
+from cogs.entertainment import music
 # 既存の機能をプラグイン対応可にします
 oldrestore = music.restore
 
@@ -17,7 +18,7 @@ def restore(sid):
     res = sid
     ctx = inspect.stack()[1].frame.f_locals["ctx"]
     plugin = bot.cogs["Plugin"]
-    enable = plugin.get_enable_pulgin(ctx.author,ctx.guild)
+    enable = plugin.get_enable_pulgin(ctx.author, ctx.guild)
     for plugins in enable:
         try:
             if res == sid:
@@ -36,7 +37,7 @@ class PluginQueue(music.Queue):
     async def setdata(self):
         ctx = inspect.stack()[1].frame.f_locals["ctx"]
         plugin = bot.cogs["Plugin"]
-        enable = plugin.get_enable_pulgin(ctx.author,ctx.guild)
+        enable = plugin.get_enable_pulgin(ctx.author, ctx.guild)
         for plugins in enable:
             try:
                 await plugins["music"].setdata(self)
@@ -53,7 +54,7 @@ class PluginSearchList(music.SearchList):
         items = []
         options = []
         plugin = bot.cogs["Plugin"]
-        enable = plugin.get_enable_pulgin(ctx.author,ctx.guild)
+        enable = plugin.get_enable_pulgin(ctx.author, ctx.guild)
         for plugins in enable:
             try:
                 item = plugins["music"].search(query)
@@ -61,7 +62,7 @@ class PluginSearchList(music.SearchList):
                     items.extend(item)
                 if len(items) > 10 :
                     break
-            except:
+            except Exception:
                 continue
         for item in items:
             options.append(discord.SelectOption(
@@ -69,7 +70,8 @@ class PluginSearchList(music.SearchList):
         if len(options) == 0:
             super().__init__(ctx, cog, query)
         else:
-            super(discord.ui.Select, self).__init__(placeholder='', min_values=1, max_values=1, options=options)
+            super(discord.ui.Select, self) \
+                .__init__(placeholder='', min_values=1, max_values=1, options=options)
 
 
 class Music(music.music):
@@ -82,7 +84,7 @@ class Music(music.music):
                 urls = await plugins["music"].is_playlist(url)
                 if len(urls) > 0:
                     return urls
-            except:
+            except Exception:
                 continue
         return res
 
@@ -103,14 +105,8 @@ class Music(music.music):
         def nextqueue(self):
             asyncio.run_coroutine_threadsafe(self.asyncnextqueue(
                 FFMPEG_OPTIONS, voice, ctx, nextqueue), loop)
-        try:
-            str(self.lop[ctx.guild.id])
-        except KeyError:
-            self.lop[ctx.guild.id] = False
-        try:
-            len(self.queues[ctx.guild.id])
-        except KeyError:
-            self.queues[ctx.guild.id] = list()
+        self.lop.setdefault(ctx.guild.id, False)
+        self.queues.setdefault(ctx.guild.id, [])
         urls = await self.is_playlist(ctx, url)
         if len(urls) > 0:
             qpl = len(self.queues[ctx.guild.id])
@@ -155,8 +151,7 @@ class Music(music.music):
                 await cur.execute("SELECT * FROM `musiclist` where `userid` = %s and `lname` = %s", (ctx.author.id, name))
                 res = await cur.fetchall()
                 if len(res) == 0:
-                    await ctx.send("このプレイリストには曲が存在しないか、作られていません")
-                    return
+                    return await ctx.send("このプレイリストには曲が存在しないか、作られていません")
                 i = 1
                 list = ""
                 for row in res:
@@ -180,7 +175,10 @@ class Music(music.music):
                         if d.content == "キャンセル":
                             await ctx.send("キャンセルしました")
                             break
-                        await cur.execute("delete FROM `musiclist` where `userid` = %s and `lname` = %s and `id` = %s limit 1", (ctx.author.id, name, res[int(d.content) - 1][3]))
+                        await cur.execute(
+                            "delete FROM `musiclist` where `userid` = %s and `lname` = %s and `id` = %s limit 1", 
+                                          (ctx.author.id, name, res[int(d.content) - 1][3])
+                        )
                         await ctx.send("削除しました")
                 except SyntaxError:
                     await ctx.send("キャンセルしました")
@@ -232,7 +230,7 @@ class PluginManager:
 
     async def load_submodule(self, name: str):
         setup = importlib.import_module(name).setup
-        await setup(self.bot,self)
+        await setup(self.bot, self)
 
 class Plugin(commands.Cog):
     def __init__(self, bot: Bot):
@@ -273,7 +271,6 @@ class Plugin(commands.Cog):
             self.guilds[row[0]] = loads(row[1])
         await self.bot.remove_cog("music")
         await bot.add_cog(Music(bot))
-        from cogs.entertainment import music
         music.Queue = PluginQueue
         music.SearchList = PluginSearchList
         music.restore = restore
@@ -289,7 +286,7 @@ class Plugin(commands.Cog):
                 await ctx.channel.send('入力を待機中です。キャンセルする場合は「キャンセルする」と送ってください')
             else:
                 if message.content == "キャンセルする":
-                    raise SyntaxError()
+                    raise asyncio.TimeoutError()
                 await ctx.channel.send("入力を受け付けました。確定する場合は「ok」と送って下さい。やり直す場合は「修正」と送ってください")
                 while True:
                     try:
@@ -306,8 +303,8 @@ class Plugin(commands.Cog):
     def get_enable_pulgin(self, user: discord.User | discord.Member, guild: discord.Guild):
         added = dict()
         res = list()
-        self.guilds.setdefault(str(guild.id),[])
-        self.users.setdefault(str(user.id),[])
+        self.guilds.setdefault(str(guild.id), [])
+        self.users.setdefault(str(user.id), [])
         for gp in self.guilds[str(guild.id)]:
             try:
                 if not added[gp]:
@@ -339,7 +336,7 @@ class Plugin(commands.Cog):
             )
             second_id = Hashids().encode(ctx.guild.id)
             if response[0][2] == args[2] and second_id == args[1]:
-                self.guilds.setdefault(str(ctx.guild.id),list())
+                self.guilds.setdefault(str(ctx.guild.id), [])
                 self.guilds[str(ctx.guild.id)].append(args[0])
                 await self.bot.execute_sql(
                     """INSERT INTO GuildPlugin VALUES (%s, %s)
@@ -366,14 +363,14 @@ class Plugin(commands.Cog):
                     catebds.append(evd)
                     ctls = ""
                 ctls = ctls + "No." + str(i) + cat[3] + ":" + cat[4] + "\n"
-                i = i + 1
-                ebdin = ebdin + 1
+                i += 1
+                ebdin += 1
             evd = discord.Embed(
                 title="プラグイン一覧", description=ctls, color=self.bot.Color)
             catebds.append(evd)
             await ctx.send(embeds=catebds)
             cno = int((await self.input(ctx, "プラグインを選んでナンバーを数値で送信してください")).content)
-            self.guilds.setdefault(str(ctx.guild.id),list())
+            self.guilds.setdefault(str(ctx.guild.id), [])
             self.guilds[str(ctx.guild.id)].append(response[cno - 1][0])
             await self.bot.execute_sql(
                 """INSERT INTO GuildPlugin VALUES (%s, %s)
@@ -393,7 +390,7 @@ class Plugin(commands.Cog):
             )
             second_id = Hashids().encode(ctx.guild.id)
             if response[0][2] == args[2] and second_id == args[1]:
-                self.users.setdefault(str(ctx.author.id),list())
+                self.users.setdefault(str(ctx.author.id), [])
                 self.users[str(ctx.author.id)].append(args[0])
                 await self.bot.execute_sql(
                     """INSERT INTO UserPlugin VALUES (%s, %s)
