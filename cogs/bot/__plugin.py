@@ -243,14 +243,11 @@ class Plugin(commands.Cog):
         self.guilds = dict()
 
     async def cog_load(self):
-        csql = "CREATE TABLE if not exists `UserPlugin` ( `UserId` BIGINT PRIMARY KEY NOT NULL DEFAULT 0, `Plugins` JSON) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin;"
-        csql1 = "CREATE TABLE if not exists `GuildPlugin` ( `GuildId` BIGINT PRIMARY KEY NOT NULL DEFAULT 0, `Plugins` JSON) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin;"
-        csql2 = "CREATE TABLE if not exists `Plugins` ( `id` BIGINT NOT NULL AUTO_INCREMENT primary key, `path` VARCHAR(300) NOT NULL,`type` VARCHAR(300) NOT NULL DEFAULT 'Public',`name` VARCHAR(300) NOT NULL,`description` VARCHAR(300) NOT NULL) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin;"
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
-                await cur.execute(csql)
-                await cur.execute(csql1)
-                await cur.execute(csql2)
+                await cur.execute("CREATE TABLE if not exists `UserPlugin` ( `UserId` BIGINT PRIMARY KEY NOT NULL DEFAULT 0, `Plugins` JSON) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin;")
+                await cur.execute("CREATE TABLE if not exists `GuildPlugin` ( `GuildId` BIGINT PRIMARY KEY NOT NULL DEFAULT 0, `Plugins` JSON) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin;")
+                await cur.execute("CREATE TABLE if not exists `Plugins` ( `id` BIGINT NOT NULL AUTO_INCREMENT primary key, `path` VARCHAR(300) NOT NULL,`type` VARCHAR(300) NOT NULL DEFAULT 'Public',`name` VARCHAR(300) NOT NULL,`description` VARCHAR(300) NOT NULL) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin;")
         response = await self.bot.execute_sql(
             "SELECT * FROM Plugins", _return_type="fetchall"
         )
