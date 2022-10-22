@@ -115,7 +115,7 @@ class Music(music.music):
             qpl = len(self.queues[ctx.guild.id])
             for u in urls:
                 qp = music.Queue(u)
-                if self.iflop[ctx.guild.id]:
+                if self.ifloop[ctx.guild.id]:
                     self.lopq[ctx.guild.id].append(qp)
                 self.queues[ctx.guild.id].append(qp)
             if not (voice.is_playing() and voice.source.music == True):
