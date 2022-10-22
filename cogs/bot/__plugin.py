@@ -96,7 +96,8 @@ class Music(music.music):
             'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
             'options': '-vn'
         }
-        loop = asyncio.get_event_loop()
+        self.ifloop = self.lop
+        loop = bot.loop
         channel = ctx.author.voice.channel
         voice = discord.utils.get(self.bot.voice_clients, guild=ctx.guild)
         if voice and voice.is_connected():
@@ -107,14 +108,14 @@ class Music(music.music):
         def nextqueue(self):
             asyncio.run_coroutine_threadsafe(self.asyncnextqueue(
                 FFMPEG_OPTIONS, voice, ctx, nextqueue), loop)
-        self.lop.setdefault(ctx.guild.id, False)
+        self.ifloop.setdefault(ctx.guild.id, False)
         self.queues.setdefault(ctx.guild.id, [])
         urls = await self.is_playlist(ctx, url)
         if len(urls) > 0:
             qpl = len(self.queues[ctx.guild.id])
             for u in urls:
                 qp = music.Queue(u)
-                if self.lop[ctx.guild.id]:
+                if self.iflop[ctx.guild.id]:
                     self.lopq[ctx.guild.id].append(qp)
                 self.queues[ctx.guild.id].append(qp)
             if not (voice.is_playing() and voice.source.music == True):
@@ -147,7 +148,7 @@ class Music(music.music):
             await super().pl(ctx, url)
 
     @commands.command()
-    async def editplaylist(self, ctx: commands.Context, name):
+    async def editplaylist(self, ctx: commands.Context, name: str):
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
                 await cur.execute("SELECT * FROM `musiclist` where `userid` = %s and `lname` = %s", (ctx.author.id, name))
@@ -458,7 +459,7 @@ class Plugin(commands.Cog):
                 ctls = ""
             ctls = ctls + "No." + str(i) + cat[3] + ":" + cat[4] + "\n"
             i = i + 1
-            ebdin = ebdin + 1
+            ebdin += 1
         evd = discord.Embed(
             title="プラグイン一覧", description=ctls, color=self.bot.Color)
         catebds.append(evd)
