@@ -257,9 +257,9 @@ class PluginManager:
         
     async def load_extension(name: str):
         try:
-            await self.bot.load_extension(name)
+            await bot.load_extension(name)
         except commands.ExtensionAlreadyLoaded:
-            await self.bot.reload_extension(name)
+            await bot.reload_extension(name)
             
             
 class Plugin(commands.Cog):
