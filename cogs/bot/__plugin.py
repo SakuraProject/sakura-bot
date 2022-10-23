@@ -254,7 +254,14 @@ class PluginManager:
     async def load_submodule(self, name: str):
         setup = importlib.import_module(name).setup
         await setup(self.bot, self)
-
+        
+    async def load_extension(name: str):
+        try:
+            await self.bot.load_extension(name)
+        except commands.ExtensionAlreadyLoaded:
+            await self.bot.reload_extension(name)
+            
+            
 class Plugin(commands.Cog):
     def __init__(self, bot: Bot):
         self.bot, self.before = bot, ""
