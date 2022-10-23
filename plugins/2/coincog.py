@@ -37,3 +37,7 @@ class CoinList(discord.ui.Select):
         item = self.values[0].split("|")
         price = str(coincheck.fetch_ticker(symbol=item[0])["last"])
         interaction.response.send_message("現在の1" + item[1] + "の価格は" + price + "円です")
+        
+        
+async def setup(bot: Bot):
+    await bot.add_cog(EncryptCoin(bot))
