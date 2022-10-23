@@ -122,6 +122,7 @@ class Queue:
             print("Music Load Error")
 
     def close(self):
+        del self.source
         # ニコニコ用
         if self.video is not None:
             self.video.close()
