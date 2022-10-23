@@ -36,12 +36,21 @@ def restore(sid):
     
 
 def is_enable(func):
-    def _is_enable(ctx: commands.Context):
+    async def _is_enable(ctx: commands.Context):
         id = str(func.__module__).split(".")[1]
         plugin = bot.cogs["Plugin"]
         enable = plugin.get_enable_pulgin(ctx.author, ctx.guild)
         if plugin.plugins[id] not in enable:
             raise commands.CommandNotFound()
+        return True
+        
+    if isinstance(func, commands.Command):
+        func.checks.append(_is_enable)
+        if not hasattr(func, '__commands_checks__'):
+            func.__commands_checks__ = []
+            func.__commands_checks.append(_is_enable)
+    return func
+            
 
 
 class PluginQueue(music.Queue):
