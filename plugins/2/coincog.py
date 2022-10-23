@@ -7,7 +7,7 @@ from utils import Bot
 
 class EncryptCoin(commands.Cog):
 
-    def __init__(bot: Bot):
+    def __init__(self, bot: Bot):
         self.bot = bot
 
     @is_enable()
@@ -27,6 +27,7 @@ class EncryptCoin(commands.Cog):
 
 class CoinList(discord.ui.Select):
     def __init__(self):
+        options = []
         coins = ["BTC/JPY|ビットコイン","ETH/JPY|イーサリアム","ETC/JPY|イーサリアムクラシック","XRP/JPY|リップル","MONA/JPY|モナコイン"]
         for coin in coins:
             options.append(discord.SelectOption(
