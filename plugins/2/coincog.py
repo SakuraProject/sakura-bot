@@ -3,6 +3,7 @@ import discord
 
 from cogs.bot.__plugin import is_enable
 from discord.ext import commands
+from utils import Bot
 
 class EncryptCoin(commands.Cog):
 
