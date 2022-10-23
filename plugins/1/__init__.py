@@ -2,10 +2,13 @@ from utils import Bot
 from youtube_dl import YoutubeDL
 from cogs.bot.__plugin import PluginManager
 
+
 class music:
+    
     def __init__(self, bot: Bot, manager: PluginManager):
         self.bot, self.before = bot, ""
         self.manager = manager
+        
     async def setdata(self, queue):
         YDL_OPTIONS = {'format': 'bestaudio', 'noplaylist': 'True',
                        "ignoreerrors": True, "cookiefile": "data/youtube.com_cookies.txt"}
