@@ -33,6 +33,15 @@ def restore(sid):
         return "https://sakura-bot.net"
     else:
         return res
+    
+
+def is_enable(func):
+    def _is_enable(ctx: commands.Context):
+        id = str(func.__module__).split(".")[1]
+        plugin = bot.cogs["Plugin"]
+        enable = plugin.get_enable_pulgin(ctx.author, ctx.guild)
+        if plugin.plugins[id] not in enable:
+            raise commands.CommandNotFound()
 
 
 class PluginQueue(music.Queue):
