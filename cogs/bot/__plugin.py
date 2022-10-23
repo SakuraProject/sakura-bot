@@ -255,11 +255,11 @@ class PluginManager:
         setup = importlib.import_module(name).setup
         await setup(self.bot, self)
         
-    async def load_extension(name: str):
+    async def load_extension(self, name: str):
         try:
-            await bot.load_extension(name)
+            await self.bot.load_extension(name)
         except commands.ExtensionAlreadyLoaded:
-            await bot.reload_extension(name)
+            await self.bot.reload_extension(name)
             
             
 class Plugin(commands.Cog):
