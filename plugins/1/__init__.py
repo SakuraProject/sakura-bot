@@ -1,6 +1,6 @@
 from utils import Bot
 from youtube_dl import YoutubeDL
-from cogs.bot.__plugin import PluginManager
+from cogs.sakurabrand.plugin import PluginManager
 
 
 class music:
