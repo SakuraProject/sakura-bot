@@ -1,4 +1,4 @@
-from cogs.bot.__plugin import PluginManager
+from cogs.sakurabrand.plugin import PluginManager
 from utils import Bot
 
 
