@@ -6,7 +6,7 @@ from cogs.sakurabrand.plugin import PluginManager
 class Music:
     
     def __init__(self, bot: Bot, manager: PluginManager):
-        self.bot, self.before = bot, ""
+        self.bot = bot
         self.manager = manager
         
     async def setdata(self, queue):
