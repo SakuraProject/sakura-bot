@@ -92,8 +92,7 @@ class OnlineNotice(commands.Cog):
                     )
                     user = self.bot.get_user(id_)
                     if not user:
-                        del self.cache[after.id][self.cache[after.id].index(
-                            id_)]
+                        del self.cache[after.id][self.cache[after.id].index(id_)]
                         await self.bot.execute_sql(
                             "UPDATE OnlineNotice SET Authors = %s WHERE UserId = %s",
                             (dumps(self.cache[after.id]), after.id)
