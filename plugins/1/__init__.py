@@ -3,7 +3,7 @@ from youtube_dl import YoutubeDL
 from cogs.sakurabrand.plugin import PluginManager
 
 
-class music:
+class Music:
     
     def __init__(self, bot: Bot, manager: PluginManager):
         self.bot, self.before = bot, ""
