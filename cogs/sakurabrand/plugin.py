@@ -36,6 +36,7 @@ def restore(sid):
     
 
 def is_enable(func):
+    """プラグインが有効化されているか確認するデコレーターです"""
     async def _is_enable(ctx: commands.Context):
         id = str(func.__module__).split(".")[2].split("_")[0]
         plugin = bot.cogs["Plugin"]
