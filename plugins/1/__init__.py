@@ -26,4 +26,4 @@ class Music:
         return sid.replace("twitch:", "https://m.twitch.tv/videos/")
         
 async def setup(bot: Bot, manager: PluginManager):
-    await manager.add_class(music(bot, manager))
+    await manager.add_class(Music(bot, manager))
