@@ -23,7 +23,7 @@ def restore(sid):
     for plugins in enable:
         try:
             if res == sid:
-                res = plugins["music"].restore(sid)
+                res = plugins["Music"].restore(sid)
             else:
                 return res
         except Exception:
@@ -37,7 +37,7 @@ def restore(sid):
 
 def is_enable(func):
     async def _is_enable(ctx: commands.Context):
-        id = str(func.__module__).split(".")[1]
+        id = str(func.__module__).split(".")[2].split("_")[0]
         plugin = bot.cogs["Plugin"]
         enable = plugin.get_enable_pulgin(ctx.author, ctx.guild)
         if plugin.plugins[id] not in enable:
@@ -61,7 +61,7 @@ class PluginQueue(music.Queue):
         enable = plugin.get_enable_pulgin(ctx.author, ctx.guild)
         for plugins in enable:
             try:
-                await plugins["music"].setdata(self)
+                await plugins["Music"].setdata(self)
             except Exception:
                 continue
         if not hasattr(self,"source"):
@@ -78,7 +78,7 @@ class PluginSearchList(music.SearchList):
         enable = plugin.get_enable_pulgin(ctx.author, ctx.guild)
         for plugins in enable:
             try:
-                item = plugins["music"].search(query)
+                item = plugins["Music"].search(query)
                 if item != None and len(item) >0:
                     items.extend(item)
                 if len(items) > 10 :
@@ -103,7 +103,7 @@ class Music(music.music):
         enable = plugin.get_enable_pulgin(ctx.author,ctx.guild)
         for plugins in enable:
             try:
-                urls = await plugins["music"].is_playlist(url)
+                urls = await plugins["Music"].is_playlist(url)
                 if len(urls) > 0:
                     return urls
             except Exception:
