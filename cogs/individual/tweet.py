@@ -67,11 +67,18 @@ class Tweet(commands.Cog, AsyncStreamingClient):
                 for row in result:
                     if not row[1] in filn:
                         try:
-                            twiid = self.twicon.get_user(
-                                username=row[1]).data.username
-                            filn.append(row[1])
-                            if not twiid in self.fil:
-                                self.fil.append(twiid)
+                            user = self.twicon.get_user(
+                                username=row[1])
+                            if user.data is None:
+                                ch = self.bot.get_channel(row[0])
+                                if ch is not None:
+                                    await ch.send("通知を試みましたがユーザーが見つかりませんでした。")
+                                await cur.execute("delete FROM `tweet` where `cid`=%s and `twiname`=%s", (row[0], row[1]))
+                            else:
+                                twiid = user.data.username
+                                filn.append(row[1])
+                                if not twiid in self.fil:
+                                    self.fil.append(twiid)
                         except NotFound:
                             ch = self.bot.get_channel(row[0])
                             if ch is not None:
