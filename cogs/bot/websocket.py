@@ -184,7 +184,6 @@ class Websocket(commands.Cog):
 
     async def help_catlist(self, args: dict) -> dict:
         "カテゴリのリストを'res'に入れて返す。"
-        assert isinstance(self.bot.cogs["Help"], Help)
         options = [
             {"rname": name, "name": name}
             for name in self.bot.cogs["Help"].get_categories()

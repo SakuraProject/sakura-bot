@@ -9,6 +9,8 @@ from discord.ext import commands
 from aiohttp import ClientSession
 from aiomysql import Pool
 
+from ._types import Cogs
+
 
 reT = TypeVar("reT")
 
@@ -19,6 +21,7 @@ class Bot(commands.Bot):
     session: ClientSession
     pool: Pool
     owner_ids: list[int]
+    cogs: Cogs
 
     Color = 0xffbdde
 

@@ -1,11 +1,21 @@
 # Sakura Badges
 
+from typing import TypedDict, Callable, Any
+
 import discord
 
 from utils import Bot
 
 
-BADGES = {
+class BadgeType(TypedDict):
+    "バッジの型。"
+    name: str
+    emoji: str | None
+    description: str
+    condition: Callable[[discord.User | discord.Member, Bot], bool]
+
+
+BADGES: dict[str, BadgeType] = {
     "1ksp": {
         "name": "1,000 Sakura Point",
         "emoji": None,
@@ -23,7 +33,13 @@ BADGES = {
         "emoji": None,
         "description": "このBotの開発チームのメンバーです。",
         "condition": lambda u, b: u.id in b.owner_ids
-    }
+    },
+    "premium": {
+        "name": "Sakura Premium User",
+        "emoji": None,
+        "description": "プレミアムユーザーです。",
+        "condition": lambda _, __: False
+    },
 }
 
 

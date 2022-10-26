@@ -80,7 +80,6 @@ class Captcha(commands.Cog):
             ))
             random.shuffle(option)
             ws = self.bot.cogs["Websocket"]
-            assert isinstance(ws, Websocket)
 
             args = {
                 "id": Hashids().encode(interaction.user.id), "vcode": correct_code,
