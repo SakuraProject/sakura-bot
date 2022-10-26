@@ -106,6 +106,8 @@ class RoleLinker(commands.Cog):
         roles: commands.Greedy[discord.Role]
     ):
         assert ctx.guild
+        if ctx.guild.id not in self.cache:
+            self.cache[ctx.guild.id] = {}
         try:
             self.ethics_checker(ctx.guild.id)
         except RoleLinkEthicsError as e:
@@ -113,8 +115,6 @@ class RoleLinker(commands.Cog):
                 title="ロール付与ループが発生するため、このグループは登録できません。",
                 description="→".join(e.groups[e.groups.index(e.groups[-1]):])
             ))
-        if ctx.guild.id not in self.cache:
-            self.cache[ctx.guild.id] = {}
         self.cache[ctx.guild.id][name] = (mode, [r.id for r in roles])
 
         await self.bot.execute_sql(
