@@ -65,8 +65,9 @@ class RoleLinker(commands.Cog):
         await self.bot.execute_sql(
             """CREATE TABLE IF NOT EXISTS RoleLinker(
                 GuildId BIGINT NOT NULL, Name VARCHAR(16) DEFAULT 'main',
-                Mode Enum('sync', 'antisync'), Roles JSON
-            ) PRIMARY KEY(GuildId, Name);"""
+                Mode Enum('sync', 'antisync'), Roles JSON,
+                PRIMARY KEY(GuildId, Name)
+            );"""
         )
         cache = await self.bot.execute_sql(
             "SELECT * FROM RoleLinker;", _return_type="fetchall"
