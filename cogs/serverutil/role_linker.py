@@ -120,7 +120,7 @@ class RoleLinker(commands.Cog):
         await self.bot.execute_sql(
             "INSERT INTO RoleLinker VALUES(%s, %s, %s, %s) "
             "ON DUPLICATE KEY UPDATE Mode=VALUE(Mode), Roles=VALUE(Roles)",
-            (ctx.guild.id, name, mode, dumps(roles))
+            (ctx.guild.id, name, mode, dumps([r.id for r in roles]))
         )
         await ctx.reply("Ok")
 
