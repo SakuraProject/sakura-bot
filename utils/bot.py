@@ -8,6 +8,7 @@ from inspect import iscoroutinefunction
 from discord.ext import commands
 from aiohttp import ClientSession
 from aiomysql import Pool
+from orjson import loads
 
 from ._types import Cogs
 
@@ -18,12 +19,22 @@ reT = TypeVar("reT")
 class Bot(commands.Bot):
     "SakuraBotのコアです。"
 
-    session: ClientSession
+    _session: ClientSession | None
     pool: Pool
     owner_ids: list[int]
     cogs: Cogs
 
     Color = 0xffbdde
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._session = None
+
+    @property
+    def session(self) -> ClientSession:
+        if not self._session or self._session.closed:
+            self._session = ClientSession(loop=self.loop, json_serialize=loads)
+        return self._session
 
     @overload
     async def execute_sql(
