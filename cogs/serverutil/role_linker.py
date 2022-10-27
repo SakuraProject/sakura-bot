@@ -46,7 +46,8 @@ class RoleLinker(commands.Cog):
             if group[0] == "sync":
                 # 同期させる。
                 if name in groups:
-                    raise ValueError("倫理違反")
+                    groups.append(name)
+                    raise RoleLinkEthicsError(groups)
                 for _role in group[1]:
                     if _role not in now_roles:
                         # リストに追加して再度呼び出し
@@ -56,10 +57,12 @@ class RoleLinker(commands.Cog):
             else:
                 # 逆同期させる。
                 if name in groups:
-                    raise ValueError("倫理違反")
+                    groups.append(name)
+                    raise RoleLinkEthicsError(groups)
                 for _role in group[1]:
                     if _role in now_roles:
-                        raise ValueError("倫理違反")
+                        groups.append(name)
+                        raise RoleLinkEthicsError(groups)
 
     async def cog_load(self):
         await self.bot.execute_sql(
