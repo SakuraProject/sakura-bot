@@ -13,20 +13,11 @@ class GameSearch(commands.Cog):
     def __init__(self, bot: Bot):
         self.bot = bot
 
-    @commands.command(
+    @commands.hybrid_command(
         aliases=["searchgame", "ゲームを探す"],
+        description="ゲーム機を検索できます。"
     )
     async def gamesearch(self, ctx: commands.Context, *, name: str):
-        """
-        NLang ja ゲームを検索するコマンドです。
-        ゲームを検索するコマンドです。
-        **使いかた：**
-        EVAL self.bot.command_prefix+'gamesearch ゲーム名'
-        ELang ja
-        NLang default Sorry, this command only supports Japanese.
-        Sorry, this command only supports Japanese.
-        ELang default
-        """
         async with self.bot.session.get(
             "https://ysmsrv.wjg.jp/disbot/gamesearch.php?q=" +
                 quote_plus(name, encoding='utf-8')

@@ -23,7 +23,6 @@ bot = Bot(
 @bot.listen()
 async def on_ready():
     print(f"[Log]Hello {bot.user}")
-    bot.session = ClientSession(loop=bot.loop, json_serialize=loads)
     await bot.load_extension("data.owners")
     await bot.load_extension("jishaku")
     print("[Log]Connecting MySQL")

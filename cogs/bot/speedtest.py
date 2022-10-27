@@ -34,20 +34,8 @@ class speedtest(commands.Cog):
                             str(dl / 1024 / 1024) + "Mbps\n**アップロード**:\n" + str(up / 1024 / 1024) + "Mbps")
         await msg.edit(content="", embeds=[ebd])
 
-    @commands.command()
+    @commands.hybrid_command(description="botのpingを取得します")
     async def ping(self, ctx: commands.Context):
-        """
-        NLang ja botのpingを取得します
-        botのpingを取得します
-        **使いかた：**
-        EVAL self.bot.command_prefix+'ping'
-        ELang ja
-        NLang default get latency for bot
-        get latency for bot
-        **How to use：**
-        EVAL self.bot.command_prefix+'ping'
-        ELang default
-        """
         p1 = self.bot.latency * 1000
         t = time.time()
         f = await self.bot.cogs["Websocket"].sock.ping()

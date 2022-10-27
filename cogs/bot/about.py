@@ -23,7 +23,7 @@ class BotAbout(commands.Cog):
     def __init__(self, bot: Bot):
         self.bot = bot
 
-    @commands.hybrid_command()
+    @commands.hybrid_command(description="botについて表示します。")
     async def about(self, ctx: commands.Context):
         embed = discord.Embed(
             title="SakuraBotについて",

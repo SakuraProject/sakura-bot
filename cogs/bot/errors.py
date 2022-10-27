@@ -21,6 +21,7 @@ buckets = {
     commands.BucketType.role: "1ロール",
 }
 
+
 async def embedding(self: ErrorQuery, ctx: commands.Context, error: commands.CommandError):
     embed = discord.Embed(title="エラー", description="", color=0xff0000)
 
@@ -164,9 +165,11 @@ async def embedding(self: ErrorQuery, ctx: commands.Context, error: commands.Com
                 title="エラー詳細", description=f"```py\n{error_message}\n```")
         )
 
+        error_message_shorten = (error_message if len(error_message) < 990
+                                 else error_message[:990] + '...')
         embed.add_field(
             name="エラー詳細",
-            value=f"```py\n{error_message if len(error_message) < 990 else error_message[:990] + '...'}\n```"
+            value=f"```py\n{error_message_shorten}\n```"
         )
 
     return embed
