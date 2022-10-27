@@ -26,6 +26,7 @@ pyqrcode = "*"
 flake8 = "*"
 autopep8 = "*"
 discord-test = {git = "https://github.com/yaakiyu/discord-test"}
+pyright = "*"
 
 [requires]
 python_version = "3.10"
