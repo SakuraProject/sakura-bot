@@ -41,7 +41,7 @@ async def on_ready():
             else:
                 print("[Log][load]" + name)
     try:
-        await bot.load_extension("cogs.bot.__plugin")
+        await bot.load_extension("cogs.sakurabrand.plugin")
     except Exception as e:
         print("[Log][err]" + str(e))
     else:
