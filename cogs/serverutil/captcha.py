@@ -114,7 +114,7 @@ class NList(discord.ui.Select):
         super().__init__(placeholder='正しい番号を選択', min_values=1, max_values=1, options=args)
 
     async def callback(self, interaction: discord.Interaction):
-        if self.values[0] == "vcode":
+        if self.values[0] == "correct_code":
             assert interaction.guild is not None and isinstance(interaction.user, discord.Member)
 
             response = await self.bot.execute_sql(
