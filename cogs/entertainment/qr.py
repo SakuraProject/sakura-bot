@@ -12,19 +12,19 @@ class qr(commands.Cog):
     def __init__(self, bot: Bot):
         self.bot = bot
 
-    @commands.group()
+    @commands.group(description="QRコード生成・読み取り機能")
     async def qr(self, ctx: commands.Context):
         if ctx.invoked_subcommand is None:
             return await ctx.send("使用方法が違います。")
 
-    @qr.command()
+    @qr.command(description="QRコードをテキストから生成します")
     async def make(self, ctx: commands.Context, text):
         a = pyqrcode.create(content=text, error='H')
         a.png(file=str(ctx.author.id) + '.png', scale=6)
         await ctx.send(file=discord.File(str(ctx.author.id) + '.png'))
         os.remove(str(ctx.author.id) + '.png')
 
-    @qr.command()
+    @qr.command(description="QRコードを読み取ります")
     async def read(self, ctx: commands.Context, url=None):
         if url is None:
             url = ctx.message.attachments[0].url

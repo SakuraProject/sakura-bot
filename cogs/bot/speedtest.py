@@ -11,20 +11,9 @@ class speedtest(commands.Cog):
     def __init__(self, bot: Bot):
         self.bot = bot
 
-    @commands.command()
+    @commands.command(description="botを動かしているサーバーの速度を計測します")
+    @commands.cooldown(1, 3600, commands.BucketType.guild)
     async def speedtest(self, ctx: commands.Context):
-        """
-        NLang ja botサーバーのスピードテスト
-        botを動かしているサーバーのスピードテストを実行します
-        **使いかた：**
-        EVAL self.bot.command_prefix+'speedtest'
-        ELang ja
-        NLang default speedtest for bot server
-        speedtest for server to run bot
-        **How to use：**
-        EVAL self.bot.command_prefix+'speedtest'
-        ELang default
-        """
         msg = await ctx.send("計測中、しばらくお待ちください")
         stest = Speedtest()
         await self.bot.loop.run_in_executor(None, stest.get_best_server)
