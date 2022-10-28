@@ -44,7 +44,7 @@ async def on_ready():
     except Exception as e:
         print("[Log][err]" + str(e))
     else:
-        print("[Log][load]Plugin")    
+        print("[Log][load]Plugin")
     print(f"[Log]Complete Booting,Thank you for using {bot.user}")
 
 
