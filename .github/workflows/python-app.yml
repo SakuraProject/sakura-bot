@@ -37,4 +37,4 @@ jobs:
         flake8 . --count --ignore=E501 --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Check typing
       run: |
-        pipenv run pyright **/*.py
+        pipenv run pyright
