@@ -209,6 +209,7 @@ class RoleLinker(commands.Cog):
                         discord.Object(group[1][0]),
                         reason="Sakura Bot Role Linker"
                     )
+                    group[1].append(role.id)
                 except discord.Forbidden | discord.HTTPException:
                     pass
 
