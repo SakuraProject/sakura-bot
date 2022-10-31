@@ -84,5 +84,34 @@ HELP = {
         **注意**
         これは実際のメールアドレス(IMAP)を使用します。
         便利な反面、情報漏洩などの恐れもあるため使用には十分ご注意ください。"""),
-    "mail set": "メールを作成します。",
+    "mail set": "メール通知を設定します。",
+    "mail remove": "メール通知を解除します。",
+    "online_notice": "オンライン通知機能です。",
+    "online_notice add": cleandoc("""オンライン通知を設定します。
+        **使い方：**
+        `sk!online_notice add @test-user`
+        @test-user がオンラインになったときに通知します。"""),
+    "online_notice remove": cleandoc("""オンライン通知を解除します。
+        **使い方：**
+        `sk!online_notice remove @test-user`
+        @test-userがオンラインになっても通知しなくなります。"""),
+    "spoint": "自分の持っているSakuraPointを確認できます。",
+    "schedule": "スケジュール機能です。",
+    "schedule set": cleandoc("""スケジュールを設定します。
+        **使い方：**
+        `sk!schedule set [開始時刻] [終了時刻] [日付] [DM通知するかどうか] [タイトル]`
+        `sk!schedule set 06:00 12:00 2023/01/01 True 元旦`
+        開始・終了の時刻、日付は0埋めをしてください。"""),
+    "schedule delete": cleandoc("""スケジュールを削除します。
+        **使い方：**
+        `sk!schedule delete 元旦`"""),
+    "schedule list": "スケジュール一覧を表示します。",
+    "tweet": "ツイッター通知機能です。",
+    "tweet set": cleandoc("""ツイッター通知を設定します。
+        **使い方：**
+        `sk!tweet set yaakiyu`
+        (ちなみにyaakiyuは開発者の一人です。ほぼツイートしないけど。)"""),
+    "tweet remove": cleandoc("""ツイッター通知を削除します。
+        **使い方：**
+        `sk!tweet remove yaakiyu`"""),
 }

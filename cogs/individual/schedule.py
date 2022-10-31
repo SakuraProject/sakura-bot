@@ -50,13 +50,7 @@ class schedule(commands.Cog):
             await ctx.reply("使用方法が違います。")
 
     @schedule.command(
-        "set", aliases=["s", "設定"],
-        extras={
-            "headding": {
-                "ja": "予定を設定します。",
-                "en": "Set schedule"
-            }
-        }
+        "set", aliases=["s", "設定"], description="予定を作成します。"
     )
     @app_commands.describe(start="予定開始時間", end="予定終了時間",
                            day="日付", notice="DM通知するかどうか", title="タイトル")
@@ -67,7 +61,7 @@ class schedule(commands.Cog):
         await ctx.reply("Ok")
 
     @schedule.command(
-        aliases=["del", "削除"]
+        aliases=["del", "削除"], description="予定を削除します。"
     )
     @app_commands.describe(title="予定のタイトル")
     async def delete(self, ctx: commands.Context, *, title):
@@ -127,7 +121,7 @@ class schedule(commands.Cog):
             assert False, "その予定は設定されていません。"
 
     @schedule.command(
-        "list", aliases=["l", "一覧"]
+        "list", aliases=["l", "一覧"], description="予定一覧を見ます。"
     )
     async def list_(self, ctx: commands.Context):
         try:
