@@ -36,6 +36,7 @@ class KasoNotice(commands.Cog):
             "ON DUPLICATE KEY UPDATE Deadline = %s",
             (ctx.channel.id, deadline, deadline)
         )
+        await ctx.reply("Ok")
 
     @tasks.loop(minutes=1)
     async def check_kaso_loop(self):

@@ -62,7 +62,7 @@ HELP = {
         アップロード・ダウンロード速度の両方の結果が表示されます。
         このコマンドには1回実行につき1時間のクールダウンが付けられています。"""),
     "mynews": "みんなのニュース機能です。自分の投稿したいニュースを投稿できます。\n"
-        "(Powered by MyNews from ysmService)",
+              "(Powered by MyNews from ysmService)",
     "mynews post": cleandoc("""みんなのニュースを投稿します。
         **使い方：**
         `sk!mynews post`
@@ -114,4 +114,68 @@ HELP = {
     "tweet remove": cleandoc("""ツイッター通知を削除します。
         **使い方：**
         `sk!tweet remove yaakiyu`"""),
+    "bumponoff": cleandoc("""DISBOARDのBump通知を設定します。
+        **使い方：**
+        `sk!bumponoff on @bump通知`
+        bump通知というロールにメンションするようになります。
+        ロールは省略可能です。"""),
+    "tossonoff": cleandoc("""glow-botのtoss通知を設定します。
+        **使い方：**
+        `sk!tossonoff on @toss通知`
+        toss通知というロールにメンションするようになります。
+        ロールは省略可能です。"""),
+    "uponoff": cleandoc("""ディス速のup通知を設定します。
+        **使い方：**
+        `sk!uponoff on @up通知`
+        up通知というロールにメンションするようになります。
+        ロールは省略可能です。"""),
+    "frrtraiseonoff": cleandoc("""FreeRTのraise通知を設定します。
+        **使い方：**
+        `sk!frrtraiseonoff on @fr-raise通知`
+        fr-raise通知というロールにメンションするようになります。
+        ロールは省略可能です。"""),
+    "raiseonoff": cleandoc("""RTのraise通知を設定します。
+        **使い方：**
+        `sk!raiseonoff on @raise通知`
+        raise通知というロールにメンションするようになります。
+        ロールは省略可能です。"""),
+    "freethread": cleandoc("""フリースレッド機能
+        ※コマンドではありません。
+        チャンネルのトピックに`sk>freethread`を入れると、
+        そのチャンネルで何かを話したときに自動的にスレッドが開くようになります。"""),
+    "globalchat": "グローバルチャット機能です。",
+    "globalchat create": cleandoc("""グローバルチャットに参加します。
+        **使い方：**
+        `sk!globalchat create my_chat`
+        `my_chat`という名前のグローバルチャットに接続します。
+        存在しない場合は自動で作成します。
+        グローバルチャット名を省略すると`main`に接続されます。"""),
+    "globalchat remove": cleandoc("""グローバルチャットから切断します。
+        **使い方：**
+        `sk!globalchat remove`"""),
+    "kaso_notice": cleandoc("""過疎通知機能です。
+        **使い方：**
+        `sk!kaso_notice 360`
+        数字の単位は`分`です。
+        この場合、360分(6時間)何もメッセージが送信されないと通知します。"""),
+    "serverads": "サーバー掲示板機能です。",
+    "serverads register": cleandoc("""サーバーをサーバー掲示板に登録します。
+        コマンド実行後質問に答えていくだけで簡単に登録できます。"""),
+    "push": cleandoc("""サーバー掲示板での表示順位を上げます。
+        **使い方：**
+        `sk!push`
+        **注意**
+        表示順位は2時間に1回しか上げることができません。"""),
+    "role_linker": cleandoc("""ロールリンカー機能です。
+        詳しくはこちら(リンク準備中)をご覧ください。"""),
+    "role_linker set": cleandoc("""ロールリンカーを設定します。
+        **使い方：**
+        `sk!role_linker set [グループ名] [モード] [ロール]`
+        `sk!role_linker set test sync @test1 @test2`
+        test1とtest2のロールを同期モードで登録します。"""),
+    "role_linker delete": cleandoc("""ロールリンカーを削除します。
+        **使い方：**
+        `sk!role_linker delete test`
+        グループ名「test」のリンカーを削除します。"""),
+    
 }
