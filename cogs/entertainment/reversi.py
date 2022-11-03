@@ -8,7 +8,7 @@ class reversi(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command()
+    @commands.command(description="リバーシで遊びます。")
     async def reversi(self, ctx):
         b = board(self.bot)
         await b.start(ctx)

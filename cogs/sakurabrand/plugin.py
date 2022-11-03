@@ -33,7 +33,7 @@ def restore(sid):
         return "https://sakura-bot.net"
     else:
         return res
-    
+
 
 def is_enable(func):
     """プラグインが有効化されているか確認するデコレーターです"""
@@ -44,14 +44,14 @@ def is_enable(func):
         if plugin.plugins[id] not in enable:
             raise commands.CommandNotFound()
         return True
-        
+
     if isinstance(func, commands.Command):
         func.checks.append(_is_enable)
         if not hasattr(func, '__commands_checks__'):
             func.__commands_checks__ = []
             func.__commands_checks.append(_is_enable)
     return func
-            
+
 
 
 class PluginQueue(music.Queue):

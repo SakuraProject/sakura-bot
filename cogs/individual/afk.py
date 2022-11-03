@@ -16,13 +16,13 @@ class Afk(commands.Cog):
         )
         self.cache = {row[0]: row[1] for row in res}
 
-    @commands.group()
+    @commands.hybrid_group(description="留守メッセージ機能です。")
     async def afk(self, ctx: commands.Context):
         if not ctx.invoked_subcommand:
             await ctx.reply("使用方法が違います。")
 
-    @afk.command()
-    async def set(self, ctx: commands.Context, *, reason):
+    @afk.command(description="AFKを設定します。")
+    async def set(self, ctx: commands.Context, *, reason: str):
         if str(ctx.author.id) in self.cache:
             return await ctx.send("すでに設定されています。")
         await self.bot.execute_sql(

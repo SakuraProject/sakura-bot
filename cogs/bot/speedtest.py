@@ -11,20 +11,9 @@ class speedtest(commands.Cog):
     def __init__(self, bot: Bot):
         self.bot = bot
 
-    @commands.command()
+    @commands.command(description="botを動かしているサーバーの速度を計測します")
+    @commands.cooldown(1, 3600, commands.BucketType.guild)
     async def speedtest(self, ctx: commands.Context):
-        """
-        NLang ja botサーバーのスピードテスト
-        botを動かしているサーバーのスピードテストを実行します
-        **使いかた：**
-        EVAL self.bot.command_prefix+'speedtest'
-        ELang ja
-        NLang default speedtest for bot server
-        speedtest for server to run bot
-        **How to use：**
-        EVAL self.bot.command_prefix+'speedtest'
-        ELang default
-        """
         msg = await ctx.send("計測中、しばらくお待ちください")
         stest = Speedtest()
         await self.bot.loop.run_in_executor(None, stest.get_best_server)
@@ -34,20 +23,8 @@ class speedtest(commands.Cog):
                             str(dl / 1024 / 1024) + "Mbps\n**アップロード**:\n" + str(up / 1024 / 1024) + "Mbps")
         await msg.edit(content="", embeds=[ebd])
 
-    @commands.command()
+    @commands.hybrid_command(description="botのpingを取得します")
     async def ping(self, ctx: commands.Context):
-        """
-        NLang ja botのpingを取得します
-        botのpingを取得します
-        **使いかた：**
-        EVAL self.bot.command_prefix+'ping'
-        ELang ja
-        NLang default get latency for bot
-        get latency for bot
-        **How to use：**
-        EVAL self.bot.command_prefix+'ping'
-        ELang default
-        """
         p1 = self.bot.latency * 1000
         t = time.time()
         f = await self.bot.cogs["Websocket"].sock.ping()

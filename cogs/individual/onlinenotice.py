@@ -28,13 +28,14 @@ class OnlineNotice(commands.Cog):
         )
         self.cache = {c[0]: loads(c[1]) for c in cache}
 
-    @commands.hybrid_group()
-    async def online_notice(self, ctx):
+    @commands.hybrid_group(description="ユーザーがオンラインになったときに通知します。")
+    async def online_notice(self, ctx: commands.Context):
         if ctx.invoked_subcommand is None:
             await ctx.send("使用方法が違います。")
 
     @online_notice.command(
         name="add", aliases=["set", "追加", "設定"],
+        description="オンライン通知のユーザーを追加します。"
     )
     @app_commands.describe(notice_user="通知するユーザー")
     async def _add(
@@ -53,7 +54,8 @@ class OnlineNotice(commands.Cog):
         await ctx.send("Ok")
 
     @online_notice.command(
-        aliases=["delete", "del", "削除", "消去", "rem", "rm", "rmv"]
+        aliases=["delete", "del", "削除", "消去", "rem", "rm", "rmv"],
+        description="オンライン通知のユーザーを削除します。"
     )
     async def remove(
         self, ctx: commands.Context,

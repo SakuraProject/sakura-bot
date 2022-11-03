@@ -9,6 +9,7 @@ from discord.ext import commands
 from utils import Bot, TimeoutView
 from data.help import HELP
 
+
 FIRST_DESC = ("これはBotのヘルプです。下の選択メニューからカテゴリを選ぶことによりコマンドを選択できます。"
               "これを見てもよくわからない方はサポートサーバーまでお問い合わせください。")
 
@@ -25,16 +26,24 @@ class Help(commands.Cog):
         view = TimeoutView([CategoryList(self)])
         await view.send(ctx, embed=embed, view=view)
 
-    def create_help(self, query: str | None) -> discord.Embed:
+    def create_help(self, query: str | None, _mode: bool | None = None) -> discord.Embed:
         "helpのEmbedを生成します。"
-        desc = FIRST_DESC
+        embed = discord.Embed(color=self.bot.Color, description=FIRST_DESC)
         if query:
             # ヘルプを検索する。
+            # TODO: help全文からレーベンシュタイン距離による検索をする。
             if parfect := HELP.get(query):
-                desc = parfect
+                if _mode:
+                    for k, v in self.get_sub_commands(query).items():
+                        embed.add_field(name=k, value=v)
+                embed.description = parfect
             else:
-                desc = "そのコマンドは見つかりませんでした。"
-        return discord.Embed(color=self.bot.Color, description=desc)
+                embed.description = "そのコマンドは見つかりませんでした。"
+        return embed
+
+    def get_sub_commands(self, cmd_name: str) -> dict[str, str]:
+        "サブコマンド一覧を返します。"
+        return {k: v for k, v in HELP.items() if k.split()[0] == cmd_name}
 
     def get_category(self, command: commands.Command) -> str:
         "コマンドからカテゴリ名を取得します。"
@@ -91,6 +100,9 @@ class CategoryList(discord.ui.Select):
         # コマンド一覧を生成する
         desc = ""
         for cmd_name in self.cog.create_categories_commands()[self.values[0]]:
+            if " " in cmd_name:
+                # サブコマンドは一覧に表示しない
+                continue
             cmd = self.cog.bot.get_command(cmd_name)
             assert cmd
             if cmd.description:
@@ -109,7 +121,7 @@ class CmdList(discord.ui.Select):
         options = []
         self.category_name = category_name
         self.cmds = cog.convert_commands(
-            cog.create_categories_commands()[category_name]
+            [c for c in cog.create_categories_commands()[category_name] if " " not in c]
         )
         for cm in self.cmds:
             options.append(discord.SelectOption(

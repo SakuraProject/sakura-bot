@@ -7,7 +7,7 @@ from utils import Bot, get_webhook
 class GlobalChat(commands.Cog):
     def __init__(self, bot: Bot):
         self.bot = bot
-        self.channels_cache = []
+        self.channels_cache: list = []
 
     async def cog_load(self):
         await self.bot.execute_sql(
@@ -110,7 +110,6 @@ class GlobalChat(commands.Cog):
             return await cursor.fetchall()
         response = await self.bot.execute_sql(sqler)
 
-        assert isinstance(response, tuple)
         for resp in response:
             self.bot.loop.create_task(self.gc_send(resp[0], message))
 

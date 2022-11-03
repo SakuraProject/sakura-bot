@@ -14,8 +14,8 @@ ABOUT_SAKURA_BOT = cleandoc("""
     もしあなたもこのBotに興味があればぜひ貢献をご検討ください。
 
     ・Github: https://github.com/SakuraProject/sakura-bot/
-    ・公式サーバー: (リンク準備中)
-    ・公式サイト: (リンク準備中)
+    ・公式サーバー: https://discord.gg/KW4CZvYMJg/
+    ・公式サイト: https://sakura-bot.net/
 """)
 
 
@@ -23,7 +23,7 @@ class BotAbout(commands.Cog):
     def __init__(self, bot: Bot):
         self.bot = bot
 
-    @commands.hybrid_command()
+    @commands.hybrid_command(description="botについて表示します。")
     async def about(self, ctx: commands.Context):
         embed = discord.Embed(
             title="SakuraBotについて",

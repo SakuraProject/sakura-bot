@@ -11,7 +11,6 @@ from discord.ext import commands
 
 from utils import Bot, dumps
 from data.help import HELP
-from .help import Help
 
 
 class WSContext(commands.Context):
@@ -103,7 +102,6 @@ class Websocket(commands.Cog):
             await ctx.reply("使用方法が違います")
 
     @backend.command()
-    @commands.is_owner()
     async def run(self, ctx, *, code):
         self.res.setdefault("jsk", dict())
         self.res["jsk"][str(ctx.author.id)] = None
@@ -184,7 +182,6 @@ class Websocket(commands.Cog):
 
     async def help_catlist(self, args: dict) -> dict:
         "カテゴリのリストを'res'に入れて返す。"
-        assert isinstance(self.bot.cogs["Help"], Help)
         options = [
             {"rname": name, "name": name}
             for name in self.bot.cogs["Help"].get_categories()

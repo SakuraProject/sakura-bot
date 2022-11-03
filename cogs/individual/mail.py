@@ -154,25 +154,13 @@ class Mail(commands.Cog):
             webhook = await channel.create_webhook(name='sakurabot')
         return webhook
 
-    @commands.group()
+    @commands.group(description="メールをdiscordに送信する機能")
     async def mail(self, ctx: commands.Context):
         if not ctx.invoked_subcommand:
             await ctx.reply("使用方法が違います")
 
-    @mail.command()
+    @mail.command(description="メール通知を解除します")
     async def remove(self, ctx: commands.Context):
-        """
-        NLang ja mail通知を解除するコマンドです
-        新着メールをdiscordに送信する機能を解除します
-        **使いかた：**
-        EVAL self.bot.command_prefix+'mail remove'
-        ELang ja
-        NLang default This is a command to remove mail notifications.
-        remove the ability to send recent mail to discord
-        **How to use:**
-        EVAL self.bot.command_prefix+'mail remove'
-        ELang default
-        """
         def check(m):
             return m.author == ctx.author and m.channel == ctx.author.dm_channel
         await ctx.send("DMを確認してください")
@@ -193,20 +181,8 @@ class Mail(commands.Cog):
                 await ctx.author.send("解除しました")
                 await ctx.send("解除しました")
 
-    @mail.command()
+    @mail.command(description="メール通知を設定します")
     async def set(self, ctx: commands.Context):
-        """
-        NLang ja mail通知を設定するコマンドです
-        新着メールをdiscordに送信する機能を設定します
-        **使いかた：**
-        EVAL self.bot.command_prefix+'mail set'
-        ELang ja
-        NLang default This is a command to set mail notifications.
-        Set the ability to send recent mail to discord
-        **How to use:**
-        EVAL self.bot.command_prefix+'mail set'
-        ELang default
-        """
         if ctx.interaction is None:
             def check(m):
                 return m.author == ctx.author and m.channel == ctx.author.dm_channel

@@ -28,21 +28,12 @@ class ObjectInfo(commands.Cog):
     BOT_EMOJI = "<:bot1:795159827318964284><:bot2:795160390400868402>"
     VERIFIED_BOT_EMOJI = "<:verified_bot:991963186234413139>"
 
-    @commands.hybrid_command(aliases=("ui", "lookup", "user", "ユーザー情報"))
+    @commands.hybrid_command(
+        aliases=("ui", "lookup", "user", "ユーザー情報"), description="ユーザー情報を表示します。"
+    )
     async def userinfo(
         self, ctx: commands.Context, target: discord.Member | discord.User = commands.Author
     ):
-        """
-        NLang ja ユーザー情報を表示するコマンドです
-        ユーザー情報を表示するコマンドです
-        **使いかた：**
-        EVAL self.bot.command_prefix+'userinfo ユーザーid'
-        EVAL self.bot.command_prefix+'userinfo'
-        ELang ja
-        NLang default Sorry, this command only supports Japanese.
-        Sorry, this command only supports Japanese.
-        ELang default
-        """
         embeds = [
             self.create_ui_embed_1(target)
         ]
@@ -119,7 +110,7 @@ class ObjectInfo(commands.Cog):
             title=f"{target}の共通サーバー一覧",
             description="(管理者専用)"
         )
-        if isinstance(target, discord.ClientUser):
+        if target == self.bot.user:
             embed.add_field(name="** **", value="全サーバー")
             return embed
         embed.add_field(
@@ -147,21 +138,12 @@ class ObjectInfo(commands.Cog):
         )[:1000])
         return embed
 
-    @commands.hybrid_command(aliases=("si", "server", "サーバー情報"))
+    @commands.hybrid_command(
+        aliases=("si", "server", "サーバー情報"), description="サーバー情報を表示します。"
+    )
     async def serverinfo(
         self, ctx: commands.Context, target: discord.Guild = commands.CurrentGuild
     ):
-        """
-        NLang ja サーバー情報を表示するコマンドです
-        サーバー情報を表示するコマンドです
-        **使いかた：**
-        EVAL self.bot.command_prefix+'serverinfo ユーザーid'
-        EVAL self.bot.command_prefix+'serverinfo'
-        ELang ja
-        NLang default Sorry, this command only supports Japanese.
-        Sorry, this command only supports Japanese.
-        ELang default
-        """
         embeds = [self.create_si_embed_1(target)]
         descriptions = {"基本情報": "サーバーの基本情報です。"}
         if target == ctx.guild:
@@ -232,19 +214,8 @@ class ObjectInfo(commands.Cog):
         )
         return embed
 
-    @commands.hybrid_command()
+    @commands.hybrid_command(description="絵文字の情報を表示します。")
     async def emojiinfo(self, ctx: commands.Context, target: discord.Emoji):
-        """
-        NLang ja 絵文字の情報を表示するコマンドです
-        絵文字の情報を表示するコマンドです
-        **使いかた：**
-        EVAL self.bot.command_prefix+'emojiinfo 絵文字id'
-        EVAL self.bot.command_prefix+'emojiinfo'
-        ELang ja
-        NLang default Sorry, this command only supports Japanese.
-        Sorry, this command only supports Japanese.
-        ELang default
-        """
         embed = discord.Embed(
             title=f"{target}の情報",
             description=f"ID: `{target.id}`",
@@ -257,19 +228,8 @@ class ObjectInfo(commands.Cog):
         )
         await ctx.send(embed=embed)
 
-    @commands.hybrid_command()
+    @commands.hybrid_command(description="招待リンクの情報を表示します。")
     async def inviteinfo(self, ctx: commands.Context, target: discord.Invite):
-        """
-        NLang ja 招待リンクの情報を表示するコマンドです
-        招待リンクの情報を表示するコマンドです
-        **使いかた：**
-        EVAL self.bot.command_prefix+'inviteinfo 招待リンクid'
-        EVAL self.bot.command_prefix+'inviteinfo'
-        ELang ja
-        NLang default Sorry, this command only supports Japanese.
-        Sorry, this command only supports Japanese.
-        ELang default
-        """
         embed = discord.Embed(
             title=f"{target}の情報",
             description=f"ID: `{target.id}`",
