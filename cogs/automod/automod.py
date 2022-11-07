@@ -2,7 +2,7 @@
 新AutoModシステム。
 """
 
-from typing import Literal
+from typing import Literal, TYPE_CHECKING
 
 from copy import deepcopy
 
@@ -17,6 +17,9 @@ import re
 from utils import Bot, TryConverter, dumps
 
 from ._types import Setting, Actions, MutedUser
+
+if TYPE_CHECKING:
+    from aiomysql import Cursor
 
 
 def arrayinarray(list1, list2) -> bool:
@@ -659,7 +662,7 @@ class AutoMod(commands.Cog):
             )
         )
 
-        async def sqler(cursor):
+        async def sqler(cursor: "Cursor"):
             if not self.punishments[str(guild_id)]:
                 return
             await cursor.executemany(

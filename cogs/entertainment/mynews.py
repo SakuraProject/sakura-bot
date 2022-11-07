@@ -61,9 +61,11 @@ class mynews(commands.Cog):
             await ctx.send("投稿をキャンセルしました")
 
     @mynews.command(description="ニュースを検索します")
-    async def day(self, ctx: commands.Context, day):
+    async def day(self, ctx: commands.Context, day: str):
         async with self.bot.session.get(
-                "https://ysmsrv.wjg.jp/news/timebydiscord.php?input_date=", query=urllib.parse.quote_plus(day, encoding='utf-8')) as resp:
+            "https://ysmsrv.wjg.jp/news/timebydiscord.php?input_date=",
+            query=urllib.parse.quote_plus(day, encoding='utf-8')
+        ) as resp:
             rpt = await resp.json()
             if rpt == []:
                 await ctx.reply("すみません。何も見つかりませんでした。日付を確認してみてください。例:2022/07/10")
@@ -104,14 +106,14 @@ class mynews(commands.Cog):
                 await ctx.send("見たい記事を選択してください", view=vie)
 
 
-async def getusername(userid, bot: Bot):
+async def getusername(userid: str, bot: Bot):
     async with bot.session.get("https://ysmsrv.wjg.jp/news/" + userid) as resp:
         rpt = await resp.text()
         return rpt
 
 
 class SearchList(discord.ui.Select):
-    def __init__(self, args, bot: Bot):
+    def __init__(self, args: list[dict[str, str]], bot: Bot):
         self.its = args
         self.bot = bot
         options = []

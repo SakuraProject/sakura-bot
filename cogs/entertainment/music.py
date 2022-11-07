@@ -1,3 +1,5 @@
+from collections.abc import Callable
+
 import asyncio
 import audioop
 import copy
@@ -17,14 +19,14 @@ from utils import Bot
 from nicovideo_api_client.api.v2.snapshot_search_api_v2 import SnapshotSearchAPIV2
 from nicovideo_api_client.constants import FieldType
 
-def yf_gettitle(id):
+def yf_gettitle(id: str):
     searchurl = "https://ysmfilm.wjg.jp/view_raw.php?id=" + id
     with urllib.request.urlopen(searchurl) as ut:
         tit = ut.read().decode()
     return tit
 
 
-def yf_getduration(id):
+def yf_getduration(id: str):
     searchurl = "https://ysmfilm.wjg.jp/duration.php?id=" + id
     with urllib.request.urlopen(searchurl) as ut:
         tit = ut.read().decode()
@@ -34,7 +36,7 @@ def yf_getduration(id):
 niconico = NicoNico()
 
 
-def fmt_time(time):
+def fmt_time(time: str):
     if time == '--:--:--':
         return '--:--:--'
     else:
@@ -43,7 +45,7 @@ def fmt_time(time):
             str((time - (time // 3600)) // 60) + ":" + str(time % 60)
 
 
-def restore(sid):
+def restore(sid: str):
     return sid.replace("daily:", "https://www.dailymotion.com/video/") \
               .replace("bili:", "https://www.bilibili.com/video/") \
               .replace("sc:", "https://soundcloud.com/") \
@@ -52,7 +54,12 @@ def restore(sid):
 
 
 class Queue:
-    def __init__(self, url):
+    duration: str | int
+    sid: str
+    source: str
+    title: str
+
+    def __init__(self, url: str):
         self.url = url
         self.video = None
 
@@ -131,7 +138,7 @@ class Queue:
 
 class music(commands.Cog):
     def __init__(self, bot: Bot):
-        self.bot, self.before = bot, ""
+        self.bot = bot
 
     async def cog_load(self):
         csql = "CREATE TABLE if not exists `musicranking` ( `count` BIGINT NOT NULL DEFAULT 0, `vid` VARCHAR(300) NOT NULL) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin;"
@@ -141,12 +148,12 @@ class music(commands.Cog):
                 await cur.execute(csql)
                 await cur.execute(csql1)
 
-    queues = dict()
-    lop = dict()
-    lopq = dict()
+    queues: dict[int, list["Queue"]] = dict()
+    lop: dict[int, bool] = dict()
+    lopq: dict[int, list["Queue"]] = dict()
 
     @commands.command()
-    async def loop(self, ctx):
+    async def loop(self, ctx: commands.Context):
         try:
             if self.lop[ctx.guild.id]:
                 self.lop[ctx.guild.id] = False
@@ -162,7 +169,7 @@ class music(commands.Cog):
             await ctx.send("ループを設定しました")
 
     @commands.command()
-    async def play(self, ctx, *, url):
+    async def play(self, ctx: commands.Context, *, url: str):
         """
         NLang ja 音楽を再生します
         音楽を再生します。このコマンドを使用する際は先にボイスチャンネルに接続してください。
@@ -183,7 +190,7 @@ class music(commands.Cog):
             return
         await self.pl(ctx, url)
 
-    async def pl(self, ctx: commands.Context, url):
+    async def pl(self, ctx: commands.Context, url: str):
         assert ctx.guild
         YDL_OPTIONS = {'format': 'bestaudio', "ignoreerrors": True,
                        "cookiefile": "data/youtube.com_cookies.txt"}
@@ -199,7 +206,7 @@ class music(commands.Cog):
         else:
             voice = await channel.connect()
 
-        def nextqueue(er):
+        def nextqueue(_):
             asyncio.run_coroutine_threadsafe(self.asyncnextqueue(
                 FFMPEG_OPTIONS, voice, ctx, nextqueue), loop)
         try:
@@ -256,7 +263,7 @@ class music(commands.Cog):
             await ctx.send(embeds=[ebd], view=view)
             await self.addc(qp)
 
-    async def addc(self, qp):
+    async def addc(self, qp: "Queue"):
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
                 await cur.execute("SELECT * FROM `musicranking` where `vid` = %s", (qp.sid,))
@@ -267,7 +274,9 @@ class music(commands.Cog):
                     ct = int(res[0][0]) + 1
                     await cur.execute("UPDATE `musicranking` SET `count` = %s,`vid` = %s where `vid` = %s;", (ct, qp.sid, qp.sid))
 
-    async def asyncnextqueue(self, FFMPEG_OPTIONS, voice, ctx, nextqueue):
+    async def asyncnextqueue(
+        self, FFMPEG_OPTIONS, voice: discord.VoiceClient, ctx: commands.Context, nextqueue: Callable
+    ):
         if 0 < len(self.queues[ctx.guild.id]):
             try:
                 self.queues[ctx.guild.id][0].close()
@@ -307,7 +316,7 @@ class music(commands.Cog):
                 await self.addc(qp)
 
     @commands.command(description="音楽を再生します。")
-    async def playlist(self, ctx, *, name):
+    async def playlist(self, ctx: commands.Context, *, name: str):
         YDL_OPTIONS = {'format': 'bestaudio', "ignoreerrors": True,
                        "cookiefile": "data/youtube.com_cookies.txt"}
         FFMPEG_OPTIONS = {
@@ -320,7 +329,7 @@ class music(commands.Cog):
         else:
             voice = await channel.connect()
 
-        def nextqueue(er):
+        def nextqueue(_):
             asyncio.run_coroutine_threadsafe(self.asyncnextqueue(
                 FFMPEG_OPTIONS, voice, ctx, nextqueue), loop)
         try:
@@ -370,7 +379,7 @@ class music(commands.Cog):
             await self.addc(qp)
 
     @commands.command()
-    async def pause(self, ctx):
+    async def pause(self, ctx: commands.Context):
         voice = discord.utils.get(self.bot.voice_clients, guild=ctx.guild)
         self.stopt = time() - self.start
         if voice.is_playing():
@@ -379,7 +388,7 @@ class music(commands.Cog):
             await ctx.send('一時停止しました')
 
     @commands.command()
-    async def stop(self, ctx):
+    async def stop(self, ctx: commands.Context):
         """
         NLang ja 音楽の停止
         再生されている音楽を停止します。
@@ -413,7 +422,7 @@ class music(commands.Cog):
             await ctx.send('再開しました')
 
     @commands.command()
-    async def queue(self, ctx):
+    async def queue(self, ctx: commands.Context):
         list = ""
         for que in self.queues[ctx.guild.id]:
             list = list + "[" + que.title + "](" + que.url + ")\n"
@@ -422,7 +431,7 @@ class music(commands.Cog):
         await ctx.send(embeds=[embed])
 
     @commands.command()
-    async def musicranking(self, ctx):
+    async def musicranking(self, ctx: commands.Context):
         """
         NLang ja よく聞かれている曲のランキング
         よく聞かれている曲のランキングを表示します。
@@ -475,7 +484,7 @@ class music(commands.Cog):
         await ctx.send(embeds=[ebd], view=view)
 
     @commands.command()
-    async def editplaylist(self, ctx: commands.Context, name):
+    async def editplaylist(self, ctx: commands.Context, name: str):
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
                 await cur.execute("SELECT * FROM `musiclist` where `userid` = %s and `lname` = %s", (ctx.author.id, name))
@@ -506,7 +515,7 @@ class music(commands.Cog):
                 except SyntaxError:
                     await ctx.send("キャンセルしました")
 
-    async def input(self, ctx: commands.Context, q):
+    async def input(self, ctx: commands.Context, q: str):
         def check(m):
             return m.author == ctx.author and m.channel == ctx.channel
         await ctx.send(q)
@@ -549,7 +558,7 @@ class SearchList(discord.ui.Select):
 
 
 class AplButton(discord.ui.Button):
-    def __init__(self, it, bot: Bot):
+    def __init__(self, it: "Queue", bot: Bot):
         self.it = it
         self.bot = bot
         super().__init__(label="プレイリストに追加", style=discord.ButtonStyle.green)

@@ -18,14 +18,14 @@ class qr(commands.Cog):
             return await ctx.send("使用方法が違います。")
 
     @qr.command(description="QRコードをテキストから生成します")
-    async def make(self, ctx: commands.Context, text):
+    async def make(self, ctx: commands.Context, text: str):
         a = pyqrcode.create(content=text, error='H')
         a.png(file=str(ctx.author.id) + '.png', scale=6)
         await ctx.send(file=discord.File(str(ctx.author.id) + '.png'))
         os.remove(str(ctx.author.id) + '.png')
 
     @qr.command(description="QRコードを読み取ります")
-    async def read(self, ctx: commands.Context, url=None):
+    async def read(self, ctx: commands.Context, url: str | None = None):
         if url is None:
             url = ctx.message.attachments[0].url
         async with self.bot.session.get(url) as resp:
@@ -37,10 +37,10 @@ class qr(commands.Cog):
                     fp.write(r)
         image = cv2.imread(str(ctx.author.id) + 'r.png')
         qrDetector = cv2.QRCodeDetector()
-        data, bbox, rectifiedImage = qrDetector.detectAndDecode(image)
+        data, _, _ = qrDetector.detectAndDecode(image)
         await ctx.send(data)
         os.remove(str(ctx.author.id) + 'r.png')
 
 
-async def setup(bot):
+async def setup(bot: Bot):
     await bot.add_cog(qr(bot))

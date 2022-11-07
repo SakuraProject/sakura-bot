@@ -177,5 +177,4 @@ HELP = {
         **使い方：**
         `sk!role_linker delete test`
         グループ名「test」のリンカーを削除します。"""),
-    
 }

@@ -244,5 +244,5 @@ class Websocket(commands.Cog):
         return args
 
 
-def setup(bot):
+def setup(bot: Bot):
     return bot.add_cog(Websocket(bot))

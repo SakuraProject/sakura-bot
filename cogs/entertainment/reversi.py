@@ -3,33 +3,38 @@ from discord.ext import commands
 import asyncio
 import random
 
+from utils import Bot
+
 
 class reversi(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: Bot):
         self.bot = bot
 
     @commands.command(description="リバーシで遊びます。")
-    async def reversi(self, ctx):
+    async def reversi(self, ctx: commands.Context):
         b = board(self.bot)
         await b.start(ctx)
 
 
 class board():
-    def __init__(self, bot):
+    uid: dict[int, int]
+
+    def __init__(self, bot: Bot):
         self.bot = bot
-        self.h = 8
-        self.w = 8
-        self.bvb = 0
-        self.boards = dict()
-        self.users = dict()
-        self.upboard = dict()
-        self.omc = 0
-        self.turn = 1
-        self.varr = [-self.w, -self.w + 1, 1, self.w +
-                     1, self.w, self.w - 1, -1, -self.w - 1]
-        self.ck3 = 0
-        self.ck3b = 1
-        self.btu = 5
+        self.h: int = 8
+        self.w: int = 8
+        self.bvb: int = 0
+        self.boards: dict = dict()
+        self.users: dict[int, str] = dict()
+        self.upboard: dict = dict()
+        self.omc: int = 0
+        self.turn: int = 1
+        self.varr: list[int] = [
+            -self.w, -self.w + 1, 1, self.w + 1, self.w, self.w - 1, -1, -self.w - 1
+        ]
+        self.ck3: int = 0
+        self.ck3b: int = 1
+        self.btu: int = 5
 
     def botf(self, xy, ub):
         tc = 0
@@ -105,7 +110,7 @@ class board():
                     xy["x"] = berr % self.w + 1
                     xy["y"] = berr / self.w + 1
 
-    def border(self, val):
+    def border(self, val: str):
         val = val + "◆"
         for c in range(self.w):
             val = val + \
@@ -114,7 +119,7 @@ class board():
         val = val + "◆\n"
         return val
 
-    def pb(self, b):
+    def pb(self, b: dict[int | float, int]):
         val = self.border("")
         for c in range(self.h):
             val = val + \
@@ -150,7 +155,7 @@ class board():
         if bkc == wkc:
             return "引き分け"
 
-    async def o(self, board, msg, ctx):
+    async def o(self, board: dict[int | float, int], msg: discord.Message, ctx: commands.Context):
         val = ""
         resend = False
         start = ((self.h - 2) / 2) * self.w + ((self.w - 2) / 2)
@@ -282,10 +287,10 @@ class board():
                         str("break")
         return self.pb(ub)
 
-    async def start(self, ctx):
+    async def start(self, ctx: commands.Context):
         self.users[0] = "黒"
         self.users[1] = "白"
-        math = dict()
+        math: dict[int | float, int] = dict()
         for i in range(self.w * self.h):
             math[i] = 0
         for i in range(self.w * self.h):
