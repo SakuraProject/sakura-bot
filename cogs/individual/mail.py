@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 from orjson import loads
 import discord
 from discord.ext import commands, tasks
@@ -14,6 +16,16 @@ from email.header import decode_header
 import asyncio
 
 from utils import Bot, dumps
+
+
+class OverloadIMAP4:
+    user: Any
+    lt: Any
+    pas: Any
+    dch: Any
+
+    def __init__(self, original: imaplib.IMAP4 | imaplib.IMAP4_SSL):
+        self.original = original
 
 
 class PM(discord.ui.Modal):
@@ -34,13 +46,14 @@ class PM(discord.ui.Modal):
 
     async def on_submit(self, interaction: discord.Interaction):
         assert interaction.channel and interaction.guild
-        mes = await interaction.response.send_message(content="接続を確認中です", ephemeral=True)
+        await interaction.response.send_message(content="接続を確認中です", ephemeral=True)
         try:
             try:
                 m = imaplib.IMAP4(self.s.value, int(self.port.value))
             except Exception:
                 m = imaplib.IMAP4_SSL(self.s.value, int(self.port.value))
-            m.login(self.user.value, self.pas.value)
+            m = OverloadIMAP4(m)
+            m.original.login(self.user.value, self.pas.value)
             m.user = self.user.value
             m.pas = self.pas.value
             m.dch = interaction.channel
@@ -57,17 +70,17 @@ class PM(discord.ui.Modal):
                         "pas": self.pas.value
                     }
                     await cur.execute("INSERT INTO `mailnof` (`gid`, `cid`, `mname`, `data`) VALUES (%s,%s,%s,%s);", (interaction.guild.id, interaction.channel.id, self.mname.value, dumps(d)))
-            await mes.edit(content="登録完了しました")
+            await interaction.response.edit_message(content="登録完了しました")
         except Exception:
-            await mes.edit(content="接続確認に失敗しました")
+            await interaction.response.edit_message(content="接続確認に失敗しました")
 
 
 class Mail(commands.Cog):
 
     def __init__(self, bot: Bot):
         self.bot = bot
-        self.nlis = []
-        self.chl = {}
+        self.nlis: list[OverloadIMAP4] = []
+        self.chl: dict[int, dict[str, OverloadIMAP4]] = {}
         self.noftask.start()
 
     async def cog_load(self):
@@ -86,9 +99,10 @@ class Mail(commands.Cog):
                                 m = imaplib.IMAP4(d["s"], int(d["port"]))
                             except Exception:
                                 m = imaplib.IMAP4_SSL(d["s"], int(d["port"]))
+                            m = OverloadIMAP4(m)
                             m.user = d["user"]
                             m.pas = d["pas"]
-                            m.login(m.user, m.pas)
+                            m.original.login(m.user, m.pas)
                             m.dch = ch
                             m.lt = time.time()
                             self.nlis.append(m)
@@ -102,12 +116,15 @@ class Mail(commands.Cog):
         for m in self.nlis:
             try:
                 dtmt = None
-                m.select()
-                d = m.search(None, datetime.fromtimestamp(
+                m.original.select()
+                d = m.original.search(None, datetime.fromtimestamp(
                     m.lt).strftime("(SINCE \"%d-%B-%Y\")"))
                 for n in d[1][0].split():
-                    h, dt = m.fetch(n, '(RFC822)')
-                    dtm = email.message_from_string(dt[0][1].decode())
+                    h, dt = m.original.fetch(n, '(RFC822)')
+                    if dt[0] is None:
+                        continue
+                    dtm = email.message_from_string(dt[0][1].decode())  # type: ignore
+                    # ↑全く何してるかわからん。。。
                     dte = re.sub(" [(]([A-Z]*)[)]", "", dtm["Date"])
                     try:
                         dtmt = datetime.strptime(
@@ -155,14 +172,16 @@ class Mail(commands.Cog):
         return webhook
 
     @commands.group(description="メールをdiscordに送信する機能")
+    @commands.guild_only()
     async def mail(self, ctx: commands.Context):
         if not ctx.invoked_subcommand:
             await ctx.reply("使用方法が違います")
 
     @mail.command(description="メール通知を解除します")
     async def remove(self, ctx: commands.Context):
-        def check(m):
+        def check(m: discord.Message):
             return m.author == ctx.author and m.channel == ctx.author.dm_channel
+        assert ctx.guild
         await ctx.send("DMを確認してください")
         await ctx.author.send("登録したメールアドレスを入力してください")
         try:
@@ -183,6 +202,8 @@ class Mail(commands.Cog):
 
     @mail.command(description="メール通知を設定します")
     async def set(self, ctx: commands.Context):
+        assert ctx.guild
+
         if ctx.interaction is None:
             def check(m):
                 return m.author == ctx.author and m.channel == ctx.author.dm_channel
@@ -235,6 +256,7 @@ class Mail(commands.Cog):
                 except Exception:
                     m = imaplib.IMAP4_SSL(s, int(port))
                 m.login(user, pas)
+                m = OverloadIMAP4(m)
                 m.user = user
                 m.pas = pas
                 m.dch = ctx.channel

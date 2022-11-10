@@ -21,6 +21,7 @@ speedtest-cli = "*"
 aiofiles = "*"
 hashids = "*"
 pyqrcode = "*"
+nicovideo-api-client = "*"
 
 [dev-packages]
 flake8 = "*"

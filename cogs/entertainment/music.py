@@ -15,6 +15,7 @@ from discord.ext import commands
 from niconico.niconico import NicoNico
 from youtube_dl import YoutubeDL
 
+from utils._types import GuildContext
 from utils import Bot
 from nicovideo_api_client.api.v2.snapshot_search_api_v2 import SnapshotSearchAPIV2
 from nicovideo_api_client.constants import FieldType
@@ -36,7 +37,7 @@ def yf_getduration(id: str):
 niconico = NicoNico()
 
 
-def fmt_time(time: str):
+def fmt_time(time: str | int):
     if time == '--:--:--':
         return '--:--:--'
     else:
@@ -88,6 +89,8 @@ class Queue:
                     self.url = requests.get(self.url).url
                 with YoutubeDL(YDL_OPTIONS) as ydl:
                     info = ydl.extract_info(self.url, download=False)
+                if not info:
+                    raise KeyError("info not found")
                 self.source = info['url']
                 self.title = info['title']
                 self.duration = info["duration"]
@@ -110,6 +113,8 @@ class Queue:
             elif "bilibili" in self.url:
                 with YoutubeDL(BILIBILI_OPTIONS) as ydl:
                     info = ydl.extract_info(self.url, download=False)
+                if not info:
+                    raise KeyError("info not found")
                 self.source = info["formats"][0]['url']
                 self.title = info['title']
                 self.duration = info["duration"]
@@ -120,6 +125,8 @@ class Queue:
                 YDL_OPTIONS["format"] = "mp4"
                 with YoutubeDL(YDL_OPTIONS) as ydl:
                     info = ydl.extract_info(self.url, download=False)
+                if not info:
+                    raise KeyError("info not found")
                 self.source = info['url']
                 self.title = info['title']
                 self.duration = info["duration"]
@@ -148,12 +155,14 @@ class music(commands.Cog):
                 await cur.execute(csql)
                 await cur.execute(csql1)
 
-    queues: dict[int, list["Queue"]] = dict()
-    lop: dict[int, bool] = dict()
-    lopq: dict[int, list["Queue"]] = dict()
+    queues: dict[int, list["Queue"]] = {}
+    lop: dict[int, bool] = {}
+    lopq: dict[int, list["Queue"]] = {}
 
     @commands.command()
+    @commands.guild_only()
     async def loop(self, ctx: commands.Context):
+        assert ctx.guild
         try:
             if self.lop[ctx.guild.id]:
                 self.lop[ctx.guild.id] = False
@@ -169,6 +178,7 @@ class music(commands.Cog):
             await ctx.send("ループを設定しました")
 
     @commands.command()
+    @commands.guild_only()
     async def play(self, ctx: commands.Context, *, url: str):
         """
         NLang ja 音楽を再生します
@@ -191,16 +201,19 @@ class music(commands.Cog):
         await self.pl(ctx, url)
 
     async def pl(self, ctx: commands.Context, url: str):
-        assert ctx.guild
-        YDL_OPTIONS = {'format': 'bestaudio', "ignoreerrors": True,
-                       "cookiefile": "data/youtube.com_cookies.txt"}
+        assert ctx.guild and isinstance(ctx.author, discord.Member)
         FFMPEG_OPTIONS = {
             'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
             'options': '-vn'
         }
         loop = asyncio.get_event_loop()
+        if not ctx.author.voice:
+            return await ctx.send("先にボイスチャンネルに接続してください。")
         channel = ctx.author.voice.channel
+        if not channel:
+            return await ctx.send("接続するボイスチャンネルを発見できませんでした。")
         voice = discord.utils.get(self.bot.voice_clients, guild=ctx.guild)
+        assert isinstance(voice, discord.VoiceClient)
         if voice and voice.is_connected():
             await voice.move_to(channel)
         else:
@@ -238,7 +251,7 @@ class music(commands.Cog):
             if self.lop[ctx.guild.id]:
                 self.lopq[ctx.guild.id].append(qp)
             self.queues[ctx.guild.id].append(qp)
-        if voice.is_playing() and voice.source.music == True:
+        if voice.is_playing() and getattr(voice.source, "music"):
             await ctx.send(qp.title + 'をキューに追加しました')
         else:
             self.start = time()
@@ -247,17 +260,16 @@ class music(commands.Cog):
                     qp.source, **FFMPEG_OPTIONS)), after=nextqueue)
             else:
                 pcm = FFmpegPCMAudio(qp.source, **FFMPEG_OPTIONS)
-                pcm.nextqueue = nextqueue
-                pcm.cog = self
-                voice.source.s.append(pcm)
+                setattr(pcm, "nextqueue", nextqueue)
+                setattr(pcm, "cog", self)
+                getattr(voice.source, "s", []).append(pcm)
             voice.is_playing()
-            voice.source.music = True
+            setattr(voice.source, "music", True)
             ebd = discord.Embed(title=qp.title + "を再生します",
                                 color=self.bot.Color)
             ebd.add_field(
                 name="Title", value="[" + qp.title + "](" + qp.url + ")")
-            ebd.add_field(name="Time", value=fmt_time(
-                0) + "/" + fmt_time(qp.duration))
+            ebd.add_field(name="Time", value=fmt_time(0) + "/" + fmt_time(qp.duration))
             view = discord.ui.View()
             view.add_item(AplButton(qp, self.bot))
             await ctx.send(embeds=[ebd], view=view)
@@ -277,6 +289,7 @@ class music(commands.Cog):
     async def asyncnextqueue(
         self, FFMPEG_OPTIONS, voice: discord.VoiceClient, ctx: commands.Context, nextqueue: Callable
     ):
+        assert ctx.guild
         if 0 < len(self.queues[ctx.guild.id]):
             try:
                 self.queues[ctx.guild.id][0].close()
@@ -289,9 +302,9 @@ class music(commands.Cog):
                         qp.source, **FFMPEG_OPTIONS)), after=nextqueue)
                 else:
                     pcm = FFmpegPCMAudio(qp.source, **FFMPEG_OPTIONS)
-                    pcm.nextqueue = nextqueue
-                    pcm.cog = self
-                    voice.source.s.append(pcm)
+                    setattr(pcm, "nextqueue", nextqueue)
+                    setattr(pcm, "cog", self)
+                    getattr(voice.source, "s", []).append(pcm)
                 voice.is_playing()
                 await self.addc(qp)
             except IndexError:
@@ -308,21 +321,20 @@ class music(commands.Cog):
                         qp.source, **FFMPEG_OPTIONS)), after=nextqueue)
                 else:
                     pcm = FFmpegPCMAudio(qp.source, **FFMPEG_OPTIONS)
-                    pcm.nextqueue = nextqueue
-                    pcm.cog = self
-                    voice.source.s.append(pcm)
+                    setattr(pcm, "nextqueue", nextqueue)
+                    setattr(pcm, "cog", self)
+                    getattr(voice.source, "s", []).append(pcm)
                 voice.is_playing()
-                voice.source.music = True
+                setattr(voice.source, "music", True)
                 await self.addc(qp)
 
     @commands.command(description="音楽を再生します。")
-    async def playlist(self, ctx: commands.Context, *, name: str):
-        YDL_OPTIONS = {'format': 'bestaudio', "ignoreerrors": True,
-                       "cookiefile": "data/youtube.com_cookies.txt"}
+    @commands.guild_only()
+    async def playlist(self, ctx: GuildContext, *, name: str):
         FFMPEG_OPTIONS = {
             'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
         loop = asyncio.get_event_loop()
-        channel = ctx.message.author.voice.channel
+        channel = ctx.author.voice.channel
         voice = discord.utils.get(self.bot.voice_clients, guild=ctx.guild)
         if voice and voice.is_connected():
             await voice.move_to(channel)
@@ -381,6 +393,8 @@ class music(commands.Cog):
     @commands.command()
     async def pause(self, ctx: commands.Context):
         voice = discord.utils.get(self.bot.voice_clients, guild=ctx.guild)
+        if not voice:
+            return await ctx.send("接続していません。")
         self.stopt = time() - self.start
         if voice.is_playing():
             voice.pause()

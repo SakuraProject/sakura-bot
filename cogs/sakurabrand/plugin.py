@@ -48,8 +48,7 @@ def is_enable(func):
     if isinstance(func, commands.Command):
         func.checks.append(_is_enable)
         if not hasattr(func, '__commands_checks__'):
-            func.__commands_checks__ = []
-            func.__commands_checks.append(_is_enable)
+            setattr(func, "__commands_checks__", [_is_enable])
     return func
 
 
@@ -70,7 +69,7 @@ class PluginQueue(music.Queue):
 
 
 class PluginSearchList(music.SearchList):
-    def __init__(self, ctx: commands.Context, cog: music, query: str):
+    def __init__(self, ctx: commands.Context, cog: music.music, query: str):
         self.cog = cog
         self.ctx = ctx
         items = []
