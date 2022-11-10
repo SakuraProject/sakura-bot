@@ -12,7 +12,7 @@ class Prefix(commands.Cog):
     def __init__(self, bot: Bot) -> None:
         self.bot = bot
 
-    async def prepare_table(self, cursor: Cursor) -> tuple[
+    async def setup_database(self, cursor: Cursor) -> tuple[
         tuple[tuple[int, str], ...], tuple[tuple[int, str], ...]
     ]:
         await cursor.execute("""CREATE TABLE IF NOT EXISTS UserPrefix(
@@ -28,7 +28,7 @@ class Prefix(commands.Cog):
 
     async def cog_load(self):
         "テーブルの準備とキャッシュの用意をする。"
-        (users, guilds) = await self.bot.execute_sql(self.prepare_table)
+        (users, guilds) = await self.bot.execute_sql(self.setup_database)
         for (user_id, prefix) in users:
             self.bot.user_prefixes[user_id] = prefix
         for (guild_id, prefix) in guilds:
