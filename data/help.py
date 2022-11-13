@@ -6,6 +6,14 @@ from inspect import cleandoc
 HELP = {
     "help": "このコマンドです。コマンドの使い方を確認することができます。",
     "about": "Botの情報を見ることができます。",
+    "prefix": cleandoc("""botのプレフィックスを設定します。
+        **使いかた：**
+        `sk!prefix [モード] [プレフィックス]`
+        `sk!prefix user sk.`
+        **注意：**
+        モードは`user`か`server`です。
+        プレフィックスを指定してもデフォルトの`sk!`でも動きます。
+        リセットしたい場合はプレフィックスに`sk!`を指定してください。"""),
     "ping": cleandoc("""botの速さを調べられます。単位はms(ミリ秒)です。
         1000msを超えるようなことがあればサポートサーバーにて報告してください。"""),
     "captcha": cleandoc("""認証機能です。
@@ -177,5 +185,4 @@ HELP = {
         **使い方：**
         `sk!role_linker delete test`
         グループ名「test」のリンカーを削除します。"""),
-    
 }
