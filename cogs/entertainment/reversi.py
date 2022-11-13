@@ -24,7 +24,7 @@ class board():
         self.h: int = 8
         self.w: int = 8
         self.bvb: int = 0
-        self.boards: dict = dict()
+        self.boards: dict = {}
         self.users: dict[int, str] = dict()
         self.upboard: dict = dict()
         self.omc: int = 0
