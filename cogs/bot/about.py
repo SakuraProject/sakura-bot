@@ -2,7 +2,7 @@
 
 from inspect import cleandoc
 
-from discord.ext import commands
+from discord.ext import commands, tasks
 import discord
 
 from utils import Bot
@@ -22,6 +22,7 @@ ABOUT_SAKURA_BOT = cleandoc("""
 class BotAbout(commands.Cog):
     def __init__(self, bot: Bot):
         self.bot = bot
+        self.before_guilds_count: int = 0
 
     @commands.hybrid_command(description="botについて表示します。")
     async def about(self, ctx: commands.Context):
@@ -33,6 +34,17 @@ class BotAbout(commands.Cog):
         embed.add_field(name="サーバー数", value=f"{len(self.bot.guilds)}サーバー")
         embed.add_field(name="開発言語", value="Python (discord.py v2.0.1)")
         await ctx.send(embed=embed)
+
+    @tasks.loop(minutes=1)
+    async def status_updater(self):
+        await self.bot.wait_until_ready()
+
+        if self.before_guilds_count == len(self.bot.guilds):
+            return
+        await self.bot.change_presence(activity=discord.Game(
+            f"sk!help｜{len(self.bot.guilds)}guilds｜{len(self.bot.users)}users"
+        ))
+        self.before_guilds_count = len(self.bot.guilds)
 
 
 async def setup(bot: Bot) -> None:
