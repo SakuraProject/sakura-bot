@@ -206,7 +206,7 @@ class music(commands.Cog):
             'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
             'options': '-vn'
         }
-        loop = asyncio.get_event_loop()
+        loop = self.bot.loop
         if not ctx.author.voice:
             return await ctx.send("先にボイスチャンネルに接続してください。")
         channel = ctx.author.voice.channel
