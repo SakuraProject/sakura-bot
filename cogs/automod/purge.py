@@ -13,7 +13,7 @@ class purge(commands.Cog):
         self, ctx: commands.Context, length=0, member: discord.User | None = None
     ):
         if length == 0:
-            mlis = list()
+            mlis = []
             inn = False
             async for m in ctx.channel.history(limit=100000):
                 r = [getattr(e.emoji, "name", e.emoji) for e in m.reactions]
