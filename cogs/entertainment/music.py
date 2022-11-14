@@ -334,8 +334,14 @@ class music(commands.Cog):
         FFMPEG_OPTIONS = {
             'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
         loop = asyncio.get_event_loop()
+        if not ctx.author.voice:
+            return await ctx.send("ボイスチャンネルに接続してください！")
         channel = ctx.author.voice.channel
-        voice = discord.utils.get(self.bot.voice_clients, guild=ctx.guild)
+        if not channel:
+            return await ctx.send("接続先のチャンネルを見つけることができませんでした。")
+
+        voice = ctx.guild.voice_client
+        assert isinstance(voice, discord.VoiceClient)
         if voice and voice.is_connected():
             await voice.move_to(channel)
         else:
@@ -352,57 +358,67 @@ class music(commands.Cog):
             len(self.queues[ctx.guild.id])
         except KeyError:
             self.queues[ctx.guild.id] = list()
-        async with self.bot.pool.acquire() as conn:
-            async with conn.cursor() as cur:
-                await cur.execute("SELECT * FROM `musiclist` where `userid` = %s and `lname` = %s", (ctx.author.id, name))
-                res = await cur.fetchall()
-                qpl = len(self.queues[ctx.guild.id])
-                for row in res:
-                    qp = Queue(restore(row[1]))
-                    await qp.setdata()
-                    if self.lop[ctx.guild.id]:
-                        self.lopq[ctx.guild.id].append(qp)
-                    self.queues[ctx.guild.id].append(qp)
-                if not voice.is_playing():
-                    qp = self.queues[ctx.guild.id][qpl]
-        if voice.is_playing() and voice.source.music == True:
-            await ctx.send('プレイリストをキューに追加しました')
+
+        res = await self.bot.execute_sql(
+            "SELECT * FROM `musiclist` where `userid` = %s and `lname` = %s",
+            (ctx.author.id, name), _return_type="fetchall"
+        )
+        if not res:
+            return await ctx.send("プレイリストが見つかりませんでした。")
+        qpl = len(self.queues[ctx.guild.id])
+        qp = None
+        for row in res:
+            qp = Queue(restore(row[1]))
+            await qp.setdata()
+            if self.lop[ctx.guild.id]:
+                self.lopq[ctx.guild.id].append(qp)
+            self.queues[ctx.guild.id].append(qp)
+        if not voice.is_playing():
+            qp = self.queues[ctx.guild.id][qpl]
+        if voice.is_playing() and getattr(voice.source, "music", False):
+            return await ctx.send('プレイリストをキューに追加しました')
+        self.start = time()
+
+        if not qp:
+            return
+
+        if not voice.is_playing():
+            voice.play(AudioMixer(FFmpegPCMAudio(
+                qp.source, **FFMPEG_OPTIONS)), after=nextqueue)
         else:
-            self.start = time()
-            if not voice.is_playing():
-                voice.play(AudioMixer(FFmpegPCMAudio(
-                    qp.source, **FFMPEG_OPTIONS)), after=nextqueue)
-            else:
-                pcm = FFmpegPCMAudio(qp.source, **FFMPEG_OPTIONS)
-                pcm.nextqueue = nextqueue
-                pcm.cog = self
-                voice.source.s.append(pcm)
-            voice.is_playing()
-            voice.source.music = True
-            ebd = discord.Embed(title=qp.title + "を再生します",
-                                color=self.bot.Color)
-            ebd.add_field(
-                name="Title", value="[" + qp.title + "](" + qp.url + ")")
-            ebd.add_field(name="Time", value=fmt_time(
-                0) + "/" + fmt_time(qp.duration))
-            view = discord.ui.View()
-            view.add_item(AplButton(qp, self.bot))
-            await ctx.send(embeds=[ebd], view=view)
-            await self.addc(qp)
+            pcm = FFmpegPCMAudio(qp.source, **FFMPEG_OPTIONS)
+            setattr(pcm, "nextqueue", nextqueue)
+            setattr(pcm, "cog", self)
+            getattr(voice.source, "s", []).append(pcm)
+        voice.is_playing()
+        setattr(voice.source, "music", True)
+        ebd = discord.Embed(title=qp.title + "を再生します",
+                            color=self.bot.Color)
+        ebd.add_field(
+            name="Title", value="[" + qp.title + "](" + qp.url + ")")
+        ebd.add_field(name="Time", value=fmt_time(
+            0) + "/" + fmt_time(qp.duration))
+        view = discord.ui.View()
+        view.add_item(AplButton(qp, self.bot))
+        await ctx.send(embeds=[ebd], view=view)
+        await self.addc(qp)
 
     @commands.command()
-    async def pause(self, ctx: commands.Context):
-        voice = discord.utils.get(self.bot.voice_clients, guild=ctx.guild)
+    @commands.guild_only()
+    async def pause(self, ctx: GuildContext):
+        voice = ctx.guild.voice_client
         if not voice:
             return await ctx.send("接続していません。")
+        assert isinstance(voice, discord.VoiceClient)
         self.stopt = time() - self.start
         if voice.is_playing():
             voice.pause()
-            voice.source.music = False
+            setattr(voice.source, "music", False)
             await ctx.send('一時停止しました')
 
     @commands.command()
-    async def stop(self, ctx: commands.Context):
+    @commands.guild_only()
+    async def stop(self, ctx: GuildContext):
         """
         NLang ja 音楽の停止
         再生されている音楽を停止します。
@@ -415,7 +431,10 @@ class music(commands.Cog):
         EVAL self.bot.command_prefix+'stop'
         ELang default
         """
-        voice = discord.utils.get(self.bot.voice_clients, guild=ctx.guild)
+        voice = ctx.guild.voice_client
+        if not voice:
+            return await ctx.send("接続していません。")
+        assert isinstance(voice, discord.VoiceClient)
 
         if voice.is_playing():
             await ctx.send('キューを削除し一時停止しました')
@@ -423,20 +442,23 @@ class music(commands.Cog):
                 qp.close()
             self.queues[ctx.guild.id] = list()
             self.lopq[ctx.guild.id] = list()
-            voice.source.music = False
+            setattr(voice.source, "music", False)
             voice.stop()
 
     @commands.command()
-    async def resume(self, ctx: commands.Context):
-        voice = discord.utils.get(self.bot.voice_clients, guild=ctx.guild)
+    @commands.guild_only()
+    async def resume(self, ctx: GuildContext):
+        voice = ctx.guild.voice_client
+        assert isinstance(voice, discord.VoiceClient)
         self.start = time() - self.stopt
         if not voice.is_playing():
             voice.resume()
-            voice.source.music = True
+            setattr(voice.source, "music", True)
             await ctx.send('再開しました')
 
     @commands.command()
-    async def queue(self, ctx: commands.Context):
+    @commands.guild_only()
+    async def queue(self, ctx: GuildContext):
         list = ""
         for que in self.queues[ctx.guild.id]:
             list = list + "[" + que.title + "](" + que.url + ")\n"
@@ -476,8 +498,13 @@ class music(commands.Cog):
                 await ctx.send(embeds=[embed])
 
     @commands.command()
-    async def disconnect(self, ctx: commands.Context):
-        voice = discord.utils.get(self.bot.voice_clients, guild=ctx.guild)
+    @commands.guild_only()
+    async def disconnect(self, ctx: GuildContext):
+        voice = ctx.guild.voice_client
+        if not voice:
+            return await ctx.send("接続していません。")
+        assert isinstance(voice, discord.VoiceClient)
+
         await voice.disconnect()
         self.queues[ctx.guild.id] = list()
         for qp in self.queues[ctx.guild.id]:
@@ -487,7 +514,8 @@ class music(commands.Cog):
         await ctx.send('キューを削除し切断しました')
 
     @commands.command()
-    async def nowplaying(self, ctx: commands.Context):
+    @commands.guild_only()
+    async def nowplaying(self, ctx: GuildContext):
         ebd = discord.Embed(title="Now", color=self.bot.Color)
         qp = self.queues[ctx.guild.id][0]
         ebd.add_field(name="Title", value="[" + qp.title + "](" + qp.url + ")")
