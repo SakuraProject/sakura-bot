@@ -5,6 +5,7 @@ from collections.abc import Coroutine
 
 from inspect import iscoroutinefunction
 
+import discord
 from discord.ext import commands
 from aiohttp import ClientSession
 from aiomysql import Pool
@@ -23,18 +24,31 @@ class Bot(commands.Bot):
     pool: Pool
     owner_ids: list[int]
     cogs: Cogs
+    user_prefixes: dict[int, str]
+    guild_prefixes: dict[int, str]
 
     Color = 0xffbdde
 
     def __init__(self, *args, **kwargs):
+        kwargs.setdefault("command_prefix", self._get_prefix)
         super().__init__(*args, **kwargs)
         self._session = None
+        self.user_prefixes = {}
+        self.guild_prefixes = {}
 
     @property
     def session(self) -> ClientSession:
         if not self._session or self._session.closed:
             self._session = ClientSession(loop=self.loop, json_serialize=loads)
         return self._session
+
+    def _get_prefix(self, _, message: discord.Message):
+        prefixes = ["sk!", "Sk!", "SK!", "sk! ", "sk !", "sk！", "sk ! "]
+        if message.guild and message.guild.id in self.guild_prefixes:
+            prefixes.append(self.guild_prefixes[message.guild.id])
+        if message.author.id in self.user_prefixes:
+            prefixes.append(self.user_prefixes[message.author.id])
+        return prefixes
 
     @overload
     async def execute_sql(
