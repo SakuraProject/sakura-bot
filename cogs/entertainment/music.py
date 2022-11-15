@@ -180,18 +180,6 @@ class music(commands.Cog):
     @commands.command()
     @commands.guild_only()
     async def play(self, ctx: commands.Context, *, url: str):
-        """
-        NLang ja 音楽を再生します
-        音楽を再生します。このコマンドを使用する際は先にボイスチャンネルに接続してください。
-        **使いかた：**
-        EVAL self.bot.command_prefix+'play urlか検索ワード'
-        ELang ja
-        NLang default It is the command to play a music
-        It is the command to play a music.you must join the voice channel if you use
-        **how to use：**
-        EVAL self.bot.command_prefix+'play url or search query'
-        ELang default
-        """
         pattern = "https?://[\\w/:%#\\$&\\?\\(\\)~\\.=\\+\\-]+"
         if not re.match(pattern, url):
             view = discord.ui.View()
@@ -419,18 +407,6 @@ class music(commands.Cog):
     @commands.command()
     @commands.guild_only()
     async def stop(self, ctx: GuildContext):
-        """
-        NLang ja 音楽の停止
-        再生されている音楽を停止します。
-        **使いかた：**
-        EVAL self.bot.command_prefix+'stop'
-        ELang ja
-        NLang default stop the music
-        stop the music
-        **how to use：**
-        EVAL self.bot.command_prefix+'stop'
-        ELang default
-        """
         voice = ctx.guild.voice_client
         if not voice:
             return await ctx.send("接続していません。")
@@ -612,7 +588,9 @@ class AplButton(discord.ui.Button):
         try:
             message = await self.bot.wait_for('message', timeout=60.0, check=check)
         except asyncio.TimeoutError:
-            await interaction.channel.send('タイムアウトしました.  再度操作をやり直してね')
+            await interaction.response.edit_message(
+                content='タイムアウトしました.  再度操作をやり直してね'
+            )
             return
         else:
             async with self.bot.pool.acquire() as conn:
