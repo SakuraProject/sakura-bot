@@ -21,12 +21,12 @@ class board():
 
     def __init__(self, bot: Bot):
         self.bot = bot
-        self.h: int = 8
-        self.w: int = 8
+        self.h: int = 8  # height 高さ
+        self.w: int = 8  # width 横幅
         self.bvb: int = 0
         self.boards: dict = {}
-        self.users: dict[int, str] = dict()
-        self.upboard: dict = dict()
+        self.users: dict[int, str] = {}
+        self.upboard: dict = {}
         self.omc: int = 0
         self.turn: int = 1
         self.varr: list[int] = [
@@ -37,7 +37,6 @@ class board():
         self.btu: int = 5
 
     def botf(self, xy, ub):
-        tc = 0
         min = self.w * self.h
         max = 0
         mxd = 0
@@ -97,7 +96,7 @@ class board():
                 xy["x"] = mid % self.w + 1
                 xy["y"] = mid / self.w + 1
         except SyntaxError:
-            str("break")
+            pass
         if (xy["y"] - 1) * self.w + (xy["x"] -
                                      1) > 63 or (xy["y"] - 1) * self.w + (xy["x"] - 1) < 0:
             for berr in range(self.h * self.w):
@@ -241,7 +240,6 @@ class board():
             tk = 2
         else:
             tk = 1
-        sty = ""
         for bvi in range(8):
             if ub[xy + (self.varr[bvi])] == tk:
                 ccc = xy + (self.varr[bvi])
@@ -290,7 +288,7 @@ class board():
     async def start(self, ctx: commands.Context):
         self.users[0] = "黒"
         self.users[1] = "白"
-        math: dict[int | float, int] = dict()
+        math: dict[int | float, int] = {}
         for i in range(self.w * self.h):
             math[i] = 0
         for i in range(self.w * self.h):
@@ -300,12 +298,10 @@ class board():
         msg = await ctx.send(embeds=[ebd])
         imu = int((await self.input1(ctx, "ゲームモードを選んで数字を送信してください")).content)
         if imu == 1:
-            self.uid = dict()
-            self.uid[1] = ctx.author.id
+            self.uid = {1: ctx.author.id}
             self.uid[2] = int((await self.input1(ctx, "対戦相手のuseridを入力してください")).content)
         if imu == 2:
-            self.uid = dict()
-            self.uid[1] = ctx.author.id
+            self.uid = {1: ctx.author.id}
             self.btu = 2
         elif imu == 3:
             self.btu = 1
