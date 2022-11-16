@@ -20,6 +20,7 @@ from utils import Bot
 from nicovideo_api_client.api.v2.snapshot_search_api_v2 import SnapshotSearchAPIV2
 from nicovideo_api_client.constants import FieldType
 
+
 def yf_gettitle(id: str):
     searchurl = "https://ysmfilm.wjg.jp/view_raw.php?id=" + id
     with urllib.request.urlopen(searchurl) as ut:

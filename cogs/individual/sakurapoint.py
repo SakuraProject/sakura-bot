@@ -19,7 +19,7 @@ class SakuraPoint(commands.Cog):
         self.pattern = re.compile(
             "(https?://)?discord(.gg|.com/invite)/KW4CZvYMJg")
         self.url = re.compile(
-            u"https://discord.com/(api/)?oauth2/authorize\?(.*&)?client_id=985852917489737728.*"
+            r"https://discord.com/(api/)?oauth2/authorize\?(.*&)?client_id=985852917489737728.*"
         )
         self.ad_cache = []
         self.cache = defaultdict(int)
