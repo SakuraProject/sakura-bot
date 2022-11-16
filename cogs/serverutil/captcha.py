@@ -121,7 +121,7 @@ class NList(discord.ui.Select):
                 (interaction.guild.id,), _return_type="fetchone"
             )
 
-            role = interaction.guild.get_role(response[2])
+            role = interaction.guild.get_role(response[0][2])
             if not role:
                 return await interaction.response.send_message("ロールの取得に失敗しました。")
             await interaction.user.add_roles(role, reason="Sakura Captcha")

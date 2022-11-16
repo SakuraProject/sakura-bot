@@ -4,7 +4,7 @@ from time import time
 import discord
 import asyncio
 
-from utils import Bot
+from utils import Bot, GuildContext
 
 
 class bump(commands.Cog):
@@ -22,26 +22,31 @@ class bump(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
-        if message.author.id == 832614051514417202:
-            if message.embeds[0].title == "GlowBoard - 色々できるサーバー掲示板":
-                if message.embeds[0].description.find(
-                        "サーバーの表示順位をアップしました!") != -1:
-                    nof = time() + 5400
-                    await self.save(message, "toss", nof)
-                    async with self.bot.pool.acquire() as conn:
-                        async with conn.cursor() as cur:
-                            await cur.execute("SELECT * FROM `bumpset` where `gid`=%s and `type`=%s", (message.guild.id, "toss"))
-                            res1 = await cur.fetchall()
-                            if len(res1) == 0:
-                                await cur.execute("INSERT INTO `bumpset` (`gid`, `type`, `onoff`) VALUES (%s,%s,%s);", (message.guild.id, "toss", "on"))
-                                onoff = "on"
-                            else:
-                                onoff = res1[0][2]
-                            if onoff == "on":
-                                ebd = discord.Embed(
-                                    color=self.bot.Color, description="tossを確認しました。次回は<t:" + str(int(nof)) + ":R>です。時間になったら通知します")
-                                await message.channel.send(embeds=[ebd])
-        if message.author.id == 302050872383242240:
+        if (
+            message.author.id == 832614051514417202 and message.guild and
+            (embed := message.embeds[0]).title == "GlowBoard - 色々できるサーバー掲示板" and
+            embed.description and
+            embed.description.find("サーバーの表示順位をアップしました!") != -1
+        ):
+            nof = time() + 5400
+            await self.save(message, "toss", nof)
+            async with self.bot.pool.acquire() as conn:
+                async with conn.cursor() as cur:
+                    await cur.execute("SELECT * FROM `bumpset` where `gid`=%s and `type`=%s", (message.guild.id, "toss"))
+                    res1 = await cur.fetchall()
+                    if len(res1) == 0:
+                        await cur.execute("INSERT INTO `bumpset` (`gid`, `type`, `onoff`) VALUES (%s,%s,%s);", (message.guild.id, "toss", "on"))
+                        onoff = "on"
+                    else:
+                        onoff = res1[0][2]
+                    if onoff == "on":
+                        ebd = discord.Embed(
+                            color=self.bot.Color, description="tossを確認しました。次回は<t:" + str(int(nof)) + ":R>です。時間になったら通知します")
+                        await message.channel.send(embeds=[ebd])
+        if (
+            message.author.id == 302050872383242240 and
+            message.embeds[0].description and message.guild
+        ):
             if message.embeds[0].description.find(
                     "表示順をアップしたよ") != -1 or message.embeds[0].description.find("Bump done") != -1:
                 nof = time() + 7200
@@ -62,6 +67,8 @@ class bump(commands.Cog):
         if message.author.id == 761562078095867916:
             await asyncio.sleep(5)
             message = await message.channel.fetch_message(message.id)
+            if not message.embeds[0].fields[0].name or not message.guild:
+                return
             if "をアップしたよ" in message.embeds[0].fields[0].name:
                 nof = time() + 3600
                 await self.save(message, "up", nof)
@@ -78,7 +85,7 @@ class bump(commands.Cog):
                             ebd = discord.Embed(
                                 color=self.bot.Color, description="upを確認しました。次回は<t:" + str(int(nof)) + ":R>です。時間になったら通知します")
                             await message.channel.send(embeds=[ebd])
-        if message.author.id == 716496407212589087:
+        if message.author.id == 716496407212589087 and message.guild:
             if message.content.find("Raised!") != -1:
                 nof = time() + 14106
                 await self.save(message, "raise", nof)
@@ -95,7 +102,7 @@ class bump(commands.Cog):
                             ebd = discord.Embed(
                                 color=self.bot.Color, description="rt!raiseを確認しました。次回は<t:" + str(int(nof)) + ":R>です。時間になったら通知します")
                             await message.channel.send(embeds=[ebd])
-        if message.author.id == 961521106227974174:
+        if message.author.id == 961521106227974174 and message.guild:
             if message.content.find("Raised!") != -1:
                 nof = time() + 14106
                 await self.save(message, "frrtraise", nof)
@@ -113,12 +120,13 @@ class bump(commands.Cog):
                                 color=self.bot.Color, description="fr!raiseを確認しました。次回は<t:" + str(int(nof)) + ":R>です。時間になったら通知します")
                             await message.channel.send(embeds=[ebd])
 
-    dics = dict()
-    dics["toss"] = "tossの時間だよg.tossをして表示順位を上げましょう"
-    dics["raise"] = "raiseの時間だよrt!raiseをして表示順位を上げましょう"
-    dics["frrtraise"] = "Free RTのraiseの時間だよfr!raiseをして表示順位を上げましょう"
-    dics["up"] = "upの時間だよ/dissoku upをして表示順位を上げましょう"
-    dics["bump"] = "bumpの時間だよ/bumpをして表示順位を上げましょう"
+    dics = {
+        "toss": "tossの時間だよg.tossをして表示順位を上げましょう",
+        "raise": "raiseの時間だよrt!raiseをして表示順位を上げましょう",
+        "frrtraise": "Free RTのraiseの時間だよfr!raiseをして表示順位を上げましょう",
+        "up": "upの時間だよ/dissoku upをして表示順位を上げましょう",
+        "bump": "bumpの時間だよ/bumpをして表示順位を上げましょう"
+    }
 
     @tasks.loop(seconds=10)
     async def notifi(self):
@@ -141,7 +149,9 @@ class bump(commands.Cog):
                     if float(row[1]) <= nti:
                         if onoff == "on":
                             channel = self.bot.get_channel(row[0])
-                            if channel is not None:
+                            if channel and isinstance(channel, discord.abc.MessageableChannel):
+                                if not channel.guild:
+                                    continue
                                 rol = channel.guild.get_role(int(res1[0][3]))
                                 ebd = discord.Embed(
                                     title=typ + "通知", color=self.bot.Color, description=self.dics[typ])
@@ -152,6 +162,7 @@ class bump(commands.Cog):
                             await cur.execute("DELETE FROM `bump` where `gid`=%s and `type`=%s", (row[3], typ))
 
     async def save(self, message: discord.Message, type, nof):
+        assert message.guild is not None
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
                 await cur.execute(
@@ -162,8 +173,9 @@ class bump(commands.Cog):
 
     @commands.command()
     @commands.has_guild_permissions(administrator=True)
+    @commands.guild_only()
     async def frrtraiseonoff(
-        self, ctx: commands.Context, onoff, role: discord.Role | None = None
+        self, ctx: GuildContext, onoff, role: discord.Role | None = None
     ):
         if role is None:
             roleid = 0
@@ -181,9 +193,10 @@ class bump(commands.Cog):
                 await ctx.reply("設定しました")
 
     @commands.command()
+    @commands.guild_only()
     @commands.has_guild_permissions(administrator=True)
     async def raiseonoff(
-        self, ctx: commands.Context, onoff, role: discord.Role | None = None
+        self, ctx: GuildContext, onoff, role: discord.Role | None = None
     ):
         if role is None:
             roleid = 0
@@ -201,9 +214,10 @@ class bump(commands.Cog):
                 await ctx.reply("設定しました")
 
     @commands.command()
+    @commands.guild_only()
     @commands.has_guild_permissions(administrator=True)
     async def bumponoff(
-        self, ctx: commands.Context, onoff, role: discord.Role | None = None
+        self, ctx: GuildContext, onoff, role: discord.Role | None = None
     ):
         if role is None:
             roleid = 0
@@ -221,9 +235,10 @@ class bump(commands.Cog):
                 await ctx.reply("設定しました")
 
     @commands.command()
+    @commands.guild_only()
     @commands.has_guild_permissions(administrator=True)
     async def tossonoff(
-        self, ctx: commands.Context, onoff, role: discord.Role | None = None
+        self, ctx: GuildContext, onoff, role: discord.Role | None = None
     ):
         if role is None:
             roleid = 0
@@ -241,9 +256,10 @@ class bump(commands.Cog):
                 await ctx.reply("設定しました")
 
     @commands.command()
+    @commands.guild_only()
     @commands.has_guild_permissions(administrator=True)
     async def uponoff(
-        self, ctx: commands.Context, onoff, role: discord.Role | None = None
+        self, ctx: GuildContext, onoff, role: discord.Role | None = None
     ):
         if role is None:
             roleid = 0
