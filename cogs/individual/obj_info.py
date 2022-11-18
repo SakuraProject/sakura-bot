@@ -110,7 +110,7 @@ class ObjectInfo(commands.Cog):
             title=f"{target}の共通サーバー一覧",
             description="(管理者専用)"
         )
-        if target == self.bot.user:
+        if isinstance(target, discord.ClientUser):
             embed.add_field(name="** **", value="全サーバー")
             return embed
         embed.add_field(

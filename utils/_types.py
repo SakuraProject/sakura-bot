@@ -4,6 +4,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, TypedDict
 
+import discord
+from discord.ext import commands
+
 if TYPE_CHECKING:
     from cogs.automod import automod, mod, purge
     from cogs.bot import about, errors, help, prefix, speedtest, websocket
@@ -52,3 +55,8 @@ class Cogs(TypedDict):
     RoleLinker: role_linker.RoleLinker
     ticket: ticket.ticket
     tts: tts.tts
+
+class GuildContext(commands.Context):
+    "commands.guild_onlyをデコレータとしてつけた場合にctxに型付けできるクラス。"
+    author: discord.Member
+    guild: discord.Guild

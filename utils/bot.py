@@ -53,7 +53,19 @@ class Bot(commands.Bot):
     @overload
     async def execute_sql(
         self, sql: str, _injects: tuple | None = None,
-        _return_type: Literal["fetchall", "fetchone", ""] = ""
+        _return_type: Literal[""] = ...
+    ) -> None:
+        ...
+    @overload
+    async def execute_sql(
+        self, sql: str, _injects: tuple | None = None,
+        _return_type: Literal["fetchone"] = ...
+    ) -> tuple[tuple]:
+        ...
+    @overload
+    async def execute_sql(
+        self, sql: str, _injects: tuple | None = None,
+        _return_type: Literal["fetchall"] = ...
     ) -> tuple[tuple, ...]:
         ...
     @overload
@@ -74,7 +86,7 @@ class Bot(commands.Bot):
         _injects: tuple | None = None,
         _return_type: Literal["fetchall", "fetchone", ""] = "",
         **kwargs
-    ) -> reT | tuple:
+    ) -> reT | tuple | None:
         "SQL文を実行します。"
         async with self.pool.acquire() as conn:
             async with conn.cursor() as cursor:
@@ -87,4 +99,3 @@ class Bot(commands.Bot):
                     return await cursor.fetchall()
                 elif _return_type == "fetchone":
                     return await cursor.fetchone()
-                return ()

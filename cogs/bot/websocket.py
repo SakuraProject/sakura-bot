@@ -7,6 +7,7 @@ from orjson import loads
 from websockets.exceptions import ConnectionClosed
 
 import discord
+from discord.types.message import Message as MessageType
 from discord.ext import commands
 
 from utils import Bot, dumps
@@ -14,6 +15,8 @@ from data.help import HELP
 
 
 class WSContext(commands.Context):
+
+    bot: Bot
 
     async def reply(
         self, content: Optional[str] = None, **kwargs: Any
@@ -41,7 +44,7 @@ class WSContext(commands.Context):
         suppress_embeds: bool = False,
         ephemeral: bool = False,
     ) -> discord.Message:
-        sc = ""
+        sc: str = ""
         if content is not None:
             sc = content
         if embed is not None:
@@ -49,28 +52,24 @@ class WSContext(commands.Context):
                 sc = sc + embed.description
             if embed.fields is not None:
                 for fi in embed.fields:
-                    sc = sc + fi.name + fi.value
+                    sc = sc + (fi.name or "") + (fi.value or "")
         if embeds is not None:
             for e in embeds:
                 if isinstance(e.description, str):
-                    sc = sc + embed.description
+                    sc = sc + e.description
                 if e.fields is not None:
                     for fi in e.fields:
-                        sc = sc + fi.name + fi.value
-        sen = dict()
-        sen["cmd"] = "send"
-        args = dict()
-        args["content"] = sc
-        args["id"] = str(self.author.id)
+                        sc = sc + (fi.name or "") + (fi.value or "")
+        sen: dict[str, str | dict] = {"cmd": "send", "type": "res"}
+        args = {"content": sc, "id": self.author.id}
         sen["args"] = args
-        sen["type"] = "res"
-        return await self.bot.cogs["websocket"].sock.send(dumps(sen))
+        return await self.bot.cogs["Websocket"].sock.send(dumps(sen))
 
 
 class Websocket(commands.Cog):
     def __init__(self, bot: Bot):
         self.bot = bot
-        self.res = dict()
+        self.res = {}
 
     async def cog_load(self):
         self.uri = "ws://sakura-bot.net:80/ws"
@@ -131,7 +130,9 @@ class Websocket(commands.Cog):
 
     async def guild(self, args: dict):
         g = self.bot.get_guild(args["id"])
-        guild = dict()
+        if not g:
+            raise ValueError("Unknown Guild Id.")
+        guild = {}
         guild["id"] = str(g.id)
         guild["name"] = g.name
         guild["member_count"] = g.member_count
@@ -145,35 +146,37 @@ class Websocket(commands.Cog):
 
     async def channel(self, args: dict):
         g = self.bot.get_channel(args["id"])
+        if not g:
+            raise ValueError("Unknown Channel Id.")
         ch = dict()
         ch["id"] = str(g.id)
-        ch["name"] = g.name
+        ch["name"] = getattr(g, "name", "")
         return ch
 
     async def invoke(self, args: dict[str, Any]):
-        payload = dict()
-        payload["id"] = 0
         user = self.bot.get_user(int(args["id"]))
-        aut = dict()
-        aut["bot"] = user.bot
-        aut["id"] = user.id
-        aut["system"] = user.system
-        payload["author"] = aut
-        payload["content"] = args["content"]
-        payload["tts"] = False
-        payload["mention_everyone"] = False
-        payload["attachments"] = []
-        payload["embeds"] = []
-        payload["edited_timestamp"] = None
-        payload["type"] = 0
-        payload["pinned"] = False
-        payload["mentions"] = []
-        payload["mention_roles"] = []
-        message = discord.Message(data=payload, state=self.bot._get_state(
-        ), channel=self.bot.get_channel(int(args["ch"])))
-        g = self.bot.get_channel(int(args["ch"])).guild
-        if g is not None:
-            message.author = g.get_member(int(args["id"]))
+        if not user:
+            raise ValueError("Unknown User Id.")
+        payload: MessageType = {
+            "id": 0, "content": args["content"], "tts": False,
+            "mention_everyone": False, "attachments": [], "embeds": [],
+            "author": {
+                "bot": user.bot, "id": user.id, "system": user.system,
+                "username": user.name, "discriminator": user.discriminator,
+                "avatar": user.display_avatar.url
+            },
+            "edited_timestamp": None, "type": 0, "pinned": False,
+            "mentions": [], "mention_roles": [], "channel_id": int(args["ch"]),
+            "timestamp": ""
+        }
+        channel = self.bot.get_channel(int(args["ch"]))
+        if not channel or not isinstance(channel, discord.abc.MessageableChannel):
+            raise ValueError("Unknown Channel Id.")
+        message = discord.Message(
+            data=payload, state=self.bot._get_state(), channel=channel
+        )
+        if channel.guild is not None:
+            message.author = channel.guild.get_member(user.id)  # type: ignore
         else:
             message.author = user
         ctx = await self.bot.get_context(message, cls=WSContext)
@@ -195,6 +198,8 @@ class Websocket(commands.Cog):
         l = args["l"]
         for c in [m for m in self.bot.cogs.values(
         ) if m.__module__.startswith("cogs." + args["id"])]:
+            if not isinstance(c, commands.Cog):
+                continue
             for cm in c.get_commands():
                 cmds.append(await self.command({"id": cm.name}))
         args["res"] = cmds
@@ -244,5 +249,5 @@ class Websocket(commands.Cog):
         return args
 
 
-def setup(bot):
+def setup(bot: Bot):
     return bot.add_cog(Websocket(bot))
