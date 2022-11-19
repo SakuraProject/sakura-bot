@@ -1,12 +1,16 @@
 import discord
 from discord.ext import commands
+
 from tweepy.asynchronous import AsyncStreamingClient
 from tweepy import OAuth1UserHandler, Client, StreamRule
 from tweepy.errors import NotFound, Forbidden, TweepyException
 from tweepy.client import Response
 from math import inf
+
 import os
+
 from aiohttp import ClientSession, ClientTimeout
+import aiomysql
 
 from utils import Bot
 
@@ -58,43 +62,40 @@ class Tweet(commands.Cog, AsyncStreamingClient):
         await self.setfilter()
 
     async def setrule(self):
-        async with self.bot.pool.acquire() as conn:
-            async with conn.cursor() as cur:
-                await cur.execute("SELECT cid,twiname FROM `tweet`")
-                result = await cur.fetchall()
-                self.fil = []
-                filn = []
-                for row in result:
-                    if not row[1] in filn:
-                        try:
-                            user = self.twicon.get_user(
-                                username=row[1])
-                            if user.data is None:
-                                ch = self.bot.get_channel(row[0])
-                                if ch is not None:
-                                    await ch.send("通知を試みましたがユーザーが見つかりませんでした。")
-                                await cur.execute("delete FROM `tweet` where `cid`=%s and `twiname`=%s", (row[0], row[1]))
-                            else:
-                                twiid = user.data.username
-                                filn.append(row[1])
-                                if not twiid in self.fil:
-                                    self.fil.append(twiid)
-                        except NotFound:
-                            ch = self.bot.get_channel(row[0])
-                            if ch is not None:
-                                await ch.send("通知を試みましたがユーザーが見つかりませんでした。")
+        async def sqler(cur: aiomysql.Cursor):
+            await cur.execute("SELECT cid,twiname FROM `tweet`")
+            result = await cur.fetchall()
+            self.fil = []
+            filn = []
+            for row in result:
+                ch = self.bot.get_channel(row[0])
+                if not ch or not isinstance(ch, discord.TextChannel):
+                    continue
+                if not row[1] in filn:
+                    try:
+                        user = self.twicon.get_user(
+                            username=row[1])
+                        if user.data is None:
+                            await ch.send("通知を試みましたがユーザーが見つかりませんでした。")
                             await cur.execute("delete FROM `tweet` where `cid`=%s and `twiname`=%s", (row[0], row[1]))
-                        except Forbidden:
-                            ch = self.bot.get_channel(row[0])
-                            if ch is not None:
-                                await ch.send("通知を試みましたが情報の取得に失敗しました")
-                rtext = ""
-                for name in self.fil:
-                    if rtext != "":
-                        rtext = rtext + " OR "
-                    rtext = rtext + "from:" + name
-                # type: ignore
-                self.rid: Response = await self.add_rules(StreamRule(rtext))
+                        else:
+                            twiid = user.data.username
+                            filn.append(row[1])
+                            if not twiid in self.fil:
+                                self.fil.append(twiid)
+                    except NotFound:
+                        await ch.send("通知を試みましたがユーザーが見つかりませんでした。")
+                        await cur.execute("delete FROM `tweet` where `cid`=%s and `twiname`=%s", (row[0], row[1]))
+                    except Forbidden:
+                        await ch.send("通知を試みましたが情報の取得に失敗しました")
+            rtext = ""
+            for name in self.fil:
+                if rtext != "":
+                    rtext = rtext + " OR "
+                rtext = rtext + "from:" + name
+            # type: ignore
+            self.rid = await self.add_rules(StreamRule(rtext))
+        await self.bot.execute_sql(sqler)
 
     async def setfilter(self):
         await self.setrule()
@@ -172,18 +173,6 @@ class Tweet(commands.Cog, AsyncStreamingClient):
     @commands.has_permissions(manage_channels=True, manage_webhooks=True)
     @tweet.command()
     async def set(self, ctx: commands.Context, *, name):
-        """
-        NLang ja twitter通知を設定するコマンドです
-        Twitterのツイートをdiscordに送信する機能を設定します
-        **使いかた：**
-        EVAL self.bot.command_prefix+'tweet set Twitterのユーザーid'
-        ELang ja
-        NLang default This is a command to set Twitter notifications.
-        Set the ability to send Twitter tweets to discord
-        **How to use:**
-        EVAL self.bot.command_prefix+'tweet set Twitter_User_ID'
-        ELang default
-        """
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
                 await cur.execute("select * from `tweet` where twiname=%s and cid=%s;", (name, ctx.channel.id))
@@ -206,18 +195,6 @@ class Tweet(commands.Cog, AsyncStreamingClient):
     @commands.has_permissions(manage_channels=True, manage_webhooks=True)
     @tweet.command()
     async def remove(self, ctx: commands.Context, *, name):
-        """
-        NLang ja twitter通知を解除するコマンドです
-        Twitterのツイートをdiscordに送信する機能を解除します
-        **使いかた：**
-        EVAL self.bot.command_prefix+'tweet set Twitterのユーザーid'
-        ELang ja
-        NLang default This is a command to cancel Twitter notifications.
-        Unlock the ability to send Twitter tweets to discord
-        **How to use:**
-        EVAL self.bot.command_prefix+'tweet remove Twitter_user_id'
-        ELang default
-        """
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
                 await cur.execute("delete from `tweet` where twiname=%s and cid=%s limit 1;", (name, ctx.channel.id))

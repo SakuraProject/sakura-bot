@@ -9,7 +9,7 @@ from ujson import loads, dumps
 from discord.ext import commands
 from discord import FFmpegPCMAudio
 
-from utils import Bot
+from utils import Bot, GuildContext
 from cogs.entertainment import music
 # 既存の機能をプラグイン対応可にします
 oldrestore = music.restore
@@ -33,7 +33,7 @@ def restore(sid):
         return "https://sakura-bot.net"
     else:
         return res
-    
+
 
 def is_enable(func):
     """プラグインが有効化されているか確認するデコレーターです"""
@@ -44,14 +44,12 @@ def is_enable(func):
         if plugin.plugins[id] not in enable:
             raise commands.CommandNotFound()
         return True
-        
+
     if isinstance(func, commands.Command):
         func.checks.append(_is_enable)
         if not hasattr(func, '__commands_checks__'):
-            func.__commands_checks__ = []
-            func.__commands_checks.append(_is_enable)
+            setattr(func, "__commands_checks__", [_is_enable])
     return func
-            
 
 
 class PluginQueue(music.Queue):
@@ -65,12 +63,12 @@ class PluginQueue(music.Queue):
                 await plugins["Music"].setdata(self)
             except Exception:
                 continue
-        if not hasattr(self,"source"):
+        if not hasattr(self, "source"):
             await super().setdata()
 
 
 class PluginSearchList(music.SearchList):
-    def __init__(self, ctx: commands.Context, cog: music, query: str):
+    def __init__(self, ctx: commands.Context, cog: music.music, query: str):
         self.cog = cog
         self.ctx = ctx
         items = []
@@ -80,9 +78,9 @@ class PluginSearchList(music.SearchList):
         for plugins in enable:
             try:
                 item = plugins["Music"].search(query)
-                if item != None and len(item) >0:
+                if item is not None and len(item) > 0:
                     items.extend(item)
-                if len(items) > 10 :
+                if len(items) > 10:
                     break
             except Exception:
                 continue
@@ -92,7 +90,7 @@ class PluginSearchList(music.SearchList):
         if len(options) == 0:
             super().__init__(ctx, cog, query)
         else:
-            super(discord.ui.Select, self) \
+            super(music.SearchList, self) \
                 .__init__(placeholder='', min_values=1, max_values=1, options=options)
 
 
@@ -101,7 +99,7 @@ class Music(music.music):
     async def is_playlist(self, ctx: commands.Context, url: str):
         res = list()
         plugin = bot.cogs["Plugin"]
-        enable = plugin.get_enable_pulgin(ctx.author,ctx.guild)
+        enable = plugin.get_enable_pulgin(ctx.author, ctx.guild)
         for plugins in enable:
             try:
                 urls = await plugins["Music"].is_playlist(url)
@@ -111,16 +109,20 @@ class Music(music.music):
                 continue
         return res
 
-    async def pl(self, ctx: commands.Context, url: str):
-        assert ctx.guild
+    async def pl(self, ctx: GuildContext, url: str):
         FFMPEG_OPTIONS = {
             'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
             'options': '-vn'
         }
         self.ifloop = self.lop
         loop = bot.loop
+        if not ctx.author.voice:
+            return await ctx.send("ボイスチャンネルに接続していません。")
         channel = ctx.author.voice.channel
-        voice = discord.utils.get(self.bot.voice_clients, guild=ctx.guild)
+        if not channel:
+            return await ctx.send("接続先のチャンネルが見つかりませんでした。")
+        voice = ctx.guild.voice_client
+        assert isinstance(voice, discord.VoiceClient)
         if voice and voice.is_connected():
             await voice.move_to(channel)
         else:
@@ -139,19 +141,18 @@ class Music(music.music):
                 if self.ifloop[ctx.guild.id]:
                     self.lopq[ctx.guild.id].append(qp)
                 self.queues[ctx.guild.id].append(qp)
-            if not (voice.is_playing() and voice.source.music == True):
+            if not (voice.is_playing() and getattr(voice.source, "music", False)):
                 qp = self.queues[ctx.guild.id][qpl]
                 self.start = time()
                 if not voice.is_playing():
-                    voice.play(music.AudoMixer(FFmpegPCMAudio(
+                    voice.play(music.AudioMixer(FFmpegPCMAudio(
                         qp.source, **FFMPEG_OPTIONS)), after=nextqueue)
                 else:
                     pcm = FFmpegPCMAudio(qp.source, **FFMPEG_OPTIONS)
-                    pcm.nextqueue = nextqueue
-                    pcm.cog = self
-                    voice.source.s.append(pcm)
-                voice.is_playing()
-                voice.source.music = True
+                    setattr(pcm, "nextqueue", nextqueue)
+                    setattr(pcm, "cog", self)
+                    getattr(voice.source, "s", []).append(pcm)
+                setattr(voice.source, "music", True)
                 ebd = discord.Embed(title=qp.title + "を再生します",
                                     color=self.bot.Color)
                 ebd.add_field(
@@ -200,8 +201,8 @@ class Music(music.music):
                             await ctx.send("キャンセルしました")
                             break
                         await cur.execute(
-                            "delete FROM `musiclist` where `userid` = %s and `lname` = %s and `id` = %s limit 1", 
-                                          (ctx.author.id, name, res[int(d.content) - 1][3])
+                            "delete FROM `musiclist` where `userid` = %s and `lname` = %s and `id` = %s limit 1",
+                            (ctx.author.id, name, res[int(d.content) - 1][3])
                         )
                         await ctx.send("削除しました")
                 except SyntaxError:
@@ -243,6 +244,7 @@ class Music(music.music):
                     title="よく聞かれている曲", description=list, color=self.bot.Color)
                 await ctx.send(embeds=[embed])
 
+
 class PluginManager:
     def __init__(self, bot, id):
         self.id = id
@@ -255,57 +257,57 @@ class PluginManager:
     async def load_submodule(self, name: str):
         setup = importlib.import_module(name).setup
         await setup(self.bot, self)
-        
+
     async def load_extension(self, name: str):
         try:
             await self.bot.load_extension(name)
         except commands.ExtensionAlreadyLoaded:
             await self.bot.reload_extension(name)
-            
-            
+
+
 class Plugin(commands.Cog):
     def __init__(self, bot: Bot):
         self.bot, self.before = bot, ""
-        self.plugins = dict()
-        self.users = dict()
-        self.guilds = dict()
+        self.plugins = {}
+        self.users = {}
+        self.guilds = {}
 
     async def cog_load(self):
         async with self.bot.pool.acquire() as conn:
             async with conn.cursor() as cur:
-                await cur.execute("""CREATE TABLE if not exists `UserPlugin` ( 
-                                  `UserId` BIGINT PRIMARY KEY NOT NULL DEFAULT 0, 
+                await cur.execute("""CREATE TABLE if not exists `UserPlugin` (
+                                  `UserId` BIGINT PRIMARY KEY NOT NULL DEFAULT 0,
                                   `Plugins` JSON
                                   ) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin;""")
-                await cur.execute("""CREATE TABLE if not exists `GuildPlugin` ( 
-                                  `GuildId` BIGINT PRIMARY KEY NOT NULL DEFAULT 0, 
+                await cur.execute("""CREATE TABLE if not exists `GuildPlugin` (
+                                  `GuildId` BIGINT PRIMARY KEY NOT NULL DEFAULT 0,
                                   `Plugins` JSON
                                   ) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin;""")
-                await cur.execute("""CREATE TABLE if not exists `Plugins` ( 
-                                  `id` BIGINT NOT NULL AUTO_INCREMENT primary key, 
+                await cur.execute("""CREATE TABLE if not exists `Plugins` (
+                                  `id` BIGINT NOT NULL AUTO_INCREMENT primary key,
                                   `path` VARCHAR(300) NOT NULL,
                                   `type` VARCHAR(300) NOT NULL DEFAULT 'Public',
                                   `name` VARCHAR(300) NOT NULL,
                                   `description` VARCHAR(300) NOT NULL
                                   ) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin;""")
         response = await self.bot.execute_sql(
-            "SELECT * FROM Plugins", _return_type="fetchall"
+            "SELECT * FROM Plugins;", _return_type="fetchall"
         )
         for row in response:
-            name = row[2].replace("/",".")
+            name = row[2].replace("/", ".")
             try:
                 self.plugins[row[0]] = dict()
                 setup = importlib.import_module(name).setup
-                await setup(self.bot,PluginManager(self.bot, row[0]))
+                await setup(self.bot, PluginManager(self.bot, row[0]))
             except Exception as e:
                 print(e)
         response = await self.bot.execute_sql(
-            "SELECT * FROM UserPlugin", _return_type="fetchall"
+            "SELECT * FROM UserPlugin;", _return_type="fetchall"
         )
         for row in response:
             self.users[row[0]] = loads(row[1])
         response = await self.bot.execute_sql(
-            "SELECT * FROM GuildPlugin", _return_type="fetchall"
+            "SELECT * FROM GuildPlugin;", _return_type="fetchall"
         )
         for row in response:
             self.guilds[row[0]] = loads(row[1])
@@ -350,14 +352,14 @@ class Plugin(commands.Cog):
                 if not added[gp]:
                     res.append(self.plugins[gp])
                     added[gp] = True
-            except:
+            except BaseException:
                 continue
         for up in self.users[str(user.id)]:
             try:
                 if not added[up]:
                     res.append(self.plugins[up])
                     added[up] = True
-            except:
+            except BaseException:
                 continue
         return res
 
@@ -367,7 +369,8 @@ class Plugin(commands.Cog):
             await ctx.reply("使用方法が違います")
 
     @s_plugin.command()
-    async def enable_server(self, ctx: commands.Context, code: str=None):
+    @commands.guild_only()
+    async def enable_server(self, ctx: GuildContext, code: str | None = None):
         if code is not None:
             args = code.split(".")
             response = await self.bot.execute_sql(
@@ -421,7 +424,8 @@ class Plugin(commands.Cog):
             await ctx.send("追加しました")
 
     @s_plugin.command()
-    async def enable_user(self, ctx: commands.Context, code: str=None):
+    @commands.guild_only()
+    async def enable_user(self, ctx: GuildContext, code: str | None = None):
         if code is not None:
             args = code.split(".")
             response = await self.bot.execute_sql(
@@ -464,7 +468,7 @@ class Plugin(commands.Cog):
             catebds.append(evd)
             await ctx.send(embeds=catebds)
             cno = int((await self.input(ctx, "プラグインを選んでナンバーを数値で送信してください")).content)
-            self.users.setdefault(str(ctx.author.id),list())
+            self.users.setdefault(str(ctx.author.id), list())
             self.users[str(ctx.author.id)].append(response[cno - 1][0])
             await self.bot.execute_sql(
                 """INSERT INTO UserPlugin VALUES (%s, %s)
@@ -475,7 +479,8 @@ class Plugin(commands.Cog):
             await ctx.send("追加しました")
 
     @s_plugin.command()
-    async def remove_server(self, ctx: commands.Context):
+    @commands.guild_only()
+    async def remove_server(self, ctx: GuildContext):
         res = await self.bot.execute_sql(
             "SELECT * FROM Plugins WHERE `type`='Public'", _return_type="fetchall"
         )
@@ -502,7 +507,7 @@ class Plugin(commands.Cog):
         catebds.append(evd)
         await ctx.send(embeds=catebds)
         cno = int((await self.input(ctx, "削除するプラグインを選んでナンバーを数値で送信してください")).content)
-        self.guilds.setdefault(str(ctx.guild.id),list())
+        self.guilds.setdefault(str(ctx.guild.id), list())
         self.guilds[str(ctx.guild.id)].remnove(response[cno - 1][0])
         await self.bot.execute_sql(
             """INSERT INTO GuildPlugin VALUES (%s, %s)
@@ -513,7 +518,8 @@ class Plugin(commands.Cog):
         await ctx.send("削除しました")
 
     @s_plugin.command()
-    async def remove_user(self, ctx: commands.Context):
+    @commands.guild_only()
+    async def remove_user(self, ctx: GuildContext):
         res = await self.bot.execute_sql(
             "SELECT * FROM Plugins WHERE `type`='Public'", _return_type="fetchall"
         )
@@ -540,7 +546,7 @@ class Plugin(commands.Cog):
         catebds.append(evd)
         await ctx.send(embeds=catebds)
         cno = int((await self.input(ctx, "削除するプラグインを選んでナンバーを数値で送信してください")).content)
-        self.users.setdefault(str(ctx.author.id),list())
+        self.users.setdefault(str(ctx.author.id), list())
         self.users[str(ctx.author.id)].remnove(response[cno - 1][0])
         await self.bot.execute_sql(
             """INSERT INTO UserPlugin VALUES (%s, %s)
@@ -549,6 +555,7 @@ class Plugin(commands.Cog):
             (ctx.author.id, dumps(self.users[str(ctx.author.id)]))
         )
         await ctx.send("削除しました")
+
 
 async def setup(client) -> None:
     global bot

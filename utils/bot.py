@@ -5,9 +5,13 @@ from collections.abc import Coroutine
 
 from inspect import iscoroutinefunction
 
+import discord
 from discord.ext import commands
 from aiohttp import ClientSession
 from aiomysql import Pool
+from orjson import loads
+
+from ._types import Cogs
 
 
 reT = TypeVar("reT")
@@ -16,16 +20,52 @@ reT = TypeVar("reT")
 class Bot(commands.Bot):
     "SakuraBotのコアです。"
 
-    session: ClientSession
+    _session: ClientSession | None
     pool: Pool
     owner_ids: list[int]
+    cogs: Cogs
+    user_prefixes: dict[int, str]
+    guild_prefixes: dict[int, str]
 
     Color = 0xffbdde
+
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault("command_prefix", self._get_prefix)
+        super().__init__(*args, **kwargs)
+        self._session = None
+        self.user_prefixes = {}
+        self.guild_prefixes = {}
+
+    @property
+    def session(self) -> ClientSession:
+        if not self._session or self._session.closed:
+            self._session = ClientSession(loop=self.loop, json_serialize=loads)
+        return self._session
+
+    def _get_prefix(self, _, message: discord.Message):
+        prefixes = ["sk!", "Sk!", "SK!", "sk! ", "sk !", "sk！", "sk ! "]
+        if message.guild and message.guild.id in self.guild_prefixes:
+            prefixes.append(self.guild_prefixes[message.guild.id])
+        if message.author.id in self.user_prefixes:
+            prefixes.append(self.user_prefixes[message.author.id])
+        return prefixes
 
     @overload
     async def execute_sql(
         self, sql: str, _injects: tuple | None = None,
-        _return_type: Literal["fetchall", "fetchone", ""] = ""
+        _return_type: Literal[""] = ...
+    ) -> None:
+        ...
+    @overload
+    async def execute_sql(
+        self, sql: str, _injects: tuple | None = None,
+        _return_type: Literal["fetchone"] = ...
+    ) -> tuple[tuple]:
+        ...
+    @overload
+    async def execute_sql(
+        self, sql: str, _injects: tuple | None = None,
+        _return_type: Literal["fetchall"] = ...
     ) -> tuple[tuple, ...]:
         ...
     @overload
@@ -46,7 +86,7 @@ class Bot(commands.Bot):
         _injects: tuple | None = None,
         _return_type: Literal["fetchall", "fetchone", ""] = "",
         **kwargs
-    ) -> reT | tuple:
+    ) -> reT | tuple | None:
         "SQL文を実行します。"
         async with self.pool.acquire() as conn:
             async with conn.cursor() as cursor:
@@ -59,4 +99,3 @@ class Bot(commands.Bot):
                     return await cursor.fetchall()
                 elif _return_type == "fetchone":
                     return await cursor.fetchone()
-                return ()

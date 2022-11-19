@@ -1,5 +1,5 @@
-from os import listdir
 import logging
+from os import listdir
 
 
 async def setup(bot):

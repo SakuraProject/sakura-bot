@@ -12,7 +12,7 @@ class mynews(commands.Cog):
     def __init__(self, bot: Bot):
         self.bot = bot
 
-    @commands.group()
+    @commands.group(description="みんなのニュース機能")
     async def mynews(self, ctx: commands.Context):
         if ctx.invoked_subcommand is None:
             return await ctx.send("使用方法が違います。")
@@ -42,18 +42,8 @@ class mynews(commands.Cog):
                         elif message1.content == "修正":
                             break
 
-    @mynews.command()
+    @mynews.command(description="ニュースを投稿します")
     async def post(self, ctx: commands.Context):
-        """
-        NLang ja newsを投稿するコマンドです。
-        newsを投稿するコマンドです。質問されるので答えるだけで投稿可能です
-        **使いかた：**
-        EVAL self.bot.command_prefix+'news post'
-        ELang ja
-        NLang default Sorry, this command only supports Japanese.
-        Sorry, this command only supports Japanese.
-        ELang default
-        """
         await ctx.send("投稿を開始します")
         req = dict()
         req["did"] = str(ctx.author.id)
@@ -70,20 +60,12 @@ class mynews(commands.Cog):
         except SyntaxError:
             await ctx.send("投稿をキャンセルしました")
 
-    @mynews.command()
-    async def day(self, ctx: commands.Context, day):
-        """
-        NLang ja 年月日でニュースを探すコマンドです
-        newsを年月日で探します。日付の形式は西暦で書いてください
-        **使いかた：**
-        EVAL self.bot.command_prefix+'news day 2022/07/04'
-        ELang ja
-        NLang default Sorry, this command only supports Japanese.
-        Sorry, this command only supports Japanese.
-        ELang default
-        """
+    @mynews.command(description="ニュースを検索します")
+    async def day(self, ctx: commands.Context, day: str):
         async with self.bot.session.get(
-                "https://ysmsrv.wjg.jp/news/timebydiscord.php?input_date=", query=urllib.parse.quote_plus(day, encoding='utf-8')) as resp:
+            "https://ysmsrv.wjg.jp/news/timebydiscord.php?input_date=",
+            query=urllib.parse.quote_plus(day, encoding='utf-8')
+        ) as resp:
             rpt = await resp.json()
             if rpt == []:
                 await ctx.reply("すみません。何も見つかりませんでした。日付を確認してみてください。例:2022/07/10")
@@ -102,18 +84,8 @@ class mynews(commands.Cog):
                     vie.add_item(SearchList(gj, self.bot))
                 await ctx.send("見たい記事を選択してください", view=vie)
 
-    @mynews.command()
+    @mynews.command(description="今日のニュースを表示します")
     async def today(self, ctx: commands.Context):
-        """
-        NLang ja 今日のnewsを表示します
-        今日のnewsを表示します
-        **使いかた：**
-        EVAL self.bot.command_prefix+'news today'
-        ELang ja
-        NLang default Sorry, this command only supports Japanese.
-        Sorry, this command only supports Japanese.
-        ELang default
-        """
         async with self.bot.session.get("https://ysmsrv.wjg.jp/news/apitoday.php") as resp:
             rpt = await resp.text()
             if rpt == "[]":
@@ -134,14 +106,14 @@ class mynews(commands.Cog):
                 await ctx.send("見たい記事を選択してください", view=vie)
 
 
-async def getusername(userid, bot: Bot):
+async def getusername(userid: str, bot: Bot):
     async with bot.session.get("https://ysmsrv.wjg.jp/news/" + userid) as resp:
         rpt = await resp.text()
         return rpt
 
 
 class SearchList(discord.ui.Select):
-    def __init__(self, args, bot: Bot):
+    def __init__(self, args: list[dict[str, str]], bot: Bot):
         self.its = args
         self.bot = bot
         options = []
