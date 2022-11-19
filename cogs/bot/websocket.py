@@ -1,5 +1,5 @@
-from typing import Union, Optional, Sequence, Any
-
+from __future__ import annotations
+from typing import Union, Optional, Sequence, Any, TYPE_CHECKING
 import asyncio
 
 import websockets
@@ -7,11 +7,13 @@ from orjson import loads
 from websockets.exceptions import ConnectionClosed
 
 import discord
-from discord.types.message import Message as MessageType
 from discord.ext import commands
 
 from utils import Bot, dumps
 from data.help import HELP
+
+if TYPE_CHECKING:
+    from discord.types.message import Message as MessageType
 
 
 class WSContext(commands.Context):
