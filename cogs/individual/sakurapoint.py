@@ -52,13 +52,16 @@ class SakuraPoint(commands.Cog):
         target: discord.User, amount: int
     ):
         amount = (mode == "add" or -1) * amount
+        await self.spmanage_(target, amount)
+        await ctx.send("Ok.")
+
+    async def spmanage_(self, target: discord.abc.Snowflake, amount: int) -> None:
         await self.bot.execute_sql(
             """INSERT INTO SakuraPoint (UserId, Point) VALUES (%s, %s)
-                ON DUPLICATE KEY UPDATE Point = VALUES(Point) + %s;""",
+                ON DUPLICATE KEY UPDATE Point = Point + %s;""",
             (target.id, amount, amount)
         )
         self.cache[target.id] += amount
-        await ctx.send("Ok.")
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
@@ -75,7 +78,7 @@ class SakuraPoint(commands.Cog):
             content += "\n300ポイントを獲得しました！"
             await self.bot.execute_sql(
                 """INSERT INTO SakuraPoint (UserId, Point) VALUES (%s, %s)
-                    ON DUPLICATE KEY UPDATE Point = VALUES(Point) + %s;""",
+                    ON DUPLICATE KEY UPDATE Point = Point + %s;""",
                 (message.author.id, 300, 300)
             )
             self.cache[message.author.id] += 300
