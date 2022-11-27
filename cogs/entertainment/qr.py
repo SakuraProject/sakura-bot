@@ -27,7 +27,10 @@ class qr(commands.Cog):
     @qr.command(description="QRコードを読み取ります")
     async def read(self, ctx: commands.Context, url: str | None = None):
         if url is None:
-            url = ctx.message.attachments[0].url
+            if ctx.message.attachments[0].url:
+                url = ctx.message.attachments[0].url
+            elif ctx.message.attachments[0].url is None:
+                return await ctx.send("画像がありません。")
         async with self.bot.session.get(url) as resp:
             with open(str(ctx.author.id) + 'r.png', 'wb') as fp:
                 while True:
