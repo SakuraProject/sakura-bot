@@ -29,7 +29,7 @@ class qr(commands.Cog):
         if url is None:
             if ctx.message.attachments:
                 url = ctx.message.attachments[0].url
-            elif ctx.message.attachments[0].url is None:
+            else:
                 return await ctx.send("画像がありません。")
         async with self.bot.session.get(url) as resp:
             with open(str(ctx.author.id) + 'r.png', 'wb') as fp:
