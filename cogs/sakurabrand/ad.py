@@ -11,6 +11,23 @@ from aiomysql import Cursor
 from utils import Bot
 
 
+# Monkey Patch
+# SakuraAdを自動で表示するためのモンキーパッチ。
+
+def auto_send_wrapper(func):
+    async def sender(self, *args, **kwargs):
+        if kwargs.get("embed"):
+            bot = self._state._get_client()
+            if isinstance(bot, Bot) and random.random() > 0.7:
+                ad_data = bot.cogs["SakuraAd"].get_random_ad_embed()
+                kwargs["embeds"] = [kwargs.pop("embed"), ad_data]
+        return await func(self, *args, **kwargs)
+    return sender
+
+commands.Context.send = auto_send_wrapper(commands.Context.send)
+discord.TextChannel.send = auto_send_wrapper(discord.TextChannel.send)
+
+
 class MakeAdModal(discord.ui.Modal):
     content = discord.ui.TextInput(
         label="広告内容", placeholder="広告の内容を入力してください。",
@@ -67,18 +84,23 @@ class SakuraAd(commands.Cog):
         if ctx.invoked_subcommand:
             return await ctx.send("使い方が違います。")
 
+    def get_random_ad_embed(self) -> discord.Embed:
+        user_id = random.choice(list(self.cache.keys()))
+        selected_ad = random.choice(list(self.cache[user_id].keys()))
+        return self.create_ad_embed(
+            user_id, self.cache[user_id][selected_ad]
+        )
+
     @sakura_ad.command(description="広告を見ます。")
     @app_commands.rename(id_="id")
     async def view(self, ctx: commands.Context, id_: int | None = None):
         if not id_:
-            user_id = random.choice(list(self.cache.keys()))
-            selected_ad = random.choice(list(self.cache[user_id].keys()))
-            return await ctx.send(embed=self.create_ad_embed(
-                user_id, self.cache[user_id][selected_ad]
-            ))
+            return await ctx.send(embed=self.get_random_ad_embed())
+
         user_ids = [k for k, v in self.cache.items() if id_ in v.keys()]
         if not user_ids:
             return await ctx.send("広告が見つかりませんでした。")
+
         await ctx.send(embed=self.create_ad_embed(
             user_ids[0], self.cache[user_ids[0]][id_], add_point=True
         ))
@@ -86,6 +108,9 @@ class SakuraAd(commands.Cog):
 
     @sakura_ad.command(description="広告を作成します。")
     async def make(self, ctx: commands.Context, content: str | None = None):
+        if not self.bot.cogs["SakuraPoint"].spcheck(ctx.author.id):
+            return await ctx.send("あなたはSakuraPointを持っていない(もしくは、0以下)です！")
+
         if content:
             return await self.ad_made(ctx, content)
         if ctx.interaction:
@@ -126,7 +151,7 @@ class SakuraAd(commands.Cog):
         await ctx.send(embed=discord.Embed(
             title=f"{self.bot.get_user(user_id) or '(不明)'}の広告一覧",
             description="\n".join(
-                f"`{id_}`: {content.splitlines()[0]}"
+                f"`{id_}`: {len(content)}文字 ({100+int(len(content)*0.7)}ポイント消費)"
                 for id_, content in self.cache[user_id].items()
             )
         ))
@@ -136,9 +161,11 @@ class SakuraAd(commands.Cog):
     async def delete(self, ctx: commands.Context, id_: int):
         if not any(id_ in m for m in self.cache.values()):
             return await ctx.send("広告が見つかりませんでした。")
+
         user_id = [k for k, v in self.cache.items() if id_ in v.keys()][0]
         if ctx.author.id != user_id:
             return await ctx.send("広告を削除する権限がありません。")
+
         del self.cache[user_id][id_]
         if not self.cache[user_id]:
             del self.cache[user_id]
