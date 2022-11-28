@@ -18,14 +18,15 @@ def auto_send_wrapper(func):
     async def sender(self, *args, **kwargs):
         if kwargs.get("embed"):
             bot = self._state._get_client()
-            if isinstance(bot, Bot) and random.random() > 0.7:
+            if isinstance(bot, Bot) and random.random() > 0.7 and (
+                self.author.id not in bot.cogs["SakuraAd"].invisible_cache
+            ):
                 ad_data = bot.cogs["SakuraAd"].get_random_ad_embed()
                 kwargs["embeds"] = [kwargs.pop("embed"), ad_data]
         return await func(self, *args, **kwargs)
     return sender
 
 commands.Context.send = auto_send_wrapper(commands.Context.send)
-discord.TextChannel.send = auto_send_wrapper(discord.TextChannel.send)
 
 
 class MakeAdModal(discord.ui.Modal):
@@ -48,6 +49,7 @@ class SakuraAd(commands.Cog):
     def __init__(self, bot: Bot):
         self.bot = bot
         self.cache: dict[int, dict[int, str]] = {}
+        self.invisible_cache: list[int] = []
 
     async def setup_database(self, cursor: Cursor):
         await cursor.execute(
@@ -57,13 +59,21 @@ class SakuraAd(commands.Cog):
             );"""
         )
         await cursor.execute("SELECT * FROM SakuraAd;")
-        return await cursor.fetchall()
+        cache1 = await cursor.fetchall()
+        await cursor.execute(
+            """CREATE TABLE IF NOT EXISTS SakuraAdInvisible(
+                Id BIGINT PRIMARY KEY NOT NULL
+            );"""
+        )
+        await cursor.execute("SELECT * FROM SakuraAdInvisible;")
+        return (cache1, await cursor.fetchall())
 
     async def load_cog(self):
-        cache = await self.bot.execute_sql(self.setup_database)
-        for ad in cache:
+        cache1, cache2 = await self.bot.execute_sql(self.setup_database)
+        for ad in cache1:
             self.cache.setdefault(ad[2], {})
             self.cache[ad[2]][ad[0]] = ad[1]
+        self.invisible_cache = [row[0] for row in cache2]
 
     def create_ad_embed(
         self, user_id: int, content: str, *, add_point: bool = False
@@ -173,6 +183,25 @@ class SakuraAd(commands.Cog):
             "DELETE FROM SakuraAd WHERE Id = %s;", (id_,)
         )
         await ctx.send("Ok")
+
+    @sakura_ad.command(description="広告非表示のオンオフをします。")
+    async def invisible(self, ctx: commands.Context):
+        now = ctx.author.id in self.invisible_cache
+        if now:
+            await self.bot.execute_sql(
+                "DELETE FROM SakuraAdInvisible WHERE UserId = %s;", (ctx.author.id,)
+            )
+            self.invisible_cache.remove(ctx.author.id)
+        else:
+            if self.bot.cogs["SakuraPoint"].spcheck(ctx.author.id):
+                return await ctx.send(
+                    "あなたはSakuraPointを持っていない(または0以下)のためオンにできません。"
+                )
+            await self.bot.execute_sql(
+                "INSERT INTO SakuraAdInvisible VALUES (%s);", (ctx.author.id,)
+            )
+            self.invisible_cache.append(ctx.author.id)
+        await ctx.send(f"広告非表示を{'オフ' if now else 'オン'}にしました。")
 
 
 async def setup(bot: Bot) -> None:

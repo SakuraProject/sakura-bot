@@ -37,6 +37,8 @@ class SakuraPoint(commands.Cog):
         for i in data:
             self.cache[i[0]] = i[1]
 
+        self.point_task.start()
+
     @commands.command()
     async def spoint(self, ctx: commands.Context, target: discord.User | None = None):
         if target and not await self.bot.is_owner(ctx.author):
@@ -120,7 +122,7 @@ class SakuraPoint(commands.Cog):
                 await user.send(embed=discord.Embed(
                     title="警告通知",
                     description=(
-                        "あなたのSakuraPointが0を下回りました。\n"
+                        "SakuraAd機能にて引き落としを行ったところ、あなたのSakuraPointが0を下回りました。\n"
                         "毎週月曜日の0時の引き落としは続きますが、新たなSakuraAdの作成などはできなくなるためご注意ください。"
                     )
                 ))
