@@ -66,7 +66,7 @@ class SakuraPoint(commands.Cog):
         )
         self.cache[target.id] += amount
 
-    def spcheck(self, user_id: int, min_point: int = 1):
+    def spcheck(self, user_id: int, min_point: int = 1) -> bool:
         "ユーザーがmin_point以上sakurapointを持っているかをチェックする。"
         if user_id not in self.cache:
             return False
@@ -117,6 +117,8 @@ class SakuraPoint(commands.Cog):
             amount = 300
             for am in self.bot.cogs["SakuraAd"].cache[user_id].values():
                 amount += 100 + int(len(am) * 0.7)
+            if user_id in self.bot.cogs["SakuraAd"].invisible_cache:
+                amount += 200
             await self.spmanage_(user, amount)
             if self.cache[user_id] < 0:
                 await user.send(embed=discord.Embed(
