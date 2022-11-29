@@ -53,7 +53,9 @@ class SakuraAd(commands.Cog):
         self.cache: dict[int, dict[int, str]] = {}
         self.invisible_cache: list[int] = []
 
-    async def setup_database(self, cursor: Cursor) -> None:
+    async def setup_database(self, cursor: Cursor) -> tuple[
+        tuple[tuple[int, str, int], ...], tuple[tuple[int], ...]
+    ]:
         await cursor.execute(
             """CREATE TABLE IF NOT EXISTS SakuraAd(
                 Id BIGINT PRIMARY KEY NOT NULL, Content TEXT,
