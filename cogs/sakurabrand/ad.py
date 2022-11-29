@@ -1,5 +1,7 @@
 # Sakura Ad
 
+from collections.abc import Coroutine
+
 import random
 from asyncio import TimeoutError
 
@@ -14,7 +16,7 @@ from utils import Bot
 # Monkey Patch
 # SakuraAdを自動で表示するためのモンキーパッチ。
 
-def auto_send_wrapper(func):
+def auto_send_wrapper(func: Coroutine) -> Coroutine:
     async def sender(self, *args, **kwargs):
         if kwargs.get("embed"):
             bot = self._state._get_client()
@@ -39,7 +41,7 @@ class MakeAdModal(discord.ui.Modal):
         self.ctx = ctx
         super().__init__()
 
-    async def callback(self, interaction: discord.Interaction):
+    async def callback(self, interaction: discord.Interaction) -> None:
         await SakuraAd.ad_made(
             getattr(self.ctx.command, "cog"), interaction, str(self.content)
         )
@@ -51,7 +53,7 @@ class SakuraAd(commands.Cog):
         self.cache: dict[int, dict[int, str]] = {}
         self.invisible_cache: list[int] = []
 
-    async def setup_database(self, cursor: Cursor):
+    async def setup_database(self, cursor: Cursor) -> None:
         await cursor.execute(
             """CREATE TABLE IF NOT EXISTS SakuraAd(
                 Id BIGINT PRIMARY KEY NOT NULL, Content TEXT,
@@ -68,7 +70,7 @@ class SakuraAd(commands.Cog):
         await cursor.execute("SELECT * FROM SakuraAdInvisible;")
         return (cache1, await cursor.fetchall())
 
-    async def load_cog(self):
+    async def load_cog(self) -> None:
         cache1, cache2 = await self.bot.execute_sql(self.setup_database)
         for ad in cache1:
             self.cache.setdefault(ad[2], {})
@@ -136,7 +138,7 @@ class SakuraAd(commands.Cog):
         else:
             return await self.ad_made(ctx, msg.content)
 
-    async def ad_made(self, ctx: commands.Context | discord.Interaction, content: str):
+    async def ad_made(self, ctx: commands.Context | discord.Interaction, content: str) -> None:
         if isinstance(ctx, commands.Context):
             msg = await ctx.send("Ok")
             user_id = ctx.author.id
