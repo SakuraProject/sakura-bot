@@ -1,6 +1,6 @@
 # Sakura Ad
 
-from collections.abc import Coroutine
+from collections.abc import Coroutine, Callable
 
 import random
 from asyncio import TimeoutError
@@ -16,7 +16,7 @@ from utils import Bot
 # Monkey Patch
 # SakuraAdを自動で表示するためのモンキーパッチ。
 
-def auto_send_wrapper(func: Coroutine) -> Coroutine:
+def auto_send_wrapper(func: Callable[..., Coroutine]) -> Callable[..., Coroutine]:
     async def sender(self, *args, **kwargs):
         if kwargs.get("embed"):
             bot = self._state._get_client()
