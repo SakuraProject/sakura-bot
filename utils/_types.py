@@ -15,6 +15,7 @@ if TYPE_CHECKING:
         afk, individual, mail, obj_info, onlinenotice, sakurapoint, schedule,
         shopping, tweet
     )
+    from cogs.sakurabrand import ad, plugin
     from cogs.serverutil import (
         bump, captcha, freethread, gban, giveaway, globalchat, kaso_notice,
         rocations, role_linker, ticket, tts
@@ -44,6 +45,8 @@ class Cogs(TypedDict):
     schedule: schedule.schedule
     shopping: shopping.shopping
     Tweet: tweet.Tweet
+    SakuraAd: ad.SakuraAd
+    Plugin: plugin.Plugin
     bump: bump.bump
     Captcha: captcha.Captcha
     FreeThread: freethread.FreeThread
