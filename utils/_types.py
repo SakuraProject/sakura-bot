@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 class Cogs(TypedDict):
     AutoMod: automod.AutoMod
     Mod: mod.Moderation
-    purge: purge.purge
+    purge: purge.Purge
     BotAbout: about.BotAbout
     ErrorQuery: errors.ErrorQuery
     Help: help.Help
