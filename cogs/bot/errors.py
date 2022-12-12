@@ -6,6 +6,7 @@ import discord
 from discord.ext import commands
 
 from traceback import TracebackException
+import os
 
 from utils import Bot
 from data.permissions import PERMISSIONS
@@ -21,6 +22,7 @@ buckets = {
     commands.BucketType.role: "1ロール",
 }
 
+DEBUG_CHANNEL = os.environ["DEBUG_CHANNEL"]
 
 async def embedding(self: ErrorQuery, ctx: commands.Context, error: commands.CommandError):
     embed = discord.Embed(title="エラー", description="", color=0xff0000)
@@ -147,7 +149,7 @@ async def embedding(self: ErrorQuery, ctx: commands.Context, error: commands.Com
             f"なんらかのエラーが発生しました。\n`{error}`\n"
             "このエラーは開発者側の問題である可能性が高いです。サポートサーバーにて報告いただけると嬉しいです。"
         )
-        channel = self.bot.get_channel(1012623774014783598)
+        channel = self.bot.get_channel(DEBUG_CHANNEL)
 
         assert isinstance(channel, discord.TextChannel)
         error_message = "".join(
