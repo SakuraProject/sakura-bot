@@ -24,6 +24,12 @@ class BotAbout(commands.Cog):
         self.bot = bot
         self.before_guilds_count: int = 0
 
+    async def cog_load(self):
+        self.status_updater.start()
+
+    async def cog_unload(self):
+        self.status_updater.cancel()
+
     @commands.hybrid_command(description="botについて表示します。")
     async def about(self, ctx: commands.Context):
         embed = discord.Embed(

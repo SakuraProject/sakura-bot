@@ -6,6 +6,8 @@ import discord
 from discord.ext import commands
 
 from traceback import TracebackException
+from inspect import cleandoc
+import logging
 
 from utils import Bot
 from data.permissions import PERMISSIONS
@@ -154,13 +156,13 @@ async def embedding(self: ErrorQuery, ctx: commands.Context, error: commands.Com
             TracebackException.from_exception(error).format()
         )
 
-        print("\033[31m" + error_message + "\033[0m")
+        logging.exception("\033[31m" + error_message + "\033[0m")
 
         await channel.send(
-            f"""発生サーバー：{getattr(ctx.guild, 'name')}(ID:{getattr(ctx.guild, 'id')})
+            cleandoc(f"""発生サーバー：{getattr(ctx.guild, 'name')}(ID:{getattr(ctx.guild, 'id')})
                 発生チャンネル：{getattr(ctx.channel, "name")}(ID:{ctx.channel.id})
                 発生ユーザー：{ctx.author}(ID:{ctx.author.id})
-                発生コマンド：{getattr(ctx.command, "name")}(`{ctx.message.content}`)""",
+                発生コマンド：{getattr(ctx.command, "name")}(`{ctx.message.content}`)"""),
             embed=discord.Embed(
                 title="エラー詳細", description=f"```py\n{error_message}\n```")
         )
