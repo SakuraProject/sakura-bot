@@ -1,8 +1,9 @@
 # Sakurabot - automod
 
 from os import listdir
-import logging
+from logging import getLogger
 
+logger = getLogger(__name__)
 
 async def setup(bot):
     # Load all modules in this directory
@@ -10,7 +11,7 @@ async def setup(bot):
         if not name.startswith(("_", ".")):
             try:
                 await bot.load_extension("cogs.automod." + name.replace(".py", ""))
-            except Exception:
-                logging.exception("Error on automod.%s", name)
+            except Exception as e:
+                logger.exception(f"{name} failed to load. \n reason:{e}")
             else:
-                print("[Log][load]" + name)
+                logger.debug(f"{name} loaded.")

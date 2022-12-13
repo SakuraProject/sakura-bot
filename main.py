@@ -16,7 +16,7 @@ from utils import Bot
 
 load_dotenv()
 
-with open("data/logger_setting.json", "f") as f:
+with open("data/logger_setting.json", "r") as f:
     log_conf = json.load(f)
 
 config = config.dictConfig(log_conf)
@@ -54,7 +54,7 @@ async def on_ready():
         logger.error(f"Plugin failed to load. \nreason:{e}")
     else:
         logger.debug("Plugin loaded")
-    logger.info(f"All systems are fine. \nthank you for using {bot.name}")
+    logger.info(f"All systems are fine. \nthank you for using {bot.user.name}")
 
 
 if __name__ == "__main__":
