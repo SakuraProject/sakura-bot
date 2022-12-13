@@ -20,8 +20,8 @@ websockets = "*"
 speedtest-cli = "*"
 aiofiles = "*"
 hashids = "*"
-pyqrcode = "*"
 nicovideo-api-client = "*"
+qrcode = {extras = ["pil"], version = "*"}
 
 [dev-packages]
 flake8 = "*"
