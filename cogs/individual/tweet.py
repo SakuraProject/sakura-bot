@@ -13,6 +13,9 @@ from aiohttp import ClientSession, ClientTimeout
 import aiomysql
 
 from utils import Bot
+from logging import getLogger
+
+logger = getLogger(__name__)
 
 
 class Tweet(commands.Cog, AsyncStreamingClient):
@@ -25,28 +28,31 @@ class Tweet(commands.Cog, AsyncStreamingClient):
     def __init__(self, bot: Bot):
         self.bot = bot
         self.task = None
-        handler = OAuth1UserHandler(
-            os.environ["TWITTERAPIKEY"], os.environ["TWITTERSECRET"])
-        handler.set_access_token(
-            os.environ["TWITTERTOKEN"], os.environ["TWITTERTOKENSEC"])
-        self.twicon = Client(
-            bearer_token=os.environ["TWITTERBEAR"], consumer_key=os.environ["TWITTERAPIKEY"],
-            consumer_secret=os.environ["TWITTERSECRET"], access_token=os.environ["TWITTERTOKEN"],
-            access_token_secret=os.environ["TWITTERTOKENSEC"])  # API(handler)
-        self.api = self.twicon
-        self.fil = None
-        self.bearer_token = os.environ["TWITTERBEAR"]
-        self.consumer_key = os.environ["TWITTERAPIKEY"]
-        self.consumer_secret = os.environ["TWITTERSECRET"]
-        self.access_token = os.environ["TWITTERTOKEN"]
-        self.access_token_secret = os.environ["TWITTERTOKENSEC"]
-        self.timeout = ClientTimeout(sock_read=90)
-        self._session = ClientSession(timeout=self.timeout)
-        self.user_agent = "Python/3.9"
-        self.max_retries = inf
-        self.proxy = None
-        self.return_type = Response
-        self.rid: Response = None  # type: ignore
+        try:
+            handler = OAuth1UserHandler(
+                os.environ["TWITTERAPIKEY"], os.environ["TWITTERSECRET"])
+            handler.set_access_token(
+                os.environ["TWITTERTOKEN"], os.environ["TWITTERTOKENSEC"])
+            self.twicon = Client(
+                bearer_token=os.environ["TWITTERBEAR"], consumer_key=os.environ["TWITTERAPIKEY"],
+                consumer_secret=os.environ["TWITTERSECRET"], access_token=os.environ["TWITTERTOKEN"],
+                access_token_secret=os.environ["TWITTERTOKENSEC"])  # API(handler)
+            self.api = self.twicon
+            self.fil = None
+            self.bearer_token = os.environ["TWITTERBEAR"]
+            self.consumer_key = os.environ["TWITTERAPIKEY"]
+            self.consumer_secret = os.environ["TWITTERSECRET"]
+            self.access_token = os.environ["TWITTERTOKEN"]
+            self.access_token_secret = os.environ["TWITTERTOKENSEC"]
+            self.timeout = ClientTimeout(sock_read=90)
+            self._session = ClientSession(timeout=self.timeout)
+            self.user_agent = "Python/3.9"
+            self.max_retries = inf
+            self.proxy = None
+            self.return_type = Response
+            self.rid: Response = None  # type: ignore
+        except Exception:
+            logger.warning(f"APIkey is not available")
         # super().__init__(consumer_key=os.environ["TWITTERAPIKEY"],consumer_secret=os.environ["TWITTERSECRET"],access_token=os.environ["TWITTERTOKEN"],access_token_secret=os.environ["TWITTERTOKENSEC"])
         # # API(handler)
 

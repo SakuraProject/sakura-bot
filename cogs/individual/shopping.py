@@ -8,8 +8,14 @@ from discord.ext import commands
 from orjson import loads
 
 from utils import Bot, dumps
+from logging import getLogger
 
-secretkey = os.environ["YMARTKEY"]
+logger = getLogger(__name__)
+
+try:
+    secretkey = os.environ["YMARTKEY"]
+except Exception:
+    logger.warning(f"YMARTKEY not defined")
 
 
 class shopping(commands.Cog):
