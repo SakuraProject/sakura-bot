@@ -4,12 +4,10 @@ import os
 
 import discord
 
-from aiohttp import ClientSession
 from dotenv import load_dotenv
 from orjson import loads
 import aiomysql
 from logging import getLogger, config
-import json
 
 from utils import Bot
 
@@ -17,9 +15,9 @@ from utils import Bot
 load_dotenv()
 
 with open("data/logger_setting.json", "r") as f:
-    log_conf = json.load(f)
+    log_conf = loads(f.read())
 
-config = config.dictConfig(log_conf)
+config.dictConfig(log_conf)
 
 logger = getLogger(__name__)
 
@@ -54,7 +52,7 @@ async def on_ready():
         logger.error(f"Plugin failed to load. \nreason:{e}")
     else:
         logger.debug("Plugin loaded")
-    logger.info(f"All systems are fine. \nthank you for using {bot.user.name}")
+    logger.info(f"All systems are fine. \nthank you for using {bot.user}")
 
 
 if __name__ == "__main__":
