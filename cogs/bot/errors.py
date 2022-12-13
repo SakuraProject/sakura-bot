@@ -22,10 +22,8 @@ buckets = {
     commands.BucketType.role: "1ロール",
 }
 
-if os.environ.get("DEBUG_CHANNEL") == None:
-    DEBUG_CHANNEL = 1012623774014783598
-else:
-    DEBUG_CHANNEL = os.environ["DEBUG_CHANNEL"]
+DEBUG_CHANNEL = os.environ.get("DEBUG_CHANNEL", 1012623774014783598)
+
 
 async def embedding(self: ErrorQuery, ctx: commands.Context, error: commands.CommandError):
     embed = discord.Embed(title="エラー", description="", color=0xff0000)
