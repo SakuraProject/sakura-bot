@@ -7,7 +7,8 @@ from discord.ext import commands
 
 from traceback import TracebackException
 from inspect import cleandoc
-import logging
+from logging import getLogger
+import os
 
 from utils import Bot
 from data.permissions import PERMISSIONS
@@ -22,6 +23,8 @@ buckets = {
     commands.BucketType.category: "1カテゴリ",
     commands.BucketType.role: "1ロール",
 }
+
+DEBUG_CHANNEL = os.environ.get("DEBUG_CHANNEL", 1012623774014783598)
 
 
 async def embedding(self: ErrorQuery, ctx: commands.Context, error: commands.CommandError):
@@ -149,14 +152,14 @@ async def embedding(self: ErrorQuery, ctx: commands.Context, error: commands.Com
             f"なんらかのエラーが発生しました。\n`{error}`\n"
             "このエラーは開発者側の問題である可能性が高いです。サポートサーバーにて報告いただけると嬉しいです。"
         )
-        channel = self.bot.get_channel(1012623774014783598)
+        channel = self.bot.get_channel(DEBUG_CHANNEL)
 
         assert isinstance(channel, discord.TextChannel)
         error_message = "".join(
             TracebackException.from_exception(error).format()
         )
 
-        logging.exception("\033[31m" + error_message + "\033[0m")
+        getLogger(__name__).exception("\033[31m" + error_message + "\033[0m")
 
         await channel.send(
             cleandoc(f"""発生サーバー：{getattr(ctx.guild, 'name')}(ID:{getattr(ctx.guild, 'id')})
