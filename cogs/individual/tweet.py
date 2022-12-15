@@ -210,4 +210,7 @@ class Tweet(commands.Cog, AsyncStreamingClient):
 
 
 async def setup(bot: Bot):
+    if not all(os.environ.get(m, False) for m in ["TWITTERAPIKEY", "TWITTERSECRET", "TWITTERTOKEN", "TWITTERTOKENSEC", "TWITTERBEAR"]):
+        from logging import getLogger
+        return getLogger(__name__).warning("Twetter API Key not found.Tweet cog won't be loaded.")
     await bot.add_cog(Tweet(bot))
