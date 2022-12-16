@@ -1,8 +1,9 @@
 import os
 import cv2
 import discord
-import pyqrcode
+import qrcode
 from discord.ext import commands
+from io import BytesIO
 
 from utils import Bot
 
@@ -19,15 +20,20 @@ class qr(commands.Cog):
 
     @qr.command(description="QRコードをテキストから生成します")
     async def make(self, ctx: commands.Context, text: str):
-        a = pyqrcode.create(content=text, error='H')
-        a.png(file=str(ctx.author.id) + '.png', scale=6)
-        await ctx.send(file=discord.File(str(ctx.author.id) + '.png'))
-        os.remove(str(ctx.author.id) + '.png')
+        buffer = BytesIO()
+        qr = qrcode.make(text)
+        qr.save(buffer)
+        buffer.seek(0)
+        file = discord.File(buffer, "output_image.png")
+        await ctx.reply(file=file)
 
     @qr.command(description="QRコードを読み取ります")
     async def read(self, ctx: commands.Context, url: str | None = None):
         if url is None:
-            url = ctx.message.attachments[0].url
+            if ctx.message.attachments:
+                url = ctx.message.attachments[0].url
+            else:
+                return await ctx.send("画像がありません。")
         async with self.bot.session.get(url) as resp:
             with open(str(ctx.author.id) + 'r.png', 'wb') as fp:
                 while True:
@@ -38,6 +44,7 @@ class qr(commands.Cog):
         image = cv2.imread(str(ctx.author.id) + 'r.png')
         qrDetector = cv2.QRCodeDetector()
         data, _, _ = qrDetector.detectAndDecode(image)
+        print(data)
         await ctx.send(data)
         os.remove(str(ctx.author.id) + 'r.png')
 

@@ -1,13 +1,14 @@
-import logging
+from logging import getLogger
 from os import listdir
 
+logger = getLogger(__name__)
 
 async def setup(bot):
     for name in listdir("cogs/serverutil"):
         if not name.startswith(("_", ".")):
             try:
                 await bot.load_extension("cogs.serverutil." + name.replace(".py", ""))
-            except Exception:
-                logging.exception(f"Error on serverutil.{name}")
+            except Exception as e:
+                logger.exception(f"{name} failed to load. \n reason:{e}")
             else:
-                print("[Log][load]" + name)
+                logger.debug(f"{name} loaded.")

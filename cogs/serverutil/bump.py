@@ -149,7 +149,7 @@ class bump(commands.Cog):
                     if float(row[1]) <= nti:
                         if onoff == "on":
                             channel = self.bot.get_channel(row[0])
-                            if channel and isinstance(channel, discord.abc.MessageableChannel):
+                            if channel and isinstance(channel, discord.abc.Messageable):
                                 if not channel.guild:
                                     continue
                                 rol = channel.guild.get_role(int(res1[0][3]))
