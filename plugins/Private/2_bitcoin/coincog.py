@@ -43,4 +43,4 @@ class CoinList(discord.ui.Select):
 
 
 async def setup(bot: Bot):
-        await bot.add_cog(EncryptCoin(bot))
+    await bot.add_cog(EncryptCoin(bot))

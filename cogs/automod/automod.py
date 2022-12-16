@@ -242,7 +242,9 @@ class AutoMod(commands.Cog):
             pass
 
     def raidcheck(self, member):
-        return self.bot.private.automod.raidcheck(self, member)
+        (slf, ret) = self.bot.private.automod.raidcheck(self, member)
+        self = slf
+        return ret
 
     @commands.Cog.listener()
     async def on_member_join(self, member: discord.Member):
