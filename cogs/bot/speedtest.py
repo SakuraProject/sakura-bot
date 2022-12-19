@@ -19,20 +19,35 @@ class speedtest(commands.Cog):
         await self.bot.loop.run_in_executor(None, stest.get_best_server)
         up = await self.bot.loop.run_in_executor(None, stest.upload)
         dl = await self.bot.loop.run_in_executor(None, stest.download)
-        ebd = discord.Embed(title="speedtest", description="**ダウンロード**:\n" +
-                            str(dl / 1024 / 1024) + "Mbps\n**アップロード**:\n" + str(up / 1024 / 1024) + "Mbps")
-        await msg.edit(content="", embeds=[ebd])
+        ebd = discord.Embed(
+            title="speedtest",
+            description=f"**ダウンロード**:\n{dl / 1024 / 1024}Mbps\n"
+                        f"**アップロード**:\n{up / 1024 / 1024}Mbps"
+        )
+        await msg.edit(content="", embed=ebd)
 
     @commands.hybrid_command(description="botのpingを取得します")
     async def ping(self, ctx: commands.Context):
-        p1 = self.bot.latency * 1000
-        t = time.time()
-        f = await self.bot.cogs["Websocket"].sock.ping()
-        while not f.done():
-            await asyncio.sleep(1 / 1000)
-        p2 = int((time.time() - t) * 1000)
-        embed = discord.Embed(title="ping", description="**Discordとの接続速度**:\n" +
-                            str(p1) + "ms\n**バックエンドとの通信速度**:\n" + str(p2) + "ms")
+        sending = time.time()
+        await ctx.send("計測中...")
+        latency = self.bot.latency * 1000
+        time_ = time.time()
+        sock_ping = await self.bot.cogs["Websocket"].sock.ping()
+        while not sock_ping.done():
+            await asyncio.sleep(0.001)
+        backend_latency = int((time.time() - time_) * 1000)
+
+        embed = discord.Embed(
+            title="ping",
+            description="Botの動作速度に関する情報です。"
+        ).add_field(
+            name="Discordとの接続速度", value=f"{latency}ms"
+        ).add_field(
+            name="バックエンドとの通信速度", value=f"{backend_latency}ms"
+        ).add_field(
+            name="Discordへのメッセージ送信にかかった時間",
+            value=f"{int((time.time() - sending) * 1000)}ms"
+        )
         await ctx.send(embed=embed)
 
 

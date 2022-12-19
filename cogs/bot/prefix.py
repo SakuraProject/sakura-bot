@@ -46,7 +46,7 @@ class Prefix(commands.Cog):
                 (ctx.author.id, prefix)
             )
         elif not ctx.guild:
-            return await ctx.send("サーバーprefixの設定はDMで実行しないでください。")
+            raise commands.NoPrivateMessage()
         else:
             self.bot.guild_prefixes[ctx.guild.id] = prefix
             await self.bot.execute_sql(
