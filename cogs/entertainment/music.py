@@ -140,7 +140,7 @@ class Queue:
             self.video = None
 
 
-class music(commands.Cog):
+class Music(commands.Cog):
     def __init__(self, bot: Bot):
         self.bot = bot
 
@@ -545,7 +545,7 @@ class music(commands.Cog):
 
 
 class SearchList(discord.ui.Select):
-    def __init__(self, ctx: GuildContext, cog: music, query: str):
+    def __init__(self, ctx: GuildContext, cog: Music, query: str):
         args = SnapshotSearchAPIV2().keywords().query(query.split(" ")).field(
             {FieldType.TITLE, FieldType.CONTENT_ID}
         ).sort(FieldType.VIEW_COUNTER).no_filter().limit(10).user_agent(
@@ -615,4 +615,4 @@ class AudioMixer(discord.AudioSource):
 
 
 async def setup(bot: Bot):
-    await bot.add_cog(music(bot))
+    await bot.add_cog(Music(bot))

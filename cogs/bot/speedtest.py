@@ -1,13 +1,13 @@
 import discord
 from discord.ext import commands
-from speedtest import Speedtest
+import speedtest
 import asyncio
 import time
 
 from utils import Bot
 
 
-class speedtest(commands.Cog):
+class SpeedTest(commands.Cog):
     def __init__(self, bot: Bot):
         self.bot = bot
 
@@ -15,7 +15,7 @@ class speedtest(commands.Cog):
     @commands.cooldown(1, 3600, commands.BucketType.guild)
     async def speedtest(self, ctx: commands.Context):
         msg = await ctx.send("計測中、しばらくお待ちください")
-        stest = Speedtest()
+        stest = speedtest.Speedtest()
         await self.bot.loop.run_in_executor(None, stest.get_best_server)
         up = await self.bot.loop.run_in_executor(None, stest.upload)
         dl = await self.bot.loop.run_in_executor(None, stest.download)
@@ -52,4 +52,4 @@ class speedtest(commands.Cog):
 
 
 async def setup(bot: Bot):
-    await bot.add_cog(speedtest(bot))
+    await bot.add_cog(SpeedTest(bot))

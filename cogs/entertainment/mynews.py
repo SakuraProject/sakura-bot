@@ -7,7 +7,7 @@ import asyncio
 from utils import Bot
 
 
-class mynews(commands.Cog):
+class MyNews(commands.Cog):
 
     def __init__(self, bot: Bot):
         self.bot = bot
@@ -28,7 +28,7 @@ class mynews(commands.Cog):
                 await ctx.channel.send('入力を待機中です。キャンセルする場合は「キャンセルする」と送ってください')
             else:
                 if message.content == "キャンセルする":
-                    raise SyntaxError()
+                    raise TimeoutError()
                 await ctx.channel.send("入力を受け付けました。確定する場合は「ok」と送って下さい。やり直す場合は「修正」と送ってください")
                 while True:
                     try:
@@ -45,9 +45,7 @@ class mynews(commands.Cog):
     @mynews.command(description="ニュースを投稿します")
     async def post(self, ctx: commands.Context):
         await ctx.send("投稿を開始します")
-        req = dict()
-        req["did"] = str(ctx.author.id)
-        req["diname"] = ctx.author.name + '#' + ctx.author.discriminator
+        req = {"did": str(ctx.author.id), "diname": str(ctx.author)}
         try:
             req["ti"] = (await self.input(ctx, "ニュースのタイトルを入力してください")).content
             req["val"] = (await self.input(ctx, "ニュースの本文を入力してください")).content
@@ -57,7 +55,7 @@ class mynews(commands.Cog):
             ) as resp:
                 rpt = await resp.text()
                 await ctx.send(rpt)
-        except SyntaxError:
+        except TimeoutError:
             await ctx.send("投稿をキャンセルしました")
 
     @mynews.command(description="ニュースを検索します")
@@ -67,43 +65,44 @@ class mynews(commands.Cog):
             query=urllib.parse.quote_plus(day, encoding='utf-8')
         ) as resp:
             rpt = await resp.json()
-            if rpt == []:
-                await ctx.reply("すみません。何も見つかりませんでした。日付を確認してみてください。例:2022/07/10")
+        if rpt == []:
+            await ctx.reply("すみません。何も見つかりませんでした。日付を確認してみてください。例:2022/07/10")
+        else:
+            gj = rpt
+            vie = discord.ui.View()
+            if len(gj) >= 25:
+                tmp = []
+                for g in gj:
+                    if len(tmp) == 24:
+                        vie.add_item(SearchList(tmp, self.bot))
+                        tmp = []
+                    tmp.append(g)
+                vie.add_item(SearchList(tmp, self.bot))
             else:
-                gj = rpt
-                vie = discord.ui.View()
-                if len(gj) >= 25:
-                    tmp = []
-                    for g in gj:
-                        if len(tmp) == 24:
-                            vie.add_item(SearchList(tmp, self.bot))
-                            tmp = []
-                        tmp.append(g)
-                    vie.add_item(SearchList(tmp, self.bot))
-                else:
-                    vie.add_item(SearchList(gj, self.bot))
-                await ctx.send("見たい記事を選択してください", view=vie)
+                vie.add_item(SearchList(gj, self.bot))
+            await ctx.send("見たい記事を選択してください", view=vie)
 
     @mynews.command(description="今日のニュースを表示します")
     async def today(self, ctx: commands.Context):
         async with self.bot.session.get("https://ysmsrv.wjg.jp/news/apitoday.php") as resp:
             rpt = await resp.text()
-            if rpt == "[]":
-                await ctx.reply("すみません。何も見つかりませんでした。もし投稿したいnewsがある場合はnews postコマンドで投稿できます")
-            else:
-                gj = loads(rpt)
-                vie = discord.ui.View()
-                if len(gj) >= 25:
-                    tmp = []
-                    for g in gj:
-                        if len(tmp) == 24:
-                            vie.add_item(SearchList(tmp, self.bot))
-                            tmp = []
-                        tmp.append(g)
+        if rpt == "[]":
+            await ctx.reply("すみません。何も見つかりませんでした。もし投稿したいnewsがある場合はnews postコマンドで投稿できます")
+        else:
+            gj = loads(rpt)
+            vie = discord.ui.View()
+            if len(gj) >= 25:
+                tmp = []
+                for g in gj:
+                    if len(tmp) == 24:
+                        vie.add_item(SearchList(tmp, self.bot))
+                        tmp = []
+                    tmp.append(g)
+                if tmp:
                     vie.add_item(SearchList(tmp, self.bot))
-                else:
-                    vie.add_item(SearchList(gj, self.bot))
-                await ctx.send("見たい記事を選択してください", view=vie)
+            else:
+                vie.add_item(SearchList(gj, self.bot))
+            await ctx.send("見たい記事を選択してください", view=vie)
 
 
 async def getusername(userid: str, bot: Bot):
@@ -118,9 +117,8 @@ class SearchList(discord.ui.Select):
         self.bot = bot
         options = []
         for item in args:
-            item["title"] = item["title"] if not item["title"] == "" else "non title"
-            options.append(discord.SelectOption(
-                label=item["title"], description=''))
+            item["title"] = item["title"] or "No title"
+            options.append(discord.SelectOption(label=item["title"], description=''))
 
         super().__init__(placeholder='', min_values=1, max_values=1, options=options)
 
@@ -128,10 +126,10 @@ class SearchList(discord.ui.Select):
         for item in self.its:
             if item["title"] == self.values[0]:
                 ebd = discord.Embed(
-                    title=item["title"], description=item["text"], color=self.bot.Color)
-                ebd.add_field(name="投稿者", value=(await getusername(item["user"], self.bot)))
-                await interaction.response.edit_message(embeds=[ebd])
+                    title=item["title"], description=item["text"], color=self.bot.Color
+                ).add_field(name="投稿者", value=(await getusername(item["user"], self.bot)))
+                await interaction.response.edit_message(embed=ebd)
 
 
 async def setup(bot: Bot):
-    await bot.add_cog(mynews(bot))
+    await bot.add_cog(MyNews(bot))

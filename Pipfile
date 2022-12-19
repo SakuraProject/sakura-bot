@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-"discord.py" = "==2.0"
+"discord.py" = "*"
 python-dotenv = "*"
 ujson = "*"
 pytimeparse = "*"

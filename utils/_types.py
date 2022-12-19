@@ -24,16 +24,16 @@ if TYPE_CHECKING:
 class Cogs(TypedDict):
     AutoMod: automod.AutoMod
     Mod: mod.Moderation
-    purge: purge.Purge
+    Purge: purge.Purge
     BotAbout: about.BotAbout
     ErrorQuery: errors.ErrorQuery
     Help: help.Help
     Prefix: prefix.Prefix
-    speedtest: speedtest.speedtest
+    SpeedTest: speedtest.SpeedTest
     Websocket: websocket.Websocket
     GameSearch: gamesearch.GameSearch
-    music: music.music
-    mynews: mynews.mynews
+    Music: music.Music
+    MyNews: mynews.MyNews
     qr: qr.qr
     reversi: reversi.reversi
     Afk: afk.Afk
