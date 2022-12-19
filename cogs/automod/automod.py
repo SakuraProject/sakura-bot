@@ -240,23 +240,9 @@ class AutoMod(commands.Cog):
             pass
 
     def raidcheck(self, member):
-        if str(member.guild.id) not in self.m:
-            self.m[str(member.guild.id)] = []
-        if str(member.guild.id) not in self.time_:
-            self.time_[str(member.guild.id)] = time.time()
-        self.m[str(member.guild.id)].append(member)
-        if time.time() - self.time_[str(member.guild.id)] >= 15.0:
-            self.time_[str(member.guild.id)] = time.time()
-            if time.time() - self.time_[str(member.guild.id)] >= 60.0:
-                self.m[str(member.guild.id)] = []
-        elif (
-            len(self.m[str(member.guild.id)]) >= int(
-                self.settings[str(member.guild.id)]['raidcount']
-            ) and time.time() - self.time_[str(member.guild.id)] <= 15.0
-        ):
-            return True
-        else:
-            return False
+        (slf, ret) = self.bot.private.automod.raidcheck(self, member)
+        self = slf
+        return ret
 
     @commands.Cog.listener()
     async def on_member_join(self, member: discord.Member):

@@ -35,6 +35,16 @@ class Bot(commands.Bot):
         self._session = None
         self.user_prefixes = {}
         self.guild_prefixes = {}
+        self.load_private_module()
+
+    def load_private_module(self):
+        "プライベートモジュールの読み込みをします。"
+        import importlib
+        try:
+            self.private = importlib.import_module("sakura_private")
+        except:
+            from . import private_dummy
+            self.private = private_dummy
 
     @property
     def session(self) -> ClientSession:

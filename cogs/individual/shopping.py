@@ -9,12 +9,11 @@ from orjson import loads
 
 from utils import Bot, dumps
 
-secretkey = os.environ["YMARTKEY"]
-
 
 class shopping(commands.Cog):
     def __init__(self, bot: Bot):
         self.bot = bot
+        self.secretkey = os.environ["YMARTKEY"]
 
     @commands.group(aliases=["買い物"])
     async def shopping(self, ctx: commands.Context):
@@ -25,7 +24,7 @@ class shopping(commands.Cog):
     async def cart(self, ctx):
         async with self.bot.session.get(
             "https://ystore.jp/api/cart.php?secret="
-            + urllib.parse.quote_plus(secretkey, encoding='utf-8')
+            + urllib.parse.quote_plus(self.secretkey, encoding='utf-8')
             + "&disid=" + str(ctx.author.id) + "&distag="
             + urllib.parse.quote_plus(
                 ctx.author.name + '#' + ctx.author.discriminator
@@ -72,7 +71,7 @@ class shopping(commands.Cog):
         def check(m):
             return m.author == ctx.author and m.channel == ctx.author.dm_channel
         reqdata = dict()
-        reqdata["secret"] = secretkey
+        reqdata["secret"] = self.secretkey
         reqdata["disid"] = str(ctx.author.id)
         reqdata["distag"] = ctx.author.name + '#' + ctx.author.discriminator
         await ctx.author.send("配送先住所設定を開始します")
@@ -142,7 +141,7 @@ class shopping(commands.Cog):
     async def ticket(self, ctx):
         async with self.bot.session.get(
             "https://ystore.jp/api/cart.php?secret="
-            + urllib.parse.quote_plus(secretkey, encoding='utf-8')
+            + urllib.parse.quote_plus(self.secretkey, encoding='utf-8')
             + "&disid=" + str(ctx.author.id) + "&distag="
             + urllib.parse.quote_plus(
                 ctx.author.name + '#' + ctx.author.discriminator
@@ -163,7 +162,7 @@ class shopping(commands.Cog):
     async def sell(self, ctx):
         await ctx.send("出品を開始します")
         req = dict()
-        req["secret"] = secretkey
+        req["secret"] = self.secretkey
         req["disid"] = str(ctx.author.id)
         req["distag"] = ctx.author.name + '#' + ctx.author.discriminator
         try:
@@ -175,7 +174,7 @@ class shopping(commands.Cog):
                 req1 = dict()
                 req1["url"] = fis.url
                 req1["fname"] = fis.filename
-                req1["secret"] = secretkey
+                req1["secret"] = self.secretkey
                 req1["disid"] = str(ctx.author.id)
                 req1["distag"] = ctx.author.name + \
                     '#' + ctx.author.discriminator
@@ -219,7 +218,7 @@ class shopping(commands.Cog):
         req = dict()
         async with self.bot.session.get(
             "https://ystore.jp/api/items.php?secret="
-            + urllib.parse.quote_plus(secretkey, encoding='utf-8')
+            + urllib.parse.quote_plus(self.secretkey, encoding='utf-8')
             + "&disid=" + str(ctx.author.id) + "&distag="
             + urllib.parse.quote_plus(
                 ctx.author.name + '#' + ctx.author.discriminator
@@ -241,7 +240,7 @@ class shopping(commands.Cog):
             cno = int((await self.input(ctx, "編集する商品を選んで商品ナンバーを数値で送信してください")).content)
             req["i"] = gj[cno - 1]["v"]["itemid"]
         await ctx.send("編集を開始します")
-        req["secret"] = secretkey
+        req["secret"] = self.secretkey
         req["disid"] = str(ctx.author.id)
         req["distag"] = ctx.author.name + '#' + ctx.author.discriminator
         try:
@@ -253,7 +252,7 @@ class shopping(commands.Cog):
                 req1 = dict()
                 req1["url"] = fis.url
                 req1["fname"] = fis.filename
-                req1["secret"] = secretkey
+                req1["secret"] = self.secretkey
                 req1["disid"] = str(ctx.author.id)
                 req1["distag"] = ctx.author.name + \
                     '#' + ctx.author.discriminator
@@ -298,7 +297,7 @@ class shopping(commands.Cog):
             return m.author == ctx.author and m.channel == ctx.author.dm_channel
         await ctx.author.send("売上金振込口座の設定を開始します")
         req = dict()
-        req["secret"] = secretkey
+        req["secret"] = self.secretkey
         req["disid"] = str(ctx.author.id)
         req["distag"] = ctx.author.name + '#' + ctx.author.discriminator
         await ctx.send("DMを確認してください")
@@ -374,7 +373,7 @@ class shopping(commands.Cog):
             return
         else:
             cvc = message.content
-        async with self.bot.session.get("http://ystore.jp/api/getpayd.php?secret=" + urllib.parse.quote_plus(secretkey, encoding='utf-8') + "&disid=" + str(ctx.author.id) + "&distag=" + urllib.parse.quote_plus(ctx.author.name + '#' + ctx.author.discriminator)) as resp:
+        async with self.bot.session.get("http://ystore.jp/api/getpayd.php?secret=" + urllib.parse.quote_plus(self.secretkey, encoding='utf-8') + "&disid=" + str(ctx.author.id) + "&distag=" + urllib.parse.quote_plus(ctx.author.name + '#' + ctx.author.discriminator)) as resp:
             rpt = await resp.text()
         stripe.api_key = os.environ["STRIPEKEY"]
         try:
@@ -388,7 +387,7 @@ class shopping(commands.Cog):
                 off_session=True,  # 支払いの実行時に顧客が決済フローに存在しないことを示す
                 confirm=True,  # PaymentIntentの作成と確認を同時に行う
             )
-            async with self.bot.session.get("https://ystore.jp/api/payd.php?secret=" + urllib.parse.quote_plus(secretkey, encoding='utf-8') + "&disid=" + str(ctx.author.id) + "&distag=" + urllib.parse.quote_plus(ctx.author.name + '#' + ctx.author.discriminator)) as resp:
+            async with self.bot.session.get("https://ystore.jp/api/payd.php?secret=" + urllib.parse.quote_plus(self.secretkey, encoding='utf-8') + "&disid=" + str(ctx.author.id) + "&distag=" + urllib.parse.quote_plus(ctx.author.name + '#' + ctx.author.discriminator)) as resp:
                 await ctx.author.send("決済成功しました")
         except Exception:
             await ctx.author.send("このカードは使用出来ませんでした")
@@ -462,6 +461,7 @@ class CartButton(discord.ui.Button):
     def __init__(self, it, bot):
         self.it = it
         self.bot = bot
+        self.secretkey = os.environ["YMARTKEY"]
         super().__init__(label="カートに追加", style=discord.ButtonStyle.red)
 
     async def callback(self, interaction: discord.Interaction):
@@ -476,7 +476,7 @@ class CartButton(discord.ui.Button):
         else:
             async with self.bot.session.get(
                 "https://ystore.jp/api/addcart.php?secret="
-                + urllib.parse.quote_plus(secretkey, encoding='utf-8')
+                + urllib.parse.quote_plus(self.secretkey, encoding='utf-8')
                 + "&disid=" + str(interaction.user.id) + "&distag="
                 + urllib.parse.quote_plus(
                     interaction.user.name + '#' + interaction.user.discriminator
@@ -487,4 +487,7 @@ class CartButton(discord.ui.Button):
 
 
 async def setup(bot):
+    if not os.environ.get("YMARTKEY"):
+        from logging import getLogger
+        return getLogger(__name__).warning("YMARTKEY not found. shopping cog won't be loaded.")
     await bot.add_cog(shopping(bot))
