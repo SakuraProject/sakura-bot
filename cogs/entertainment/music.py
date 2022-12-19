@@ -15,7 +15,7 @@ from discord.ext import commands
 from niconico.niconico import NicoNico
 from youtube_dl import YoutubeDL
 
-from utils._types import GuildContext
+from utils import GuildContext
 from utils import Bot
 from nicovideo_api_client.api.v2.snapshot_search_api_v2 import SnapshotSearchAPIV2
 from nicovideo_api_client.constants import FieldType
@@ -70,10 +70,6 @@ class Queue:
                        "ignoreerrors": True, "cookiefile": "data/youtube.com_cookies.txt"}
         BILIBILI_OPTIONS = {'noplaylist': 'True', "ignoreerrors": True,
                             "cookiefile": "data/youtube.com_cookies.txt"}
-        FFMPEG_OPTIONS = {
-            'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
-            'options': '-vn'
-        }
         try:
             if "nicovideo.jp" in self.url or "nico.ms" in self.url:
                 if self.video is not None:
@@ -162,12 +158,11 @@ class music(commands.Cog):
 
     @commands.command()
     @commands.guild_only()
-    async def loop(self, ctx: commands.Context):
-        assert ctx.guild
+    async def loop(self, ctx: GuildContext):
         try:
             if self.lop[ctx.guild.id]:
                 self.lop[ctx.guild.id] = False
-                self.lopq[ctx.guild.id] = list()
+                self.lopq[ctx.guild.id] = []
                 await ctx.send("ループを解除しました")
             else:
                 self.lop[ctx.guild.id] = True
@@ -180,7 +175,7 @@ class music(commands.Cog):
 
     @commands.command()
     @commands.guild_only()
-    async def play(self, ctx: commands.Context, *, url: str):
+    async def play(self, ctx: GuildContext, *, url: str):
         pattern = "https?://[\\w/:%#\\$&\\?\\(\\)~\\.=\\+\\-]+"
         if not re.match(pattern, url):
             view = discord.ui.View()
@@ -189,8 +184,7 @@ class music(commands.Cog):
             return
         await self.pl(ctx, url)
 
-    async def pl(self, ctx: commands.Context, url: str):
-        assert ctx.guild and isinstance(ctx.author, discord.Member)
+    async def pl(self, ctx: GuildContext, url: str):
         FFMPEG_OPTIONS = {
             'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
             'options': '-vn'
@@ -211,14 +205,9 @@ class music(commands.Cog):
         def nextqueue(_):
             asyncio.run_coroutine_threadsafe(self.asyncnextqueue(
                 FFMPEG_OPTIONS, voice, ctx, nextqueue), loop)
-        try:
-            str(self.lop[ctx.guild.id])
-        except KeyError:
-            self.lop[ctx.guild.id] = False
-        try:
-            len(self.queues[ctx.guild.id])
-        except KeyError:
-            self.queues[ctx.guild.id] = list()
+        self.lop.setdefault(ctx.guild.id, False)
+        self.queues.setdefault(ctx.guild.id, [])
+
         if ("nicovideo.jp" in url or "nico.ms" in url) and "mylist" in url:
             qpl = len(self.queues[ctx.guild.id])
             for mylist in niconico.video.get_mylist(url):
@@ -241,7 +230,7 @@ class music(commands.Cog):
                 self.lopq[ctx.guild.id].append(qp)
             self.queues[ctx.guild.id].append(qp)
         if voice.is_playing() and getattr(voice.source, "music"):
-            await ctx.send(qp.title + 'をキューに追加しました')
+            await ctx.send(f'{qp.title}をキューに追加しました')
         else:
             self.start = time()
             if not voice.is_playing():
@@ -254,14 +243,11 @@ class music(commands.Cog):
                 getattr(voice.source, "s", []).append(pcm)
             voice.is_playing()
             setattr(voice.source, "music", True)
-            ebd = discord.Embed(title=qp.title + "を再生します",
-                                color=self.bot.Color)
-            ebd.add_field(
-                name="Title", value="[" + qp.title + "](" + qp.url + ")")
+            ebd = discord.Embed(title=f"{qp.title}を再生します", color=self.bot.Color)
+            ebd.add_field(name="Title", value=f"[{qp.title}]({qp.url})")
             ebd.add_field(name="Time", value=fmt_time(0) + "/" + fmt_time(qp.duration))
-            view = discord.ui.View()
-            view.add_item(AplButton(qp, self.bot))
-            await ctx.send(embeds=[ebd], view=view)
+            view = discord.ui.View().add_item(AplButton(qp, self.bot))
+            await ctx.send(embed=ebd, view=view)
             await self.addc(qp)
 
     async def addc(self, qp: "Queue"):
@@ -276,9 +262,8 @@ class music(commands.Cog):
                     await cur.execute("UPDATE `musicranking` SET `count` = %s,`vid` = %s where `vid` = %s;", (ct, qp.sid, qp.sid))
 
     async def asyncnextqueue(
-        self, FFMPEG_OPTIONS, voice: discord.VoiceClient, ctx: commands.Context, nextqueue: Callable
+        self, FFMPEG_OPTIONS, voice: discord.VoiceClient, ctx: GuildContext, nextqueue: Callable
     ):
-        assert ctx.guild
         if 0 < len(self.queues[ctx.guild.id]):
             try:
                 self.queues[ctx.guild.id][0].close()
@@ -321,7 +306,9 @@ class music(commands.Cog):
     @commands.guild_only()
     async def playlist(self, ctx: GuildContext, *, name: str):
         FFMPEG_OPTIONS = {
-            'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
+            'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
+            'options': '-vn'
+        }
         loop = asyncio.get_event_loop()
         if not ctx.author.voice:
             return await ctx.send("ボイスチャンネルに接続してください！")
@@ -337,16 +324,11 @@ class music(commands.Cog):
             voice = await channel.connect()
 
         def nextqueue(_):
-            asyncio.run_coroutine_threadsafe(self.asyncnextqueue(
-                FFMPEG_OPTIONS, voice, ctx, nextqueue), loop)
-        try:
-            str(self.lop[ctx.guild.id])
-        except KeyError:
-            self.lop[ctx.guild.id] = False
-        try:
-            len(self.queues[ctx.guild.id])
-        except KeyError:
-            self.queues[ctx.guild.id] = list()
+            asyncio.run_coroutine_threadsafe(
+                self.asyncnextqueue(FFMPEG_OPTIONS, voice, ctx, nextqueue), loop
+            )
+        self.lop.setdefault(ctx.guild.id, False)
+        self.queues.setdefault(ctx.guild.id, [])
 
         res = await self.bot.execute_sql(
             "SELECT * FROM `musiclist` where `userid` = %s and `lname` = %s",
@@ -466,9 +448,8 @@ class music(commands.Cog):
                 for row in res:
                     que = Queue(restore(row[1]))
                     await que.setdata()
-                    list = list + \
-                        str(i) + "位 [" + que.title + "](" + que.url + ")\n"
-                    i = i + 1
+                    list += f"{i}位 [{que.title}]({que.url})\n"
+                    i += 1
                     que.close()
                 embed = discord.Embed(
                     title="よく聞かれている曲", description=list, color=self.bot.Color)
@@ -500,39 +481,42 @@ class music(commands.Cog):
             int(time() - self.start)) + "/" + fmt_time(qp.duration))
         view = discord.ui.View()
         view.add_item(AplButton(qp, self.bot))
-        await ctx.send(embeds=[ebd], view=view)
+        await ctx.send(embed=ebd, view=view)
 
     @commands.command()
     async def editplaylist(self, ctx: commands.Context, name: str):
-        async with self.bot.pool.acquire() as conn:
-            async with conn.cursor() as cur:
-                await cur.execute("SELECT * FROM `musiclist` where `userid` = %s and `lname` = %s", (ctx.author.id, name))
-                res = await cur.fetchall()
-                if len(res) == 0:
-                    await ctx.send("このプレイリストには曲が存在しないか、作られていません")
-                    return
-                i = 1
-                list = ""
-                for row in res:
-                    que = Queue(restore(row[1]))
-                    await que.setdata()
-                    list = list + "No." + \
-                        str(i) + "[" + que.title + "](" + que.url + ")\n"
-                    i = i + 1
-                    que.close()
-                embed = discord.Embed(
-                    title=name, description=list, color=self.bot.Color)
-                await ctx.send(embeds=[embed])
-                try:
-                    while True:
-                        d = await self.input(ctx, "削除する曲のNoを数字で入力してください。キャンセルする場合はキャンセルと送ってください")
-                        if d.content == "キャンセル":
-                            await ctx.send("キャンセルしました")
-                            break
-                        await cur.execute("delete FROM `musiclist` where `userid` = %s and `lname` = %s and `id` = %s limit 1", (ctx.author.id, name, res[int(d.content) - 1][3]))
-                        await ctx.send("削除しました")
-                except SyntaxError:
+        res = await self.bot.execute_sql(
+            "SELECT * FROM `musiclist` where `userid` = %s and `lname` = %s",
+            (ctx.author.id, name), _return_type="fetchall"
+        )
+        if len(res) == 0:
+            await ctx.send("このプレイリストには曲が存在しないか、作られていません。")
+            return
+        i = 1
+        list = ""
+        for row in res:
+            que = Queue(restore(row[1]))
+            await que.setdata()
+            list = list + "No." + \
+                str(i) + "[" + que.title + "](" + que.url + ")\n"
+            i = i + 1
+            que.close()
+        embed = discord.Embed(
+            title=name, description=list, color=self.bot.Color)
+        await ctx.send(embed=embed)
+        try:
+            while True:
+                d = await self.input(ctx, "削除する曲のNoを数字で入力してください。キャンセルする場合はキャンセルと送ってください")
+                if d.content == "キャンセル":
                     await ctx.send("キャンセルしました")
+                    break
+                await self.bot.execute_sql(
+                    "delete FROM `musiclist` where `userid` = %s and `lname` = %s and `id` = %s limit 1",
+                    (ctx.author.id, name, res[int(d.content) - 1][3])
+                )
+                await ctx.send("削除しました")
+        except SyntaxError:
+            await ctx.send("キャンセルしました")
 
     async def input(self, ctx: commands.Context, q: str):
         def check(m):
@@ -542,16 +526,16 @@ class music(commands.Cog):
             try:
                 message = await self.bot.wait_for('message', timeout=180.0, check=check)
             except asyncio.TimeoutError:
-                await ctx.channel.send('入力を待機中です。キャンセルする場合は「キャンセルする」と送ってください')
+                await ctx.send('入力を待機中です。キャンセルする場合は「キャンセルする」と送ってください')
             else:
                 if message.content == "キャンセルする":
                     raise SyntaxError()
-                await ctx.channel.send("入力を受け付けました。確定する場合は「ok」と送って下さい。やり直す場合は「修正」と送ってください")
+                await ctx.send("入力を受け付けました。確定する場合は「ok」と送って下さい。やり直す場合は「修正」と送ってください")
                 while True:
                     try:
                         message1 = await self.bot.wait_for('message', timeout=180.0, check=check)
                     except asyncio.TimeoutError:
-                        await ctx.channel.send('タイムアウトしました。入力をやりなおしてください')
+                        await ctx.send('タイムアウトしました。入力をやりなおしてください')
                         break
                     else:
                         if message1.content == "ok":
@@ -561,8 +545,12 @@ class music(commands.Cog):
 
 
 class SearchList(discord.ui.Select):
-    def __init__(self, ctx: commands.Context, cog: music, query: str):
-        args = SnapshotSearchAPIV2().keywords().query(query.split(" ")).field({FieldType.TITLE, FieldType.CONTENT_ID}).sort(FieldType.VIEW_COUNTER).no_filter().limit(10).user_agent("NicoApiClient", "0.5.0").request().json()["data"]
+    def __init__(self, ctx: GuildContext, cog: music, query: str):
+        args = SnapshotSearchAPIV2().keywords().query(query.split(" ")).field(
+            {FieldType.TITLE, FieldType.CONTENT_ID}
+        ).sort(FieldType.VIEW_COUNTER).no_filter().limit(10).user_agent(
+            "NicoApiClient", "0.5.0"
+        ).request().json()["data"]
         self.cog = cog
         self.ctx = ctx
         options = []
@@ -594,10 +582,11 @@ class AplButton(discord.ui.Button):
             )
             return
         else:
-            async with self.bot.pool.acquire() as conn:
-                async with conn.cursor() as cur:
-                    await cur.execute("INSERT INTO `musiclist` (`userid`,`vid`,`lname`) VALUES (%s,%s,%s);", (interaction.user.id, self.it.sid, message.content))
-                    await message.channel.send('追加完了しました')
+            await self.bot.execute_sql(
+                "INSERT INTO `musiclist` (`userid`,`vid`,`lname`) VALUES (%s,%s,%s);",
+                (interaction.user.id, self.it.sid, message.content)
+            )
+            await message.channel.send('追加完了しました')
 
 
 class AudioMixer(discord.AudioSource):
