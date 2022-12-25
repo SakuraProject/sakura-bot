@@ -4,15 +4,22 @@ import os
 
 import discord
 
-from aiohttp import ClientSession
 from dotenv import load_dotenv
 from orjson import loads
 import aiomysql
+from logging import getLogger, config
 
 from utils import Bot
 
 
 load_dotenv()
+
+with open("data/logger_setting.json", "r") as f:
+    log_conf = loads(f.read())
+
+config.dictConfig(log_conf)
+
+logger = getLogger(__name__)
 
 bot = Bot(
     command_prefix='sk!', intents=discord.Intents.all(),
@@ -22,10 +29,10 @@ bot = Bot(
 
 @bot.listen()
 async def on_ready():
-    print(f"[Log]Hello {bot.user}")
+    logger.info("System will be ready...")
     await bot.load_extension("data.owners")
     await bot.load_extension("jishaku")
-    print("[Log]Connecting MySQL")
+    logger.debug("Connecting Database Server...")
     bot.pool = await aiomysql.create_pool(
         host=os.environ["MYSQLHOST"], port=int(os.environ["MYSQLPORT"]),
         user=os.environ["MYSQLUSER"], password=os.environ["MYSQLPASS"],
@@ -36,16 +43,16 @@ async def on_ready():
             try:
                 await bot.load_extension("cogs."+name.replace(".py", ""))
             except Exception as e:
-                print("[Log][err]" + str(e))
+                logger.error(f"{name} failed to load. \nreason:{e}")
             else:
-                print("[Log][load]" + name)
+                logger.debug(f"{name} is Loaded.")
     try:
         await bot.load_extension("cogs.sakurabrand.plugin")
     except Exception as e:
-        print("[Log][err]" + str(e))
+        logger.error(f"Plugin failed to load. \nreason:{e}")
     else:
-        print("[Log][load]Plugin")
-    print(f"[Log]Complete Booting,Thank you for using {bot.user}")
+        logger.debug("Plugin loaded")
+    logger.info(f"All systems are fine. \nthank you for using {bot.user}")
 
 
 if __name__ == "__main__":

@@ -3,3 +3,4 @@ pylintrc
 .discord_test/
 __pycache__/
 .vscode
+to be replaced

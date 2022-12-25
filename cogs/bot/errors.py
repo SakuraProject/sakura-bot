@@ -22,7 +22,7 @@ buckets = {
     commands.BucketType.role: "1ロール",
 }
 
-DEBUG_CHANNEL = os.environ.get("DEBUG_CHANNEL", 1012623774014783598)
+DEBUG_CHANNEL = int(os.environ.get("DEBUG_CHANNEL", 1012623774014783598))
 
 
 async def embedding(self: ErrorQuery, ctx: commands.Context, error: commands.CommandError):
