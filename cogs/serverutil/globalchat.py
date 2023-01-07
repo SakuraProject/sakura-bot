@@ -103,7 +103,7 @@ class GlobalChat(commands.Cog):
                 (message.channel.id,)
             )
             response = await cursor.fetchone()
-            response: str = response[0][0]
+            response: str = response[0]
             await cursor.execute(
                 "SELECT ChannelId FROM GlobalChat2 WHERE Name = %s;", (response,)
             )
