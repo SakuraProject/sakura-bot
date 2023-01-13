@@ -19,8 +19,7 @@ class GameSearch(commands.Cog):
     )
     async def gamesearch(self, ctx: commands.Context, *, name: str):
         async with self.bot.session.get(
-            "https://ysmsrv.wjg.jp/disbot/gamesearch.php?q=" +
-                quote_plus(name, encoding='utf-8')
+            f"https://ysmsrv.wjg.jp/disbot/gamesearch.php?q={quote_plus(name, encoding='utf-8')}"
         ) as resp:
             gj = loads(await resp.text())
         hdw = ""
@@ -34,15 +33,12 @@ class GameSearch(commands.Cog):
             await ctx.send("すみません。見つかりませんでした。別の単語をお試しください")
         else:
             await ctx.send(embed=discord.Embed(
-                title=gametitle + "の詳細",
-                description=game["Item"]["itemCaption"].replace('\\n', '\n'),
-                color=self.bot.Color
-            ).add_field(
-                name="機種", value=hdw
-            ).set_image(
+                title=gametitle + "の詳細", color=self.bot.Color,
+                description=game["Item"]["itemCaption"].replace('\\n', '\n')
+            ).add_field(name="機種", value=hdw).set_image(
                 url=game["Item"]["largeImageUrl"]
             ).set_footer(text="ゲーム情報検索"))
 
 
-async def setup(bot):
+async def setup(bot: Bot):
     await bot.add_cog(GameSearch(bot))
