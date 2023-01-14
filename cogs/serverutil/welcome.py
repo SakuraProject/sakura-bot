@@ -49,7 +49,7 @@ class Welcome(commands.Cog):
                 return role.mention
             return f"{emojis.WARNING}存在しないロールが指定されています。"
 
-        (row,) = await self.bot.execute_sql(
+        row = await self.bot.execute_sql(
             "SELECT * FROM Welcome WHERE GuildId = %s LIMIT 1;",
             (ctx.guild.id,), _return_type="fetchone"
         )
@@ -131,7 +131,7 @@ class Welcome(commands.Cog):
     async def on_member_join(self, member: discord.Member):
         if member.guild.id not in self.guilds_cache:
             return
-        (welcome_data,) = await self.bot.execute_sql(
+        welcome_data = await self.bot.execute_sql(
             "SELECT * FROM Welcome WHERE GuildId = %s LIMIT 1;",
             (member.guild.id,), _return_type="fetchone"
         )
