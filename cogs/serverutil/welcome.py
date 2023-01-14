@@ -76,16 +76,18 @@ class Welcome(commands.Cog):
         if not content:
             if ctx.guild.id not in self.guilds_cache:
                 return await ctx.send(f"{emojis.WARNING}この機能は設定されていません。")
-                await self.bot.execute_sql(
-                    """UPDATE Welcome SET Message = NULL WHERE GuildId = %s;""",
-                    (ctx.guild.id,)
-                )
+            await self.bot.execute_sql(
+                """UPDATE Welcome SET Message = NULL WHERE GuildId = %s;""",
+                (ctx.guild.id,)
+            )
+            self.guilds_cache.pop(ctx.guild.id)
             return await ctx.send(f"{emojis.CHECK_MARK}メッセージ送信をしなくなりました。")
         await self.bot.execute_sql(
             """INSERT INTO Welcome VALUES (%s, 1, %s, %s, 0, 0)
                 ON DUPLICATE KEY UPDATE Message = VALUES(Message);""",
             (ctx.guild.id, channel.id, content)
         )
+        self.guilds_cache.append(ctx.guild.id)
         await ctx.send(f"{emojis.CHECK_MARK}登録しました。")
 
     @welcome.command(description="ロールを付与します。")
@@ -113,6 +115,7 @@ class Welcome(commands.Cog):
                     """UPDATE Welcome SET UserRole = 0, BotRole = 0 WHERE GuildId = %s;""",
                     (ctx.guild.id,)
                 )
+            self.guilds_cache.pop(ctx.guild.id)
             return await ctx.send(f"{emojis.CHECK_MARK}ロール付与をしなくなりました。")
         await self.bot.execute_sql(
             """INSERT INTO Welcome VALUES (%s, 1, %s, NULL, %s, %s)
@@ -121,6 +124,7 @@ class Welcome(commands.Cog):
              role.id if mode in ["user", "all"] else 0,
              role.id if mode in ["bot", "all"] else 0)
         )
+        self.guilds_cache.append(ctx.guild.id)
         await ctx.send(f"{emojis.CHECK_MARK}登録しました。")
 
     @commands.Cog.listener()
