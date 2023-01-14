@@ -41,7 +41,7 @@ class Welcome(commands.Cog):
 
         def get_channel_ment(channel_id: int) -> str:
             if (ch := self.bot.get_channel(channel_id)):
-                return ch.mention
+                return getattr(ch, "mention", f"{emojis.WARNING}存在しないチャンネル")
             return f"{emojis.WARNING}存在しないチャンネル"
 
         def get_role_ment(role_id: int) -> str:
@@ -147,14 +147,14 @@ class Welcome(commands.Cog):
 
     def welcome_replace(self, content: str, member: discord.Member) -> str:
         return (
-            content.replace("$member$", str(member)).replace("$member_id$", member.id)
+            content.replace("$member$", str(member)).replace("$member_id$", str(member.id))
             .replace("$member_name$", member.name).replace("$member_ment$", member.mention)
             .replace("$member_mention$", member.mention).replace("$user$", str(member))
-            .replace("$user_id$", member.id).replace("$user_name$", member.name)
+            .replace("$user_id$", str(member.id)).replace("$user_name$", member.name)
             .replace("$user_ment$", member.mention).replace("$user_mention$", member.mention)
             .replace("$guild$", member.guild.name).replace("$guild_name$", member.guild.name)
-            .replace("$guild_id$", member.guild.id)
-            .replace("$member_count$", len(member.guild.members))
+            .replace("$guild_id$", str(member.guild.id))
+            .replace("$member_count$", str(len(member.guild.members)))
             .replace("$user_count$", str(len(member.guild.members)))
             .replace("$bot_count$", str(len([1 for m in member.guild.members if m.bot])))
             .replace("$non_bot_count$", str(len([1 for m in member.guild.members if not m.bot])))
