@@ -68,7 +68,7 @@ class Welcome(commands.Cog):
         ))
 
     @welcome.command(description="メッセージを送信します")
-    @commands.has_guild_permissions(manage_guilds=True)
+    @commands.has_guild_permissions(manage_guild=True)
     async def message(
         self, ctx: GuildContext, channel: discord.TextChannel = commands.CurrentChannel,
         *, content: str = ""
@@ -89,7 +89,7 @@ class Welcome(commands.Cog):
         await ctx.send(f"{emojis.CHECK_MARK}登録しました。")
 
     @welcome.command(description="ロールを付与します。")
-    @commands.has_guild_permissions(manage_guilds=True, manage_roles=True)
+    @commands.has_guild_permissions(manage_guild=True, manage_roles=True)
     async def role(
         self, ctx: GuildContext, mode: Literal["user", "bot", "all"],
         role: discord.Role | None = None
