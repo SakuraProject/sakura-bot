@@ -129,7 +129,7 @@ class Welcome(commands.Cog):
             return
         (welcome_data,) = await self.bot.execute_sql(
             "SELECT * FROM Welcome WHERE GuildId = %s LIMIT 1;",
-            (ctx.guild.id,), _return_type="fetchone"
+            (member.guild.id,), _return_type="fetchone"
         )
         # メッセージ送信
         if welcome_data[3]:
