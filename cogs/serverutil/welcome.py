@@ -117,13 +117,24 @@ class Welcome(commands.Cog):
                 )
             self.guilds_cache.pop(ctx.guild.id)
             return await ctx.send(f"{emojis.CHECK_MARK}ロール付与をしなくなりました。")
-        await self.bot.execute_sql(
-            """INSERT INTO Welcome VALUES (%s, 1, %s, NULL, %s, %s)
+        if mode == "user":
+            await self.bot.execute_sql(
+                """INSERT INTO Welcome VALUES (%s, 1, 0, NULL, %s, 0)
+                ON DUPLICATE KEY UPDATE UserRole = VALUES(UserRole);""",
+                (ctx.guild.id, role.id)
+            )
+        if mode == "bot":
+            await self.bot.execute_sql(
+                """INSERT INTO Welcome VALUES (%s, 1, 0, NULL, %s, %s)
+                ON DUPLICATE KEY UPDATE BotRole = VALUES(BotRole);""",
+                (ctx.guild.id, role.id)
+            )
+        if mode == "all":
+            await self.bot.execute_sql(
+                """INSERT INTO Welcome VALUES (%s, 1, 0, NULL, %s, %s)
                 ON DUPLICATE KEY UPDATE UserRole = VALUES(UserRole), BotRole = VALUES(BotRole);""",
-            (ctx.guild.id, ctx.channel.id,
-             role.id if mode in ["user", "all"] else 0,
-             role.id if mode in ["bot", "all"] else 0)
-        )
+                (ctx.guild.id, role.id, role.id)
+            )
         self.guilds_cache.append(ctx.guild.id)
         await ctx.send(f"{emojis.CHECK_MARK}登録しました。")
 
