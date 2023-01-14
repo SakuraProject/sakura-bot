@@ -99,7 +99,16 @@ class SakuraAd(commands.Cog):
             return await ctx.send("使い方が違います。")
 
     def get_random_ad_embed(self) -> discord.Embed:
-        user_id = random.choice(list(self.cache.keys()))
+        choices = list(self.cache.keys())
+        choices.append(0)
+        user_id = random.choice(choices)
+        if user_id == 0:
+            return self.create_ad_embed(
+                self.bot.user.id, "SakuraBotの導入よろしくお願いします！\n"
+                "[導入する](https://discord.com/api/oauth2/authorize?client_id=985852917489737728&permissions=8&scope=applications.commands%20bot)"
+                "\n[公式サーバーに参加](https://discord.gg/KW4CZvYMJg/)\n"
+                "[公式サイト](https://sakura-bot.net/)"
+            )
         selected_ad = random.choice(list(self.cache[user_id].keys()))
         return self.create_ad_embed(
             user_id, self.cache[user_id][selected_ad]
