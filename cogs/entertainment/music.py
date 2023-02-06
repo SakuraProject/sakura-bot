@@ -6,9 +6,8 @@ import aiohttp
 import audioop
 import copy
 import re
-import urllib.parse
+from urllib.parse import urlparse, parse_qs
 import urllib.request
-from logging import getLogger
 from time import time
 
 import discord
@@ -17,7 +16,7 @@ from discord.ext import commands
 from niconico.niconico import NicoNico
 from youtube_dl import YoutubeDL
 
-from utils import Bot, GuildContext, TimeoutView
+from utils import Bot, GuildContext, MyView as TimeoutView
 from nicovideo_api_client.api.v2.snapshot_search_api_v2 import SnapshotSearchAPIV2
 from nicovideo_api_client.constants import FieldType
 
@@ -47,11 +46,11 @@ def fmt_time(time: str | int) -> str:
 
 def restore(sid: str):
     "VideoIdの文字列のURLへの置き換えを行います。"
-    return sid.replace("daily:", "https://www.dailymotion.com/video/"
-        ).replace("bili:", "https://www.bilibili.com/video/"
-        ).replace("sc:", "https://soundcloud.com/"
-        ).replace("nico:", "https://www.nicovideo.jp/watch/"
-        ).replace("yf:", "https://ysmfilm.net/view.php?id=")
+    return sid.replace("daily:", "https://www.dailymotion.com/video/") \
+              .replace("bili:", "https://www.bilibili.com/video/") \
+              .replace("sc:", "https://soundcloud.com/") \
+              .replace("nico:", "https://www.nicovideo.jp/watch/") \
+              .replace("yf:", "https://ysmfilm.net/view.php?id=")
 
 
 class Queue:
@@ -70,64 +69,70 @@ class Queue:
         self.session = session
 
     async def setdata(self):
-        try:
-            if "nicovideo.jp" in self.url or "nico.ms" in self.url:
-                if self.video is not None:
-                    self.video.close()
-                video = niconico.video.get_video(self.url)
-                video.connect()
-                self.source = video.download_link
-                self.title = video.video.title
-                self.duration = video.video.duration
-                self.sid = "nico:" + video.video.id
-                self.video = video
-            elif "soundcloud" in self.url:
-                if "goo.gl" in self.url:
-                    self.url = requests.get(self.url).url
-                with YoutubeDL(self.YDL_OPTIONS) as ydl:
-                    info = ydl.extract_info(self.url, download=False)
-                if not info:
-                    raise KeyError("info not found")
-                self.source = info['url']
-                self.title = info['title']
-                self.duration = info["duration"]
-                self.sid = self.url.replace("https://soundcloud.com/", "sc:")
-            elif "ysmfilm" in self.url:
-                qs = urllib.parse.urlparse(self.url).query
-                qs_d = urllib.parse.parse_qs(qs)
-                dar = (await yf_getduration(qs_d['id'][0], self.session)).split(':')
-                self.duration = int(dar[0]) * 360 + int(dar[1]) * 60 + int(dar[2])
-                self.title = await yf_gettitle(qs_d['id'][0], self.session)
-                self.source = "https://ysmfilm.wjg.jp/video/" + qs_d['id'][0] + ".mp4"
-                self.sid = "yf:" + qs_d['id'][0]
-            elif urllib.parse.urlparse(self.url).path.endswith(('.mp4', 'mp3')):
+        parsed = urlparse(self.url)
+        if not parsed.netloc:
+            if parsed.path.endswith((".mp3", ".mp4")):
                 self.duration = '--:--:--'
                 self.title = self.url
                 self.source = self.url
                 self.sid = self.url
-            elif "bilibili" in self.url:
-                with YoutubeDL(self.BILIBILI_OPTIONS) as ydl:
-                    info = ydl.extract_info(self.url, download=False)
-                if not info:
-                    raise KeyError("info not found")
-                self.source = info["formats"][0]['url']
-                self.title = info['title']
-                self.duration = info["duration"]
-                self.sid = "bili:" + info["webpage_url"].replace(
-                    "https://www.bilibili.com/video/", "", 1)
-            elif "dailymotion" in self.url:
-                x = copy.copy(self.YDL_OPTIONS)
-                x["format"] = "mp4"
-                with YoutubeDL(x) as ydl:
-                    info = ydl.extract_info(self.url, download=False)
-                if not info:
-                    raise KeyError("info not found")
-                self.source = info['url']
-                self.title = info['title']
-                self.duration = info["duration"]
-                self.sid = "daily:" + info["id"]
-        except Exception:
-            getLogger(__name__).exception("Music Loading Error.")
+                return self
+            parsed = urlparse("https://" + self.url)
+
+        if parsed.netloc in ("nicovideo.jp", "nico.ms"):
+            if self.video is not None:
+                self.video.close()
+            video = niconico.video.get_video(self.url)
+            video.connect()
+            self.source = video.download_link
+            self.title = video.video.title
+            self.duration = video.video.duration
+            self.sid = "nico:" + video.video.id
+            self.video = video
+        elif parsed.netloc == "soundcloud.com":
+            with YoutubeDL(self.YDL_OPTIONS) as ydl:
+                info = ydl.extract_info(self.url, download=False)
+            if not info:
+                raise KeyError("info not found")
+            self.source = info['url']
+            self.title = info['title']
+            self.duration = info["duration"]
+            self.sid = self.url.replace("https://soundcloud.com/", "sc:")
+        elif parsed.netloc == "ysmfilm.net":
+            qs = urlparse(self.url).query
+            qs_d = parse_qs(qs)
+            dar = (await yf_getduration(qs_d['id'][0], self.session)).split(':')
+            self.duration = int(dar[0]) * 360 + int(dar[1]) * 60 + int(dar[2])
+            self.title = await yf_gettitle(qs_d['id'][0], self.session)
+            self.source = "https://ysmfilm.wjg.jp/video/" + qs_d['id'][0] + ".mp4"
+            self.sid = "yf:" + qs_d['id'][0]
+        elif parsed.netloc in (
+            "bilibili.com", "www.bilibili.com", "www.bilibili.tv",
+            "bilibili.tv", "bilibili.co.jp"
+        ):
+            with YoutubeDL(self.BILIBILI_OPTIONS) as ydl:
+                info = ydl.extract_info(self.url, download=False)
+            if not info:
+                raise KeyError("info not found")
+            self.source = info["formats"][0]['url']
+            self.title = info['title']
+            self.duration = info["duration"]
+            self.sid = "bili:" + info["webpage_url"].replace(
+                "https://www.bilibili.com/video/", "", 1)
+        elif parsed.netloc in ("dailymotion.com", "www.dailymotion.com"):
+            x = copy.copy(self.YDL_OPTIONS)
+            x["format"] = "mp4"
+            with YoutubeDL(x) as ydl:
+                info = ydl.extract_info(self.url, download=False)
+            if not info:
+                raise KeyError("info not found")
+            self.source = info['url']
+            self.title = info['title']
+            self.duration = info["duration"]
+            self.sid = "daily:" + info["id"]
+        else:
+            raise ValueError("Matched no video services.")
+        return self
 
     def close(self):
         del self.source
@@ -205,7 +210,8 @@ class Music(commands.Cog):
 
         def nextqueue(_):
             asyncio.run_coroutine_threadsafe(self.asyncnextqueue(
-                self.FFMPEG_OPTIONS, voice, ctx, nextqueue), loop)
+                self.FFMPEG_OPTIONS, voice, ctx, nextqueue
+            ), loop)
         self.lop.setdefault(ctx.guild.id, False)
         self.queues.setdefault(ctx.guild.id, [])
 
@@ -222,8 +228,7 @@ class Music(commands.Cog):
             if not voice.is_playing():
                 qp = self.queues[ctx.guild.id][qpl]
             else:
-                await ctx.send('プレイリストをキューに追加しました')
-                return
+                return await ctx.send('プレイリストをキューに追加しました')
         else:
             qp = Queue(url, self.bot.session)
             await qp.setdata()
@@ -241,13 +246,13 @@ class Music(commands.Cog):
                 pcm = discord.FFmpegPCMAudio(qp.source, **self.FFMPEG_OPTIONS)
                 setattr(pcm, "nextqueue", nextqueue)
             setattr(voice.source, "music", True)
-            ebd = discord.Embed(title=f"{qp.title}を再生します", color=self.bot.Color)
-            ebd.add_field(name="Title", value=f"[{qp.title}]({qp.url})")
-            ebd.add_field(name="Time", value=fmt_time(0) + "/" + fmt_time(qp.duration))
+            ebd = discord.Embed(
+                title=f"{qp.title}を再生します", color=self.bot.Color
+            ).add_field(
+                name="Title", value=f"[{qp.title}]({qp.url})"
+            ).add_field(name="Time", value=fmt_time(0) + "/" + fmt_time(qp.duration))
 
-            button = AplButton(qp, self.bot)
-            button._view = TimeoutView([button])
-            await button._view.send(ctx, embed=ebd)
+            await TimeoutView([AplButton(qp, self.bot)]).send(ctx, embed=ebd)
             await self.addc(qp)
 
     async def addc(self, qp: "Queue"):
@@ -257,6 +262,20 @@ class Music(commands.Cog):
                 ON DUPLICATE KEY UPDATE Count = Count + 1""",
             (qp.sid,)
         )
+
+    async def make_ranking(self) -> str:
+        "ランキングデータを作成します。"
+        res = await self.bot.execute_sql(
+            "SELECT * FROM MusicRanking ORDER BY Count desc limit 10",
+            _return_type="fetchall"
+        )
+        lis = ""
+        for i, row in enumerate(res):
+            que = Queue(restore(row[1]), self.bot.session)
+            await que.setdata()
+            lis += f"{i}位 [{que.title}]({que.url})\n"
+            que.close()
+        return lis
 
     async def asyncnextqueue(
         self, FFMPEG_OPTIONS, voice: discord.VoiceClient, ctx: GuildContext, nextqueue: Callable
@@ -352,14 +371,12 @@ class Music(commands.Cog):
             pcm = discord.FFmpegPCMAudio(qp.source, **FFMPEG_OPTIONS)
             setattr(pcm, "nextqueue", nextqueue)
         setattr(voice.source, "music", True)
-        ebd = discord.Embed(title=qp.title + "を再生します",
-                            color=self.bot.Color)
-        ebd.add_field(
-            name="Title", value=f"[{qp.title}]({qp.url})")
-        ebd.add_field(name="Time", value=fmt_time(0) + "/" + fmt_time(qp.duration))
-        button = AplButton(qp, self.bot)
-        button._view = TimeoutView([button])
-        await button._view.send(ctx, embed=ebd)
+        ebd = discord.Embed(
+            title=f"{qp.title}を再生します", color=self.bot.Color
+        ).add_field(
+            name="Title", value=f"[{qp.title}]({qp.url})"
+        ).add_field(name="Time", value=f"{fmt_time(0)}/{fmt_time(qp.duration)}")
+        await TimeoutView([AplButton(qp, self.bot)]).send(ctx, embed=ebd)
         await self.addc(qp)
 
     @commands.command()
@@ -419,20 +436,9 @@ class Music(commands.Cog):
 
     @commands.command()
     async def musicranking(self, ctx: commands.Context):
-        res = await self.bot.execute_sql(
-            "SELECT * FROM MusicRanking ORDER BY Count desc limit 10",
-            _return_type="fetchall"
-        )
-        i = 1
-        list = ""
-        for row in res:
-            que = Queue(restore(row[1]), self.bot.session)
-            await que.setdata()
-            list += f"{i}位 [{que.title}]({que.url})\n"
-            i += 1
-            que.close()
+        lis = await self.make_ranking()
         embed = discord.Embed(
-            title="よく聞かれている曲", description=list, color=self.bot.Color)
+            title="よく聞かれている曲", description=lis, color=self.bot.Color)
         await ctx.send(embed=embed)
 
     @commands.command()
@@ -444,23 +450,26 @@ class Music(commands.Cog):
         assert isinstance(voice, discord.VoiceClient)
 
         await voice.disconnect()
-        self.queues[ctx.guild.id] = list()
+        self.queues.setdefault(ctx.guild.id, [])
         for qp in self.queues[ctx.guild.id]:
             qp.close()
-        self.queues[ctx.guild.id] = list()
-        self.lopq[ctx.guild.id] = list()
+        self.queues[ctx.guild.id] = []
+        self.lopq[ctx.guild.id] = []
         await ctx.send('キューを削除し切断しました')
 
     @commands.command()
     @commands.guild_only()
     async def nowplaying(self, ctx: GuildContext):
-        ebd = discord.Embed(title="Now", color=self.bot.Color)
+        if not self.queues.get(ctx.guild.id):
+            return await ctx.send("何も再生していません。")
         qp = self.queues[ctx.guild.id][0]
-        ebd.add_field(name="Title", value="[" + qp.title + "](" + qp.url + ")")
-        ebd.add_field(name="Time", value=fmt_time(
-            int(time() - self.start)) + "/" + fmt_time(qp.duration))
-        view = TimeoutView([AplButton(qp, self.bot)])
-        await view.send(ctx, embed=ebd)
+        await TimeoutView([AplButton(qp, self.bot)]).send(ctx, embed=discord.Embed(
+            title="Now playing", color=self.bot.Color
+        ).add_field(
+            name="Title", value=f"[{qp.title}]({qp.url})"
+        ).add_field(
+            name="Time", value=f"{fmt_time(int(time() - self.start))}/{fmt_time(qp.duration)}"
+        ))
 
     @commands.command()
     async def editplaylist(self, ctx: commands.Context, name: str):
@@ -469,61 +478,37 @@ class Music(commands.Cog):
             (ctx.author.id, name), _return_type="fetchall"
         )
         if len(res) == 0:
-            await ctx.send("このプレイリストには曲が存在しないか、作られていません。")
-            return
-        i = 1
+            return await ctx.send("このプレイリストには曲が存在しないか、作られていません。")
         list = ""
-        for row in res:
+        for i, row in enumerate(res):
             que = Queue(restore(row[1]), self.bot.session)
             await que.setdata()
             list += f"No.{i}[{que.title}]({que.url})\n"
-            i = i + 1
             que.close()
-        embed = discord.Embed(
-            title=name, description=list, color=self.bot.Color)
-        await ctx.send(embed=embed)
+        embed = discord.Embed(title=name, description=list, color=self.bot.Color)
+        await ctx.send(
+            "削除する曲のNoを数字で入力してください。キャンセルする場合はキャンセルと送ってください",
+            embed=embed
+        )
         try:
-            while True:
-                d = await self.input(ctx, "削除する曲のNoを数字で入力してください。キャンセルする場合はキャンセルと送ってください")
-                if d.content == "キャンセル":
-                    await ctx.send("キャンセルしました")
-                    break
-                await self.bot.execute_sql(
-                    "DELETE FROM MusicList WHERE UserId = %s and `lname` = %s and `id` = %s limit 1",
-                    (ctx.author.id, name, res[int(d.content) - 1][3])
-                )
-                await ctx.send("削除しました")
-        except SyntaxError:
-            await ctx.send("キャンセルしました")
-
-    async def input(self, ctx: commands.Context, q: str):
-        def check(m):
-            return m.author == ctx.author and m.channel == ctx.channel
-        await ctx.send(q)
-        while True:
-            try:
-                message = await self.bot.wait_for('message', timeout=180.0, check=check)
-            except asyncio.TimeoutError:
-                await ctx.send('入力を待機中です。キャンセルする場合は「キャンセルする」と送ってください')
-            else:
-                if message.content == "キャンセルする":
-                    raise SyntaxError()
-                await ctx.send("入力を受け付けました。確定する場合は「ok」と送って下さい。やり直す場合は「修正」と送ってください")
-                while True:
-                    try:
-                        message1 = await self.bot.wait_for('message', timeout=180.0, check=check)
-                    except asyncio.TimeoutError:
-                        await ctx.send('タイムアウトしました。入力をやりなおしてください')
-                        break
-                    else:
-                        if message1.content == "ok":
-                            return message
-                        elif message1.content == "修正":
-                            break
+            msg = await self.bot.wait_for(
+                "message", timeout=60.0,
+                check=lambda m: m.author == ctx.author and m.channel == ctx.channel
+            )
+        except TimeoutError:
+            return await ctx.send("一定時間操作がなかったためキャンセルしました。")
+        if msg.content == "キャンセル":
+            return await ctx.send("キャンセルしました")
+        await self.bot.execute_sql(
+            "DELETE FROM MusicList WHERE UserId = %s and ListName = %s"
+            " and VideoId = %s limit 1;",
+            (ctx.author.id, name, res[int(msg.content) - 1][3])
+        )
+        await ctx.send("削除しました")
 
 
 class SearchList(discord.ui.Select):
-    _view: TimeoutView | None = None
+    view: TimeoutView | None
 
     def __init__(self, ctx: GuildContext, cog: Music, query: str):
         # ニコニコで検索
@@ -544,15 +529,14 @@ class SearchList(discord.ui.Select):
         super().__init__(placeholder='', min_values=1, max_values=1, options=options)
 
     async def callback(self, interaction: discord.Interaction):
-        if self._view and await self._view.check(interaction):
+        if self.view and await self.view.check(interaction):
             return
         await interaction.response.edit_message(content="")
         await self.cog._play(self.ctx, self.values[0])
 
 
 class AplButton(discord.ui.Button):
-    
-    _view: TimeoutView | None = None
+    view: TimeoutView | None
 
     def __init__(self, queue: "Queue", bot: Bot):
         self.queue = queue
@@ -560,7 +544,7 @@ class AplButton(discord.ui.Button):
         super().__init__(label="プレイリストに追加", style=discord.ButtonStyle.green)
 
     async def callback(self, interaction: discord.Interaction):
-        if self._view and self._view.check(interaction):
+        if self.view and self.view.check(interaction):
             return
         def check(m):
             return m.author == interaction.user and m.channel == interaction.channel
@@ -574,7 +558,7 @@ class AplButton(discord.ui.Button):
             return
         else:
             await self.bot.execute_sql(
-                "INSERT INTO `musiclist` (`userid`,`vid`,`lname`) VALUES (%s,%s,%s);",
+                "INSERT INTO MusicList (UserId, VideoId, ListName) VALUES (%s,%s,%s);",
                 (interaction.user.id, self.queue.sid, message.content)
             )
             await message.channel.send('追加完了しました')

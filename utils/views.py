@@ -11,9 +11,10 @@ import discord
 class EmbedSelect(discord.ui.Select):
     "embed選択用のセレクトメニュー。"
 
+    view: "MyView" | None
+
     def __init__(
         self, embeds: Sequence[discord.Embed], extras: dict | None = None,
-        parent: "EmbedsView" | None = None
     ):
         self.embeds = embeds
         if extras is None:
@@ -24,15 +25,14 @@ class EmbedSelect(discord.ui.Select):
             options = [discord.SelectOption(
                 label=k or "...", description=extras[k] or "...", value=str(count)
             ) for count, k in enumerate(extras.keys())]
-        self.parent = parent
 
         super().__init__(
             placeholder='見たい項目を選んでください...', min_values=1, max_values=1, options=options
         )
 
     async def callback(self, interaction: discord.Interaction):
-        if self.parent and self.parent.author_id:
-            if self.parent.author_id != interaction.user.id:
+        if self.view and self.view.author_id:
+            if self.view.author_id != interaction.user.id:
                 return await interaction.response.send_message(
                     'あなたはこの操作をすることができません。', ephemeral=True
                 )
@@ -41,11 +41,8 @@ class EmbedSelect(discord.ui.Select):
         )
 
 
-class TimeoutView(discord.ui.View):
-    """タイムアウト時に編集するビュー。
-
-    Inspiration by: RextTeam 2022
-    """
+class MyView(discord.ui.View):
+    "タイムアウト時に編集をしたり、ユーザーが操作できるかを自動で調べるビュー。"
 
     message: discord.Message | None = None
     author_id: int | None = None
@@ -86,7 +83,7 @@ class TimeoutView(discord.ui.View):
         await self.message.edit(view=self)
 
 
-class EmbedsView(TimeoutView):
+class EmbedsView(MyView):
     "Embedsビュー。初期化時にembedのリストを渡す。"
 
     children: list[EmbedSelect]
@@ -99,7 +96,7 @@ class EmbedsView(TimeoutView):
         self.embeds = embeds
         self.message, self.author_id = None, None
 
-        self.add_item(EmbedSelect(embeds, extras, self))
+        self.add_item(EmbedSelect(embeds, extras))
 
     async def send(self, ctx: commands.Context):
         "Sendします。"
@@ -109,27 +106,13 @@ class EmbedsView(TimeoutView):
             await super().send(ctx, embed=self.embeds[0], view=self)
 
 
-class EmbedsButtonView(TimeoutView):
+class EmbedsButtonView(MyView):
     "Embedsビューのボタンバージョン。"
 
     def __init__(self, embeds: Sequence[discord.Embed]):
         self.embeds = embeds
         self.page = 0
         super().__init__()
-
-    async def check(self, interaction: discord.Interaction) -> bool:
-        "ユーザーが操作できないかどうか調べます。"
-        if self.author_id and self.author_id != interaction.user.id:
-            await interaction.response.send_message(
-                'あなたはこの操作をすることができません。', ephemeral=True
-            )
-            return True
-        elif self.message and self.message.author != interaction.user:
-            await interaction.response.send_message(
-                'あなたはこの操作をすることができません。', ephemeral=True
-            )
-            return True
-        return False
 
     @discord.ui.button(label="<")
     async def left(self, interaction: discord.Interaction, _):
