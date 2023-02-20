@@ -20,7 +20,7 @@ class GlobalChat(commands.Cog):
         ids = await self.bot.execute_sql(
             "SELECT ChannelId FROM GlobalChat2;", _return_type="fetchall"
         )
-        self.channels_cache = list(ids)
+        self.channels_cache = list(i[0] for i in ids)
 
     @commands.hybrid_group(
         description="グローバルチャットです。",
@@ -103,7 +103,7 @@ class GlobalChat(commands.Cog):
                 (message.channel.id,)
             )
             response = await cursor.fetchone()
-            response: str = response[0][0]
+            response: str = response[0]
             await cursor.execute(
                 "SELECT ChannelId FROM GlobalChat2 WHERE Name = %s;", (response,)
             )
