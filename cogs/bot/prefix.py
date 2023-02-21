@@ -3,6 +3,8 @@
 from typing import Literal
 
 from discord.ext import commands
+import discord
+
 from aiomysql import Cursor
 
 from utils import Bot
@@ -21,9 +23,9 @@ class Prefix(commands.Cog):
         await cursor.execute("""CREATE TABLE IF NOT EXISTS GuildPrefix(
             GuildId BIGINT PRIMARY KEY NOT NULL, Prefix TEXT
         );""")
-        await cursor.execute("""SELECT * FROM UserPrefix;""")
+        await cursor.execute("SELECT * FROM UserPrefix;")
         data1 = await cursor.fetchall()
-        await cursor.execute("""SELECT * FROM GuildPrefix;""")
+        await cursor.execute("SELECT * FROM GuildPrefix;")
         return (data1, await cursor.fetchall())
 
     async def cog_load(self):
@@ -48,12 +50,16 @@ class Prefix(commands.Cog):
         elif not ctx.guild:
             raise commands.NoPrivateMessage()
         else:
-            self.bot.guild_prefixes[ctx.guild.id] = prefix
-            await self.bot.execute_sql(
-                """INSERT INTO GuildPrefix VALUES (%s, %s)
-                    ON DUPLICATE KEY UPDATE Prefix=VALUES(Prefix);""",
-                (ctx.guild.id, prefix)
-            )
+            assert isinstance(ctx.author, discord.Member)
+            if not ctx.author.guild_permissions.administrator:
+                raise commands.MissingPermissions(["administrator"])
+            else:
+                self.bot.guild_prefixes[ctx.guild.id] = prefix
+                await self.bot.execute_sql(
+                    """INSERT INTO GuildPrefix VALUES (%s, %s)
+                        ON DUPLICATE KEY UPDATE Prefix=VALUES(Prefix);""",
+                    (ctx.guild.id, prefix)
+                )
         await ctx.send("Ok")
 
 
