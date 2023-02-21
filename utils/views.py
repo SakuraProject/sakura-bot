@@ -68,7 +68,8 @@ class MyView(discord.ui.View):
         return False
 
     async def send(self, ctx: commands.Context, *args, **kwargs) -> discord.Message:
-        "送信した後にmessageをセットします。"
+        "送信した後にmessageをセットします。引数にviewを含める必要はありません。"
+        kwargs.setdefault("view", self)
         self.author_id = ctx.author.id
         message = await ctx.send(*args, **kwargs)
         self.message = message
