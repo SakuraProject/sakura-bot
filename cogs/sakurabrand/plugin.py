@@ -122,8 +122,7 @@ class Music(music.music):
         if not channel:
             return await ctx.send("接続先のチャンネルが見つかりませんでした。")
         voice = ctx.guild.voice_client
-        assert isinstance(voice, discord.VoiceClient)
-        if voice and voice.is_connected():
+        if isinstance(voice, discord.VoiceClient) and voice.is_connected():
             await voice.move_to(channel)
         else:
             voice = await channel.connect()
