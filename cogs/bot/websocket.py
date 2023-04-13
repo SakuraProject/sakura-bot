@@ -156,7 +156,7 @@ class Websocket(commands.Cog):
             "timestamp": ""
         }
         channel = self.bot.get_channel(int(args["ch"]))
-        if not channel or not isinstance(channel, discord.abc.MessageableChannel):
+        if not channel or not isinstance(channel, discord.abc.Messageable):
             raise ValueError("Unknown Channel Id.")
         message = discord.Message(
             data=payload, state=self.bot._get_state(), channel=channel
