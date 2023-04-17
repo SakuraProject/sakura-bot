@@ -17,14 +17,14 @@ class SpeedTest(commands.Cog):
         msg = await ctx.send("計測中、しばらくお待ちください")
         stest = speedtest.Speedtest()
         await self.bot.loop.run_in_executor(None, stest.get_best_server)
-        up = await self.bot.loop.run_in_executor(None, stest.upload)
-        dl = await self.bot.loop.run_in_executor(None, stest.download)
-        ebd = discord.Embed(
+        upload = await self.bot.loop.run_in_executor(None, stest.upload)
+        download = await self.bot.loop.run_in_executor(None, stest.download)
+        embed = discord.Embed(
             title="speedtest",
-            description=f"**ダウンロード**:\n{dl / 1024 / 1024}Mbps\n"
-                        f"**アップロード**:\n{up / 1024 / 1024}Mbps"
+            description=f"**ダウンロード**:\n{download / 1024 / 1024}Mbps\n"
+                        f"**アップロード**:\n{upload / 1024 / 1024}Mbps"
         )
-        await msg.edit(content="", embed=ebd)
+        await msg.edit(content="", embed=embed)
 
     @commands.hybrid_command(description="botのpingを取得します")
     async def ping(self, ctx: commands.Context):

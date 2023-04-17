@@ -18,3 +18,8 @@ discordBotプロジェクトです。
 4.`sakura_private`リポジトリを見る権限がある人はそれを`git clone`しておく
 
 5.`pipenv run python3 main.py`または`python shell`を実行してから`python3 main.py`を実行すると起動できる
+
+## 環境変数で変更できるもの
+`名称 (キー)` の形式で記載
+
+* エラーログのチャンネル (DEBUG_CHANNEL)

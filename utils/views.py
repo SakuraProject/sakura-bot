@@ -3,9 +3,13 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
+from typing import Any, TYPE_CHECKING
 
 from discord.ext import commands
 import discord
+
+if TYPE_CHECKING:
+    from .bot import Bot
 
 
 class EmbedSelect(discord.ui.Select):
@@ -42,7 +46,18 @@ class EmbedSelect(discord.ui.Select):
 
 
 class MyView(discord.ui.View):
-    "タイムアウト時に編集をしたり、ユーザーが操作できるかを自動で調べるビュー。"
+    """タイムアウト時に編集をしたり、ユーザーが操作できるかを自動で調べるビュー。
+    使い方:
+      await MyView([Selects, Buttons, ...]).send(ctx, 'Select from bottom...')
+
+    class Selects(discord.ui.Select):
+      view: MyView | None
+
+      async def callback(self, interaction):
+        if self.view and self.view.check(interaction):
+          # この時点で操作できない場合は操作できないという返信がされている
+          return
+    """
 
     message: discord.Message | None = None
     author_id: int | None = None
@@ -83,6 +98,18 @@ class MyView(discord.ui.View):
                 item.disabled = True  # type: ignore
         await self.message.edit(view=self)
 
+    async def on_error(
+        self, interaction: discord.Interaction, error: commands.CommandError,
+        item: discord.ui.Item[Any], /
+    ) -> None:
+        if isinstance(interaction.client, Bot):
+            try:
+                ctx = await commands.Context.from_interaction(interaction)  # type: ignore
+                await interaction.client.cogs["ErrorQuery"].on_command_error(ctx, error)
+            except ValueError:
+                pass
+        return await super().on_error(interaction, error, item)
+
 
 class EmbedsView(MyView):
     "Embedsビュー。初期化時にembedのリストを渡す。"
@@ -99,12 +126,12 @@ class EmbedsView(MyView):
 
         self.add_item(EmbedSelect(embeds, extras))
 
-    async def send(self, ctx: commands.Context):
+    async def send(self, ctx: commands.Context, *args, **kwargs):
         "Sendします。"
         if len(self.embeds) == 1:
-            await super().send(ctx, embed=self.embeds[0])
+            return await super().send(ctx, embed=self.embeds[0])
         else:
-            await super().send(ctx, embed=self.embeds[0], view=self)
+            return await super().send(ctx, embed=self.embeds[0], view=self)
 
 
 class EmbedsButtonView(MyView):
@@ -135,9 +162,9 @@ class EmbedsButtonView(MyView):
         else:
             return await interaction.response.send_message("次のページはありません", ephemeral=True)
 
-    async def send(self, ctx: commands.Context):
+    async def send(self, ctx: commands.Context, *args, **kwargs):
         "Sendします。"
         if len(self.embeds) == 1:
-            await super().send(ctx, embed=self.embeds[0])
+            return await super().send(ctx, embed=self.embeds[0])
         else:
-            await super().send(ctx, embed=self.embeds[0], view=self)
+            return await super().send(ctx, embed=self.embeds[0], view=self)

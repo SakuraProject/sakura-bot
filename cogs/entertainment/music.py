@@ -7,16 +7,14 @@ import audioop
 import copy
 import re
 from urllib.parse import urlparse, parse_qs
-import urllib.request
 from time import time
 
 import discord
-import requests
 from discord.ext import commands
 from niconico.niconico import NicoNico
 from youtube_dl import YoutubeDL
 
-from utils import Bot, GuildContext, MyView as TimeoutView
+from utils import Bot, GuildContext, MyView
 from nicovideo_api_client.api.v2.snapshot_search_api_v2 import SnapshotSearchAPIV2
 from nicovideo_api_client.constants import FieldType
 
@@ -185,7 +183,7 @@ class Music(commands.Cog):
         if re.match(self.URL_PATTERN, url):
             await self._play(ctx, url)
         else:
-            view = TimeoutView([SearchList(ctx, self, url)])
+            view = MyView([SearchList(ctx, self, url)])
             await view.send(ctx, "検索結果から曲を選んでください。")
 
     FFMPEG_OPTIONS = {
@@ -252,7 +250,7 @@ class Music(commands.Cog):
                 name="Title", value=f"[{qp.title}]({qp.url})"
             ).add_field(name="Time", value=fmt_time(0) + "/" + fmt_time(qp.duration))
 
-            await TimeoutView([AplButton(qp, self.bot)]).send(ctx, embed=ebd)
+            await MyView([AplButton(qp, self.bot)]).send(ctx, embed=ebd)
             await self.addc(qp)
 
     async def addc(self, qp: "Queue"):
@@ -376,7 +374,7 @@ class Music(commands.Cog):
         ).add_field(
             name="Title", value=f"[{qp.title}]({qp.url})"
         ).add_field(name="Time", value=f"{fmt_time(0)}/{fmt_time(qp.duration)}")
-        await TimeoutView([AplButton(qp, self.bot)]).send(ctx, embed=ebd)
+        await MyView([AplButton(qp, self.bot)]).send(ctx, embed=ebd)
         await self.addc(qp)
 
     @commands.command()
@@ -463,7 +461,7 @@ class Music(commands.Cog):
         if not self.queues.get(ctx.guild.id):
             return await ctx.send("何も再生していません。")
         qp = self.queues[ctx.guild.id][0]
-        await TimeoutView([AplButton(qp, self.bot)]).send(ctx, embed=discord.Embed(
+        await MyView([AplButton(qp, self.bot)]).send(ctx, embed=discord.Embed(
             title="Now playing", color=self.bot.Color
         ).add_field(
             name="Title", value=f"[{qp.title}]({qp.url})"
@@ -508,7 +506,7 @@ class Music(commands.Cog):
 
 
 class SearchList(discord.ui.Select):
-    view: TimeoutView | None
+    view: MyView | None
 
     def __init__(self, ctx: GuildContext, cog: Music, query: str):
         # ニコニコで検索
@@ -536,7 +534,7 @@ class SearchList(discord.ui.Select):
 
 
 class AplButton(discord.ui.Button):
-    view: TimeoutView | None
+    view: MyView | None
 
     def __init__(self, queue: "Queue", bot: Bot):
         self.queue = queue
@@ -567,8 +565,7 @@ class AplButton(discord.ui.Button):
 class AudioMixer(discord.AudioSource):
     def __init__(self, msource):
         super().__init__()
-        self.s = []
-        self.s.append(msource)
+        self.s = [msource]
         self.music = False
         self.tts = False
 
