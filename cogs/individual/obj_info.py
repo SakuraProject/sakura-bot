@@ -94,14 +94,13 @@ class ObjectInfo(commands.Cog):
                 target.guild_permissions, perm, False) else ":x:") + name
             for perm, name in PERMISSIONS.items()
         )
-        embed = discord.Embed(
-            title=f"{target}の権限",
-            description="このサーバーでの権限です。"
-        )
-        embed.add_field(name="** **", value=desc)
-        embed.set_thumbnail(url=target.display_avatar.url)
 
-        return embed
+        return discord.Embed(
+            title=f"{target}の権限",
+            description=desc
+        ).set_footer(
+            text="このサーバー全体での権限です。"
+        ).set_thumbnail(url=target.display_avatar.url)
 
     def create_ui_embed_3(self, target: discord.Member |
                           discord.User) -> discord.Embed:
