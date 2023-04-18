@@ -23,9 +23,11 @@ class Bot(commands.Bot):
     _session: ClientSession | None
     pool: Pool
     owner_ids: list[int]
+    user: discord.ClientUser
     cogs: Cogs
     user_prefixes: dict[int, str]
     guild_prefixes: dict[int, str]
+    voice_clients: list[discord.VoiceClient]
 
     Color = 0xffbdde
 
@@ -64,25 +66,19 @@ class Bot(commands.Bot):
     async def execute_sql(
         self, sql: str, _injects: tuple | None = None,
         _return_type: Literal[""] = ...
-    ) -> None:
+    ) -> tuple | None:
         ...
     @overload
     async def execute_sql(
         self, sql: str, _injects: tuple | None = None,
         _return_type: Literal["fetchone"] = ...
-    ) -> tuple[tuple]:
+    ) -> tuple[Any, ...]:
         ...
     @overload
     async def execute_sql(
         self, sql: str, _injects: tuple | None = None,
         _return_type: Literal["fetchall"] = ...
     ) -> tuple[tuple, ...]:
-        ...
-    @overload
-    async def execute_sql(
-        self, sql: str, _injects: tuple | None = None,
-        _return_type: Literal[""] = ""
-    ) -> tuple:
         ...
     @overload
     async def execute_sql(

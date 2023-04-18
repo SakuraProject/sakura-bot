@@ -7,7 +7,7 @@ import asyncio
 from utils import Bot, GuildContext
 
 
-class bump(commands.Cog):
+class Bump(commands.Cog):
     def __init__(self, bot: Bot):
         self.bot = bot
         self.notifi.start()
@@ -278,4 +278,4 @@ class bump(commands.Cog):
 
 
 async def setup(bot: Bot):
-    await bot.add_cog(bump(bot))
+    await bot.add_cog(Bump(bot))
