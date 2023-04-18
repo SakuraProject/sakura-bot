@@ -62,9 +62,9 @@ class WSContext(commands.Context):
                 if e.fields is not None:
                     for fi in e.fields:
                         sc = sc + (fi.name or "") + (fi.value or "")
-        sen: dict[str, str | dict] = {"cmd": "send", "type": "res"}
-        args = {"content": sc, "id": self.author.id}
-        sen["args"] = args
+        sen = {
+            "cmd": "send", "type": "res", "args": {"content": sc, "id": self.author.id}
+        }
         return await self.bot.cogs["Websocket"].sock.send(dumps(sen))
 
 
@@ -103,57 +103,41 @@ class Websocket(commands.Cog):
             await ctx.reply("使用方法が違います")
 
     @backend.command()
-    async def run(self, ctx, *, code):
+    async def run(self, ctx: commands.Context, *, code):
         self.res.setdefault("jsk", dict())
         self.res["jsk"][str(ctx.author.id)] = None
-        req = dict()
-        req["cmd"] = "jsk"
-        req["type"] = "cmd"
-        arg = dict()
-        arg["id"] = str(ctx.author.id)
-        arg["code"] = code
-        req["args"] = arg
+        req = {
+            "cmd": "jsk", "type": "cmd", "args": {"id": str(ctx.author.id), "code": code}
+        }
         await self.sock.send(dumps(req))
         await asyncio.sleep(1)
         while self.res["jsk"][str(ctx.author.id)] is None:
             await asyncio.sleep(1)
         await ctx.send(self.res["jsk"][str(ctx.author.id)]["res"])
 
-    async def shareguilds(self, args: dict):
+    def shareguilds(self, args: dict):
         share = getattr(self.bot.get_user(int(args["id"])), "mutual_guilds", [])
         res = list()
         for g in share:
-            guild = await self.guild({"id": g.id})
+            guild = self.guild({"id": g.id})
             res.append(guild)
-        recv = dict()
-        recv["id"] = args["id"]
-        recv["guilds"] = res
-        return recv
+        return {"id": args["id"], "guilds": res}
 
-    async def guild(self, args: dict):
+    def guild(self, args: dict):
         g = self.bot.get_guild(args["id"])
         if not g:
             raise ValueError("Unknown Guild Id.")
-        guild = {}
-        guild["id"] = str(g.id)
-        guild["name"] = g.name
-        guild["member_count"] = g.member_count
-        guild["icon"] = dict()
-        if g.icon is not None:
-            guild["icon"]["url"] = g.icon.url
-        else:
-            guild["icon"]["url"] = None
-        guild["text_channels"] = [(await self.channel({"id": ch.id})) for ch in g.text_channels]
-        return guild
+        return {
+            "id": str(g.id), "name": g.name, "member_count": g.member_count,
+            "icon": {"url": getattr(g.icon, "url", None)},
+            "text_channels": [self.channel({"id": ch.id}) for ch in g.text_channels]
+        }
 
-    async def channel(self, args: dict):
-        g = self.bot.get_channel(args["id"])
-        if not g:
+    def channel(self, args: dict):
+        c = self.bot.get_channel(args["id"])
+        if not c:
             raise ValueError("Unknown Channel Id.")
-        ch = dict()
-        ch["id"] = str(g.id)
-        ch["name"] = getattr(g, "name", "")
-        return ch
+        return {"id": str(c.id), "name": getattr(c, "name", "")}
 
     async def invoke(self, args: dict[str, Any]):
         user = self.bot.get_user(int(args["id"]))
@@ -185,13 +169,12 @@ class Websocket(commands.Cog):
         await self.bot.invoke(ctx)
         return args
 
-    async def help_catlist(self, args: dict) -> dict:
+    def help_catlist(self, args: dict) -> dict:
         "カテゴリのリストを'res'に入れて返す。"
-        options = [
+        args["res"] = [
             {"rname": name, "name": name}
             for name in self.bot.cogs["Help"].get_categories()
         ]
-        args["res"] = options
         return args
 
     async def help_cmdlist(self, args: dict) -> dict:
@@ -203,35 +186,30 @@ class Websocket(commands.Cog):
             if not isinstance(c, commands.Cog):
                 continue
             for cm in c.get_commands():
-                cmds.append(await self.command({"id": cm.name}))
+                cmds.append(self.command({"id": cm.name}))
         args["res"] = cmds
         return args
 
-    async def command(self, args: dict) -> dict:
+    def command(self, args: dict) -> dict:
         "コマンドの情報を'res'に入れて返す。argsの'id'にはコマンド名を入れること。"
         cm = self.bot.get_command(args["id"])
         if not cm:
             return args
-        dc = dict()
+        dc = {
+            "name": args["id"], "doc": HELP.get(cm.name, ""), "type": type(cm).__name__,
+            "clean_params": [self.convert_param(p) for p in cm.clean_params.values()],
+        }
         if isinstance(cm, commands.Group | commands.HybridGroup):
-            comds = list(cm.commands)
-            cl = list()
-            for c in comds:
-                cl.append(await self.command({"id": cm.name + " " + c.name}))
-            dc["commands"] = cl
-        dc["name"] = args["id"]
-        clp = [(await self.convert_param(p))
-               for p in cm.clean_params.values()]
-        dc["clean_params"] = clp
-        dc["doc"] = HELP.get(cm.name, "")
-        dc["type"] = type(cm).__name__
+            dc["commands"] = [
+                self.command({"id": f"{cm.name} {c.name}"}) for c in cm.commands
+            ]
         args["res"] = dc
         return args
 
-    async def convert_param(self, p: commands.Parameter):
+    def convert_param(self, p: commands.Parameter):
         return {"name": p.name, "required": p.required}
 
-    async def commands(self, args):
+    def commands(self, args):
         ccl = list()
         for c in self.bot.commands:
             if isinstance(c, commands.Group | commands.HybridGroup):
@@ -240,13 +218,13 @@ class Websocket(commands.Cog):
                     if isinstance(cm, commands.Group | commands.HybridGroup):
                         comds1 = list(cm.commands)
                         for ccm in comds1:
-                            ccl.append(await self.command(
+                            ccl.append(self.command(
                                 {"id": c.name + " " + cm.name + " " + ccm.name}
                             ))
                     else:
-                        ccl.append(await self.command({"id": c.name + " " + cm.name}))
+                        ccl.append(self.command({"id": c.name + " " + cm.name}))
             else:
-                ccl.append(await self.command({"id": c.name}))
+                ccl.append(self.command({"id": c.name}))
         args["commands"] = ccl
         return args
 

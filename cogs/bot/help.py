@@ -6,11 +6,11 @@ import inspect
 import discord
 from discord.ext import commands
 
-from utils import Bot, TimeoutView
+from utils import Bot, MyView
 from data.help import HELP
 
 
-FIRST_DESC = ("これはBotのヘルプです。下の選択メニューからカテゴリを選ぶことによりコマンドを選択できます。"
+FIRST_DESC = ("このBotのヘルプです。下の選択メニューからカテゴリを選ぶことによりコマンドを選択できます。"
               "これを見てもよくわからない方はサポートサーバーまでお問い合わせください。")
 
 
@@ -22,9 +22,9 @@ class Help(commands.Cog):
         description="ヘルプを表示します。", aliases=["ヘルプ"]
     )
     async def help(self, ctx: commands.Context, *, search_query: str | None = None):
-        embed = self.create_help(search_query)
-        view = TimeoutView([CategoryList(self)])
-        await view.send(ctx, embed=embed, view=view)
+        await MyView([CategoryList(self)]).send(
+            ctx, embed=self.create_help(search_query)
+        )
 
     def create_help(self, query: str | None, _mode: bool | None = None) -> discord.Embed:
         "helpのEmbedを生成します。"
@@ -50,8 +50,7 @@ class Help(commands.Cog):
         paths = inspect.getfile(command.callback).split(os.path.sep)
         if "cogs" not in paths:
             return "others"
-        category_name = paths[paths.index("cogs") - len(paths) + 1]
-        return category_name
+        return paths[paths.index("cogs") - len(paths) + 1]
 
     def get_categories(self) -> list[str]:
         "カテゴリ名のリストを取得します。"
@@ -110,7 +109,7 @@ class CategoryList(discord.ui.Select):
             else:
                 desc += f"\n{cmd_name}: {HELP[cmd_name].splitlines()[0]}"
         embed = discord.Embed(title=self.values[0], description=desc)
-        view = TimeoutView([self, CmdList(self.values[0], self.cog)])
+        view = MyView([self, CmdList(self.values[0], self.cog)])
         view.message = interaction.message
         await interaction.response.edit_message(embeds=[embed], view=view)
 
@@ -140,7 +139,7 @@ class CmdList(discord.ui.Select):
         if isinstance(cmd, commands.Command | commands.HybridCommand):
             await interaction.response.edit_message(embeds=[embed])
         else:
-            view = TimeoutView(
+            view = MyView(
                 [CategoryList(self.cog), CmdList(self.category_name, self.cog)]
             )
             await interaction.response.edit_message(embeds=[embed], view=view)

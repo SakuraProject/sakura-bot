@@ -24,16 +24,16 @@ if TYPE_CHECKING:
 class Cogs(TypedDict):
     AutoMod: automod.AutoMod
     Mod: mod.Moderation
-    purge: purge.purge
+    Purge: purge.Purge
     BotAbout: about.BotAbout
     ErrorQuery: errors.ErrorQuery
     Help: help.Help
     Prefix: prefix.Prefix
-    speedtest: speedtest.speedtest
+    SpeedTest: speedtest.SpeedTest
     Websocket: websocket.Websocket
     GameSearch: gamesearch.GameSearch
-    music: music.music
-    mynews: mynews.mynews
+    Music: music.Music
+    MyNews: mynews.MyNews
     qr: qr.qr
     reversi: reversi.reversi
     Afk: afk.Afk
@@ -47,17 +47,17 @@ class Cogs(TypedDict):
     Tweet: tweet.Tweet
     SakuraAd: ad.SakuraAd
     Plugin: plugin.Plugin
-    bump: bump.bump
+    Bump: bump.Bump
     Captcha: captcha.Captcha
     FreeThread: freethread.FreeThread
     Gban: gban.Gban
-    giveaway: giveaway.giveaway
+    Giveaway: giveaway.Giveaway
     GlobalChat: globalchat.GlobalChat
     KasoNotice: kaso_notice.KasoNotice
-    rocations: rocations.rocations
+    Rocations: rocations.Rocations
     RoleLinker: role_linker.RoleLinker
-    ticket: ticket.ticket
-    tts: tts.tts
+    Ticket: ticket.Ticket
+    TTS: tts.TTS
 
 class GuildContext(commands.Context):
     "commands.guild_onlyをデコレータとしてつけた場合にctxに型付けできるクラス。"

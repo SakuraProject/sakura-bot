@@ -15,7 +15,7 @@ class FreeThread(commands.Cog):
     )
     async def freethread(self, ctx: commands.Context):
         await ctx.reply(
-            "この機能を有効にするにはチャンネルトピックに`sk>freethread`と書いてください"
+            "チャンネルトピックに`sk>freethread`と書くとフリースレッドが使用できます。"
         )
 
     @commands.Cog.listener()

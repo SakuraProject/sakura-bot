@@ -94,14 +94,13 @@ class ObjectInfo(commands.Cog):
                 target.guild_permissions, perm, False) else ":x:") + name
             for perm, name in PERMISSIONS.items()
         )
-        embed = discord.Embed(
-            title=f"{target}の権限",
-            description="このサーバーでの権限です。"
-        )
-        embed.add_field(name="** **", value=desc)
-        embed.set_thumbnail(url=target.display_avatar.url)
 
-        return embed
+        return discord.Embed(
+            title=f"{target}の権限",
+            description=desc
+        ).set_footer(
+            text="このサーバー全体での権限です。"
+        ).set_thumbnail(url=target.display_avatar.url)
 
     def create_ui_embed_3(self, target: discord.Member |
                           discord.User) -> discord.Embed:
@@ -234,16 +233,19 @@ class ObjectInfo(commands.Cog):
             title=f"{target}の情報",
             description=f"ID: `{target.id}`",
             color=self.bot.Color
-        )
-        embed.add_field(name="作成日時",
-                        value=discord.utils.format_dt(target.created_at)
-                        if target.created_at else "なし")
-        embed.add_field(name="有効期限",
-                        value=discord.utils.format_dt(target.expires_at)
-                        if target.expires_at else "不明")
-        embed.add_field(name="使用回数", value=target.uses)
-        embed.add_field(name="使用可能回数", value=target.max_uses)
-        embed.add_field(
+        ).add_field(
+            name="作成日時",
+            value=discord.utils.format_dt(target.created_at)
+                  if target.created_at else "なし"
+        ).add_field(
+            name="有効期限",
+            value=discord.utils.format_dt(target.expires_at)
+                  if target.expires_at else "不明"
+        ).add_field(
+            name="使用回数", value=target.uses
+        ).add_field(
+            name="使用可能回数", value=target.max_uses
+        ).add_field(
             name="招待リンクの使用可能回数が制限されているか",
             value="はい" if target.max_uses is None else "いいえ"
         )

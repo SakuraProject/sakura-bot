@@ -2,14 +2,14 @@ import asyncio
 from hashids import Hashids
 from discord.ext import commands
 import discord
-from ujson import loads
+from orjson import loads
 import datetime
 import random
 
 from utils import Bot, dumps
 
 
-class giveaway(commands.Cog):
+class Giveaway(commands.Cog):
     def __init__(self, bot: Bot):
         self.bot = bot
 
@@ -48,13 +48,13 @@ class giveaway(commands.Cog):
                                 new_message = None
                                 channel = self.bot.get_channel(
                                     int(gaway['cid'][str(i)]))
-                                if channel is not None:
+                                if isinstance(channel, discord.abc.Messageable):
                                     try:
                                         new_message = await channel.fetch_message(int(gaway['mid'][str(i)]))
                                     except discord.errors.NotFound:
                                         new_message = None
                             except KeyError:
-                                str("keyerror")
+                                continue
                             if channel is not None:
                                 if new_message is not None:
                                     userstemp = [u async for u in new_message.reactions[0].users()]
@@ -95,7 +95,7 @@ class giveaway(commands.Cog):
                                     text='Thanks for entering!')
                                 channelt = self.bot.get_channel(
                                     int(gaway['cid'][str(i)]))
-                                if channelt is not None:
+                                if isinstance(channelt, discord.abc.Messageable):
                                     await channelt.send(embed=winning_announcement)
                                 self.gavs.pop(gk)
                                 await self.delete(gk)
@@ -153,6 +153,8 @@ class giveaway(commands.Cog):
             await ctx.channel.send(f'チャンネルメンションが無効だよ。このように入力してね: {ctx.channel.mention}')
             return
         channel = self.bot.get_channel(c_id)
+        if not isinstance(channel, discord.abc.Messageable):
+            return await ctx.send("エラー: botが送信できるチャンネルを選んでください。")
         try:
             gavs = self.gavs[code]
             prize = gavs['prize']
@@ -200,6 +202,8 @@ class giveaway(commands.Cog):
         prize = str(giveaway_answers[1])
         times = int(giveaway_answers[2])
         win = int(giveaway_answers[3])
+        if not isinstance(channel, discord.abc.Messageable):
+            return await ctx.send("エラー: botが送信できるチャンネルを選んでください。")
         await ctx.channel.send(f'{prize}の抽選を開始しました\n{channel.mention}でお知らせをしてください、開催期間は{times}秒です')
         give = discord.Embed(color=0x2ecc71)
         give.set_author(name=f'GIVEAWAY TIME!',
@@ -234,4 +238,4 @@ class giveaway(commands.Cog):
 
 
 async def setup(bot):
-    await bot.add_cog(giveaway(bot))
+    await bot.add_cog(Giveaway(bot))

@@ -38,7 +38,7 @@ BADGES: dict[str, BadgeType] = {
         "name": "Sakura Premium User",
         "emoji": None,
         "description": "プレミアムユーザーです。",
-        "condition": lambda _, __: False
+        "condition": lambda *_: False
     },
 }
 

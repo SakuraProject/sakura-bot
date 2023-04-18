@@ -23,7 +23,7 @@ from cogs.entertainment.music import AudioMixer
 from utils import Bot
 
 
-class tts(commands.Cog):
+class TTS(commands.Cog):
     def __init__(self, bot: Bot):
         self.bot = bot
         self.pl = [' ', 'I', 'N', 'U', 'a', 'b', 'by', 'ch', 'cl', 'd', 'dy', 'e', 'f', 'g', 'gy', 'h', 'hy', 'i', 'j',
@@ -123,7 +123,7 @@ class tts(commands.Cog):
                 if not voice.is_playing():
                     voice.play(AudioMixer(discord.FFmpegPCMAudio(swav)))
                 else:
-                    voice.source.s.append(discord.FFmpegPCMAudio(swav))
+                    getattr(voice.source, "s").append(discord.FFmpegPCMAudio(swav))
                 while voice.is_playing():
                     await asyncio.sleep(1)
                 os.remove(swav)
@@ -186,9 +186,15 @@ class tts(commands.Cog):
                 self.dic.setdefault(str(ctx.guild.id), dict())
                 self.dic[str(ctx.guild.id)][text] = replased
                 if len(res) == 0:
-                    await cur.execute("INSERT INTO `tts` (`gid`, `voice`, `dic`) VALUES (%s,%s,%s);", (ctx.guild.id, self.values[0], dumps(self.dic[str(ctx.guild.id)]).decode()))
+                    await cur.execute(
+                        "INSERT INTO `tts` (`gid`, `voice`, `dic`) VALUES (%s,%s,%s);",
+                        (ctx.guild.id, text, dumps(self.dic[str(ctx.guild.id)]).decode())
+                    )
                 else:
-                    await cur.execute("UPDATE `tts` SET `dic` = %s where `gid` = %s;", (dumps(self.dic[str(ctx.guild.id)]).decode(), ctx.guild.id))
+                    await cur.execute(
+                        "UPDATE `tts` SET `dic` = %s where `gid` = %s;",
+                        (dumps(self.dic[str(ctx.guild.id)]).decode(), ctx.guild.id)
+                    )
                 await ctx.send("登録しました")
 
     @tts.command()
@@ -200,9 +206,15 @@ class tts(commands.Cog):
                 self.dic.setdefault(str(ctx.guild.id), dict())
                 self.dic[str(ctx.guild.id)].pop(text)
                 if len(res) == 0:
-                    await cur.execute("INSERT INTO `tts` (`gid`, `voice`, `dic`) VALUES (%s,%s,%s);", (ctx.guild.id, self.values[0], dumps(self.dic[str(ctx.guild.id)]).decode()))
+                    await cur.execute(
+                        "INSERT INTO `tts` (`gid`, `voice`, `dic`) VALUES (%s,%s,%s);",
+                        (ctx.guild.id, text, dumps(self.dic[str(ctx.guild.id)]).decode())
+                    )
                 else:
-                    await cur.execute("UPDATE `tts` SET `dic` = %s where `gid` = %s;", (dumps(self.dic[str(ctx.guild.id)]).decode(), ctx.guild.id))
+                    await cur.execute(
+                        "UPDATE `tts` SET `dic` = %s where `gid` = %s;",
+                        (dumps(self.dic[str(ctx.guild.id)]).decode(), ctx.guild.id)
+                    )
                 await ctx.send("削除しました")
 
 
@@ -236,4 +248,4 @@ class MainView(discord.ui.View):
 
 
 async def setup(bot):
-    await bot.add_cog(tts(bot))
+    await bot.add_cog(TTS(bot))
