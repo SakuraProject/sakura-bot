@@ -310,7 +310,7 @@ class Plugin(commands.Cog):
         )
         for row in response:
             self.guilds[row[0]] = loads(row[1])
-        await self.bot.remove_cog("music")
+        await self.bot.remove_cog("Music")
         await bot.add_cog(Music(bot))
         music.Queue = PluginQueue
         music.SearchList = PluginSearchList
