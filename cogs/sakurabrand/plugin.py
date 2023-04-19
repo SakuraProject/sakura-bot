@@ -10,7 +10,7 @@ from discord.ext import commands
 from discord import FFmpegPCMAudio
 
 from utils import Bot, GuildContext
-from cogs.entertainment import music
+from cogs.entertainment import usic
 # 既存の機能をプラグイン対応可にします
 oldrestore = music.restore
 
@@ -94,7 +94,7 @@ class PluginSearchList(music.SearchList):
                 .__init__(placeholder='', min_values=1, max_values=1, options=options)
 
 
-class Music(music.music):
+class Music(music.Music):
 
     async def is_playlist(self, ctx: commands.Context, url: str):
         res = list()
