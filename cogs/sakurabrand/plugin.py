@@ -10,7 +10,7 @@ from discord.ext import commands
 from discord import FFmpegPCMAudio
 
 from utils import Bot, GuildContext
-from cogs.entertainment import usic
+from cogs.entertainment import music
 # 既存の機能をプラグイン対応可にします
 oldrestore = music.restore
 
