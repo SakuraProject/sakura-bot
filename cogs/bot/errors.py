@@ -5,7 +5,9 @@ from __future__ import annotations
 import discord
 from discord.ext import commands
 
-from traceback import TracebackException
+import traceback
+from inspect import cleandoc
+from logging import getLogger
 import os
 
 from utils import Bot
@@ -99,12 +101,12 @@ async def embedding(self: ErrorQuery, ctx: commands.Context, error: commands.Com
         elif isinstance(error, commands.NotOwner):
             embed.description = "このコマンドはbotの所有者のみ実行できます。"
         elif isinstance(error, commands.MissingPermissions):
-            embed.description = "あなたがコマンドを実行するのに必要な権限が足りません。"
+            embed.description = "あなたがコマンドを実行するのに必要な権限が足りません。\n"
             embed.description += ", ".join(
                 f"`{PERMISSIONS.get(name)}`" for name in error.missing_permissions
             )
         elif isinstance(error, commands.BotMissingPermissions):
-            embed.description = "コマンドの実行に対してBotが必要な権限が足りません。"
+            embed.description = "コマンドの実行に対してBotが必要な権限が足りません。\n"
             embed.description += "足りない権限: " + ", ".join(
                 f"`{PERMISSIONS.get(name)}`" for name in error.missing_permissions
             )
@@ -133,7 +135,7 @@ async def embedding(self: ErrorQuery, ctx: commands.Context, error: commands.Com
         elif isinstance(error, commands.NSFWChannelRequired):
             embed.description = "このコマンドはNSFWチャンネル専用です。"
         else:
-            embed.description = "このコマンドは実行を禁止されています。"
+            embed.description = "このコマンドは何らかの理由により実行を禁止されています。"
     elif isinstance(error, commands.CommandNotFound):
         embed.description = "コマンドが見つかりませんでした。"
     elif isinstance(error, commands.DisabledCommand):
@@ -153,17 +155,15 @@ async def embedding(self: ErrorQuery, ctx: commands.Context, error: commands.Com
         channel = self.bot.get_channel(DEBUG_CHANNEL)
 
         assert isinstance(channel, discord.TextChannel)
-        error_message = "".join(
-            TracebackException.from_exception(error).format()
-        )
+        error_message = "".join(traceback.format_exception(error))
 
-        print("\033[31m" + error_message + "\033[0m")
+        getLogger(__name__).exception("\033[31m" + error_message + "\033[0m")
 
         await channel.send(
-            f"""発生サーバー：{getattr(ctx.guild, 'name')}(ID:{getattr(ctx.guild, 'id')})
+            cleandoc(f"""発生サーバー：{getattr(ctx.guild, 'name')}(ID:{getattr(ctx.guild, 'id')})
                 発生チャンネル：{getattr(ctx.channel, "name")}(ID:{ctx.channel.id})
                 発生ユーザー：{ctx.author}(ID:{ctx.author.id})
-                発生コマンド：{getattr(ctx.command, "name")}(`{ctx.message.content}`)""",
+                発生コマンド：{getattr(ctx.command, "name")}(`{ctx.message.content}`)"""),
             embed=discord.Embed(
                 title="エラー詳細", description=f"```py\n{error_message}\n```")
         )

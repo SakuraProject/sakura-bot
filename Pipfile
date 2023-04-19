@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-"discord.py" = "==2.0"
+"discord.py" = "*"
 python-dotenv = "*"
 ujson = "*"
 pytimeparse = "*"
@@ -28,6 +28,8 @@ flake8 = "*"
 autopep8 = "*"
 discord-test = {git = "https://github.com/yaakiyu/discord-test"}
 pyright = "*"
+pycodestyle = "*"
+pydocstyle = "*"
 
 [requires]
 python_version = "3.10"

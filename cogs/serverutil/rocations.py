@@ -3,7 +3,7 @@ import asyncio
 from time import time
 
 
-class rocations(commands.Cog):
+class Rocations(commands.Cog):
     def __init__(self, bot):
         self.bot, self.before = bot, ""
 
@@ -89,4 +89,4 @@ class rocations(commands.Cog):
 
 
 async def setup(bot):
-    await bot.add_cog(rocations(bot))
+    await bot.add_cog(Rocations(bot))

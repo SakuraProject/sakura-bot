@@ -4,14 +4,16 @@ from discord.ext import commands
 from utils import Bot
 
 
-class purge(commands.Cog):
+class Purge(commands.Cog):
     def __init__(self, bot: Bot):
         self.bot = bot
 
-    @commands.command()
+    @commands.command(description="メッセージを一斉削除します。")
     async def purge(
-        self, ctx: commands.Context, length=0, member: discord.User | None = None
+        self, ctx: commands.Context, length=0, target: discord.User | None = None
     ):
+        if not isinstance(ctx.channel, discord.TextChannel):
+            return await ctx.send("このコマンドはテキストチャンネルでしか実行できません。")
         if length == 0:
             mlis = []
             inn = False
@@ -28,23 +30,19 @@ class purge(commands.Cog):
                         mlis.append(m)
 
             def check(m):
-                if member is not None:
-                    return m.author.id == member.id and m.id in [
+                if target is not None:
+                    return m.author.id == target.id and m.id in [
                         ml.id for ml in mlis]
                 else:
                     return m.id in [ml.id for ml in mlis]
             dmsg = await ctx.channel.purge(limit=100000, check=check)
             await ctx.send(str(len(dmsg)) + "メッセージを削除しました")
         else:
-            def check(m):
-                if member is not None:
-                    return m.author.id == member.id and m.id in [
-                        ml.id for ml in mlis]
-                else:
-                    return True
-            dmsg = await ctx.channel.purge(limit=length, check=check)
+            dmsg = await ctx.channel.purge(
+                limit=min(length, 300), check=lambda m: target is None or m.id == target.id
+            )
             await ctx.send(str(len(dmsg)) + "メッセージを削除しました")
 
 
 async def setup(bot: Bot):
-    await bot.add_cog(purge(bot))
+    await bot.add_cog(Purge(bot))

@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 
 
-class ticket(commands.Cog):
+class Ticket(commands.Cog):
     def __init__(self, bot):
         self.bot, self.before = bot, ""
 
@@ -81,6 +81,8 @@ class ticket(commands.Cog):
     async def on_interaction(self, interaction: discord.Interaction):
         if not interaction.data or not interaction.guild or not interaction.message:
             return
+        assert isinstance(interaction.user, discord.Member)
+
         if interaction.data.get("custom_id", "") == "sakuraticket":
             chan = interaction.channel
             cat = getattr(chan, "category", None)
@@ -127,4 +129,4 @@ class MainView(discord.ui.View):
 
 
 async def setup(bot):
-    await bot.add_cog(ticket(bot))
+    await bot.add_cog(Ticket(bot))
