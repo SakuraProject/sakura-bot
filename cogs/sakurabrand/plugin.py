@@ -68,7 +68,7 @@ class PluginQueue(music.Queue):
 
 
 class PluginSearchList(music.SearchList):
-    def __init__(self, ctx: commands.Context, cog: music.music, query: str):
+    def __init__(self, ctx: commands.Context, cog: music.usic, query: str):
         self.cog = cog
         self.ctx = ctx
         items = []
