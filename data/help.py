@@ -16,7 +16,10 @@ HELP = {
         bump通知というロールにメンションするようになります。
         ロールは省略可能です。"""),
     "captcha": cleandoc("""認証機能です。
-        サーバーを荒らしから守るために使用できます。"""),
+        サーバーを荒らしから守るために使用できます。
+        サブコマンド一覧：
+            - `captcha web`
+            - `captcha password`"""),
     "captcha web": cleandoc("""Web認証用のパネルを送信します。
         **使いかた：**
         `sk!captcha web @認証済み`
