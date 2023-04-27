@@ -42,7 +42,7 @@ class ObjectInfo(commands.Cog):
         if ctx.author.id in self.bot.owner_ids:
             embeds.append(self.create_ui_embed_3(target))
 
-        view = EmbedsView(embeds)
+        view = EmbedsView(embeds, {f"{target}の権限": "このサーバー内でのユーザーの権限です。"})
         await view.send(ctx)
 
     # User info Embed creator
@@ -144,7 +144,7 @@ class ObjectInfo(commands.Cog):
         self, ctx: commands.Context, target: discord.Guild = commands.CurrentGuild
     ):
         embeds = [self.create_si_embed_1(target)]
-        descriptions = {"基本情報": "サーバーの基本情報です。"}
+        descriptions = {f"{target.name}の基本情報": "サーバーの基本情報です。"}
         if target == ctx.guild:
             embeds.append(self.create_si_embed_2(target))
             descriptions["ロール一覧"] = "サーバーにあるロールの一覧です。"
@@ -159,7 +159,7 @@ class ObjectInfo(commands.Cog):
     def create_si_embed_1(self, target: discord.Guild) -> discord.Embed:
         "基本情報"
         embed = discord.Embed(
-            title=f"{target.name}の情報",
+            title=f"{target.name}の基本情報",
             description=f"ID: `{target.id}`",
             color=self.bot.Color
         )

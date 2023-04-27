@@ -18,17 +18,16 @@ class EmbedSelect(discord.ui.Select):
     view: "MyView" | None
 
     def __init__(
-        self, embeds: Sequence[discord.Embed], extras: dict | None = None,
+        self, embeds: Sequence[discord.Embed], extras: dict = {},
     ):
         self.embeds = embeds
-        if extras is None:
-            options = [discord.SelectOption(
-                label=e.title or "...", description=e.description or "...", value=str(count)
-            ) for count, e in enumerate(embeds)]
-        else:
-            options = [discord.SelectOption(
-                label=k or "...", description=extras[k] or "...", value=str(count)
-            ) for count, k in enumerate(extras.keys())]
+        options = []
+        for count, embed in enumerate(embeds):
+            options.append(discord.SelectOption(
+                label=embed.title or "...",
+                description=(extras.get(embed.title) or embed.description or "...")[:100],
+                value=str(count)
+            ))
 
         super().__init__(
             placeholder='見たい項目を選んでください...', min_values=1, max_values=1, options=options
@@ -118,7 +117,7 @@ class EmbedsView(MyView):
 
     def __init__(
         self, embeds: Sequence[discord.Embed],
-        extras: dict[str, str] | None = None
+        extras: dict[str, str] = {}
     ):
         super().__init__()
         self.embeds = embeds
@@ -128,10 +127,15 @@ class EmbedsView(MyView):
 
     async def send(self, ctx: commands.Context, *args, **kwargs):
         "Sendします。"
+        if "embed" in kwargs or "embeds" in kwargs:
+            raise KeyError("No Embed key-word arguments are arrowed.")
         if len(self.embeds) == 1:
-            return await super().send(ctx, embed=self.embeds[0])
+            return await super().send(ctx, *args, embed=self.embeds[0], **kwargs)
         else:
-            return await super().send(ctx, embed=self.embeds[0], view=self)
+            view = kwargs.pop("view") or self
+            return await super().send(
+                ctx, *args, embed=self.embeds[0], view=view, **kwargs
+            )
 
 
 class EmbedsButtonView(MyView):
