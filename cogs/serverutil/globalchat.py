@@ -26,12 +26,15 @@ class GlobalChat(commands.Cog):
         description="グローバルチャットです。",
         aliases=["グローバルチャット", "gc"]
     )
+    @commands.bot_has_permissions(view_channel=True, manage_webhooks=True)
+    @commands.has_permissions(manage_channels=True)
     async def globalchat(self, ctx: commands.Context):
         if not ctx.invoked_subcommand:
             await ctx.reply("使用方法が違います。")
 
     @globalchat.command(
-        description="グローバルチャットに接続します。"
+        description="グローバルチャットに接続します。",
+        aliases=["connect"]
     )
     async def create(self, ctx: commands.Context, name: str = "main"):
         try:
@@ -45,7 +48,8 @@ class GlobalChat(commands.Cog):
         await ctx.reply("グローバルチャットに接続しました。")
 
     @globalchat.command(
-        description="グローバルチャットから切断します。"
+        description="グローバルチャットから切断します。",
+        aliases=["delete"]
     )
     async def remove(self, ctx: commands.Context):
         try:
