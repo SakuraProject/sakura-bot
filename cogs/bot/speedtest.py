@@ -41,12 +41,12 @@ class SpeedTest(commands.Cog):
             title="ping",
             description="Botの動作速度に関する情報です。"
         ).add_field(
-            name="Discordとの接続速度", value=f"{latency}ms"
+            name="Discordとの接続速度", value=f"{latency:.2f}ms"
         ).add_field(
             name="バックエンドとの通信速度", value=f"{backend_latency}ms"
         ).add_field(
             name="Discordへのメッセージ送信にかかった時間",
-            value=f"{int((time.time() - sending) * 1000)}ms"
+            value=f"{int((time.time() - sending) * 1000):.2f}ms"
         )
         await ctx.send(embed=embed)
 
