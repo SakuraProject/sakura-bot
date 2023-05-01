@@ -36,6 +36,8 @@ class GlobalChat(commands.Cog):
         description="グローバルチャットに接続します。",
         aliases=["connect"]
     )
+    @commands.bot_has_permissions(view_channel=True, manage_webhooks=True)
+    @commands.has_permissions(manage_channels=True)
     async def create(self, ctx: commands.Context, name: str = "main"):
         try:
             await self.bot.execute_sql(
@@ -49,8 +51,10 @@ class GlobalChat(commands.Cog):
 
     @globalchat.command(
         description="グローバルチャットから切断します。",
-        aliases=["delete"]
+        aliases=["delete", "rm", "del"]
     )
+    @commands.bot_has_permissions(view_channel=True, manage_webhooks=True)
+    @commands.has_permissions(manage_channels=True)
     async def remove(self, ctx: commands.Context):
         try:
             await self.bot.execute_sql(

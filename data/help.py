@@ -5,7 +5,9 @@ from inspect import cleandoc
 
 HELP = {
     "about": "Botの情報を見ることができます。",
-    "afk": "留守メッセージ機能です。",
+    "afk": cleandoc("""留守メッセージ機能です。
+        サブコマンド一覧：
+            - `afk set`"""),
     "afk set": cleandoc("""留守メッセージを設定します。
         **使い方：**
         `sk!afk set 勉強中です。`
