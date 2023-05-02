@@ -66,9 +66,39 @@ class GlobalChat(commands.Cog):
             return await ctx.reply("グローバルチャットに接続していません。")
         await ctx.reply("グローバルチャットから切断しました。")
 
+    @globalchat.command()
+    async def information(
+        self, ctx: commands.Context,
+        channel: discord.TextChannel = commands.CurrentChannel
+    ):
+        if channel.id not in self.channels_cache:
+            return await ctx.send(embed=discord.Embed(
+                title="エラー",
+                description=("この" if channel == ctx.channel else "その")
+                    + "チャンネルはグローバルチャットに接続していません！"
+            ))
+        data = await self.bot.execute_sql(
+            "SELECT Name FROM GlobalChat2 WHERE ChannelId=%s;",
+            (channel.id,), _return_type="fetchone"
+        )
+        data2 = await self.bot.execute_sql(
+            "SELECT ChannelId FROM GlobalChat2 WHERE Name=%s;",
+            (data[0],), _return_type="fetchall"
+        )
+        await ctx.send(embed=discord.Embed(
+            title="グローバルチャット接続状況",
+            description=f"名前: {data[0]}", color=0x00ffff
+        ).add_field(
+            name="このグローバルチャットの接続数", value=f"{len(data2)}チャンネル"
+        ))
+
     async def gc_send(self, channel_id: int, message: discord.Message):
         channel = self.bot.get_channel(channel_id)
         if not channel or not isinstance(channel, discord.TextChannel):
+            await self.bot.execute_sql(
+                "DELETE FROM GlobalChat2 WHERE ChannelId = %s;",
+                (channel_id,)
+            )
             return
         webhook = await get_webhook(channel)
         if channel.guild == message.guild or message.author.discriminator == '0000':
