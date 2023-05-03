@@ -102,30 +102,12 @@ class Bump(commands.Cog):
                             ebd = discord.Embed(
                                 color=self.bot.Color, description="rt!raiseを確認しました。次回は<t:" + str(int(nof)) + ":R>です。時間になったら通知します")
                             await message.channel.send(embeds=[ebd])
-        if message.author.id == 961521106227974174 and message.guild:
-            if message.content.find("Raised!") != -1:
-                nof = time() + 14106
-                await self.save(message, "frrtraise", nof)
-                async with self.bot.pool.acquire() as conn:
-                    async with conn.cursor() as cur:
-                        await cur.execute("SELECT * FROM `bumpset` where `gid`=%s and `type`=%s", (message.guild.id, "frrtraise"))
-                        res1 = await cur.fetchall()
-                        if len(res1) == 0:
-                            await cur.execute("INSERT INTO `bumpset` (`gid`, `type`, `onoff`) VALUES (%s,%s,%s);", (message.guild.id, "frrtraise", "on"))
-                            onoff = "on"
-                        else:
-                            onoff = res1[0][2]
-                        if onoff == "on":
-                            ebd = discord.Embed(
-                                color=self.bot.Color, description="fr!raiseを確認しました。次回は<t:" + str(int(nof)) + ":R>です。時間になったら通知します")
-                            await message.channel.send(embeds=[ebd])
 
     dics = {
-        "toss": "tossの時間だよg.tossをして表示順位を上げましょう",
-        "raise": "raiseの時間だよrt!raiseをして表示順位を上げましょう",
-        "frrtraise": "Free RTのraiseの時間だよfr!raiseをして表示順位を上げましょう",
-        "up": "upの時間だよ/dissoku upをして表示順位を上げましょう",
-        "bump": "bumpの時間だよ/bumpをして表示順位を上げましょう"
+        "toss": "tossの時間だよ!\n`g.toss`をして表示順位を上げましょう",
+        "raise": "raiseの時間だよ!\n`rt!raise`をして表示順位を上げましょう",
+        "up": "upの時間だよ!\n</dissoku up:828002256690610256>をして表示順位を上げましょう",
+        "bump": "bumpの時間だよ!\n</bump:947088344167366698>をして表示順位を上げましょう"
     }
 
     @tasks.loop(seconds=10)
@@ -170,27 +152,6 @@ class Bump(commands.Cog):
                     (message.channel.id, str(nof), type, message.guild.id)
                 )
                 await conn.commit()
-
-    @commands.command()
-    @commands.has_guild_permissions(administrator=True)
-    @commands.guild_only()
-    async def frrtraiseonoff(
-        self, ctx: GuildContext, onoff, role: discord.Role | None = None
-    ):
-        if role is None:
-            roleid = 0
-        else:
-            roleid = role.id
-        async with self.bot.pool.acquire() as conn:
-            async with conn.cursor() as cur:
-                await cur.execute("SELECT * FROM `bumpset` where `type`=%s and `gid` = %s", ("frrtraise", ctx.guild.id))
-                res = await cur.fetchall()
-                await conn.commit()
-                if len(res) == 0:
-                    await cur.execute("INSERT INTO `bumpset` (`gid`, `type`, `onoff`, `role`) VALUES (%s,%s,%s,%s);", (ctx.guild.id, "frrtraise", onoff.replace("true", "on"), roleid))
-                else:
-                    await cur.execute("UPDATE `bumpset` SET `gid` = %s,`type` = %s,`onoff` = %s,`role` = %s where `gid` = %s and `type` = %s;", (ctx.guild.id, "frrtraise", onoff.replace("true", "on"), roleid, ctx.guild.id, "frrtraise"))
-                await ctx.reply("設定しました")
 
     @commands.command()
     @commands.guild_only()
