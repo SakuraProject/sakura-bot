@@ -484,7 +484,6 @@ class AutoMod(commands.Cog):
         if msg.guild is None or msg.author == msg.guild.me:
             return
 
-        assert isinstance(msg.author, discord.Member)
         gid, uid = msg.guild.id, msg.author.id
 
         self.data_check(gid, uid)
@@ -503,7 +502,8 @@ class AutoMod(commands.Cog):
                     await msg.channel.send(
                         "⚠️メッセージの削除に失敗しました。権限を確認してください。"
                     )
-                await self.do_punish(g_setting, msg.author, msg.channel)
+                if isinstance(msg.author, discord.Member):
+                    await self.do_punish(g_setting, msg.author, msg.channel)
 
                 await self.save(gid)
 
