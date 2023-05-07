@@ -19,7 +19,7 @@ class Help(commands.Cog):
         self.bot = bot
 
     @commands.hybrid_command(
-        description="ヘルプを表示します。", aliases=["ヘルプ"]
+        description="ヘルプを表示します。", aliases=["ヘルプ", "h"]
     )
     async def help(self, ctx: commands.Context, *, search_query: str | None = None):
         await MyView([CategoryList(self)]).send(
@@ -105,9 +105,9 @@ class CategoryList(discord.ui.Select):
             cmd = self.cog.bot.get_command(cmd_name)
             assert cmd
             if cmd.description:
-                desc += f"\n{cmd_name}: {cmd.description}"
+                desc += f"\n`{cmd_name}`: {cmd.description}"
             else:
-                desc += f"\n{cmd_name}: {HELP[cmd_name].splitlines()[0]}"
+                desc += f"\n`{cmd_name}`: {HELP[cmd_name].splitlines()[0]}"
         embed = discord.Embed(title=self.values[0], description=desc)
         view = MyView([self, CmdList(self.values[0], self.cog)])
         view.message = interaction.message
