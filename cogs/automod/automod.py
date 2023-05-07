@@ -481,7 +481,7 @@ class AutoMod(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, msg: discord.Message):
-        if msg.guild is None or msg.author == msg.guild.me:
+        if msg.guild is None or msg.author == msg.guild.me or not isinstance(msg.author, discord.Member):
             return
 
         gid, uid = msg.guild.id, msg.author.id
