@@ -12,6 +12,7 @@ from aiomysql import Pool
 from orjson import loads
 
 from ._types import Cogs
+from data.owners import owner_ids
 
 
 reT = TypeVar("reT")
@@ -37,6 +38,7 @@ class Bot(commands.Bot):
         self._session = None
         self.user_prefixes = {}
         self.guild_prefixes = {}
+        self.owner_ids = owner_ids
         self.load_private_module()
 
     def load_private_module(self):
