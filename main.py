@@ -30,7 +30,6 @@ bot = Bot(
 @bot.listen()
 async def on_ready():
     logger.info("System will be ready...")
-    await bot.load_extension("data.owners")
     await bot.load_extension("jishaku")
     logger.debug("Connecting Database Server...")
     bot.pool = await aiomysql.create_pool(
