@@ -131,7 +131,7 @@ class Welcome(commands.Cog):
             )
         if mode == "bot":
             await self.bot.execute_sql(
-                """INSERT INTO Welcome2 VALUES (%s, 1, 0, NULL, %s, %s, NULL)
+                """INSERT INTO Welcome2 VALUES (%s, 1, 0, NULL, 0, %s, NULL)
                 ON DUPLICATE KEY UPDATE BotRole = VALUES(BotRole);""",
                 (ctx.guild.id, role.id)
             )
