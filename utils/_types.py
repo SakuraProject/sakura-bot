@@ -12,10 +12,10 @@ if TYPE_CHECKING:
     from cogs.bot import about, errors, help, prefix, speedtest, websocket
     from cogs.entertainment import gamesearch, music, mynews, qr, reversi
     from cogs.individual import (
-        afk, individual, mail, obj_info, onlinenotice, sakurapoint, schedule,
+        afk, individual, mail, obj_info, onlinenotice, schedule,
         shopping, tweet
     )
-    from cogs.sakurabrand import ad, plugin
+    from cogs.sakurabrand import ad, plugin, sakurapoint
     from cogs.serverutil import (
         bump, captcha, freethread, gban, giveaway, globalchat, kaso_notice,
         rocations, role_linker, ticket, tts
