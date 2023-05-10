@@ -12,6 +12,19 @@ HELP = {
         **使い方：**
         `sk!afk set 勉強中です。`
         他の人からメンションされたときにこのbotが代わりに`勉強中です。`と送信します。"""),
+    "automod": cleandoc("""自動モデレーション機能です。
+        スパムメッセージを抑制したり、raid(連続多人数入室)を自動でBANしたりします。
+        サブコマンド一覧:
+            - `automod settings`
+            - `automod muterolesetup`
+            - `automod ngword`
+            - `automod antiraid`
+            - `automod antitokens`
+            - `automod antispam`
+            - `automod ignore`
+            - `automod punishments`
+            - `automod pardon`
+            - `automod check`"""),
     "bumponoff": cleandoc("""DISBOARDのBump通知を設定します。
         **使い方：**
         `sk!bumponoff on @bump通知`
@@ -84,6 +97,10 @@ HELP = {
         便利な反面、情報漏洩などの恐れもあるため使用には十分ご注意ください。"""),
     "mail set": "メール通知を設定します。",
     "mail remove": "メール通知を解除します。",
+    "mute": cleandoc("""ユーザーをミュートします。
+        `sk!automod muterolesetup`を実行したサーバーでのみ使用できます。
+        **使い方：**
+            `sk!mute @yaakiyu`"""),
     "mynews": "みんなのニュース機能です。自分の投稿したいニュースを投稿できます。\n"
               "(Powered by MyNews from ysmService)",
     "mynews post": cleandoc("""みんなのニュースを投稿します。
@@ -181,13 +198,17 @@ HELP = {
     "tweet remove": cleandoc("""ツイッター通知を削除します。
         **使い方：**
         `sk!tweet remove yaakiyu`"""),
-    "userinfo": cleandoc("""ユーザー情報を表示します。
-        **使いかた：**
-        `sk!userinfo [ユーザー名・メンション・ID]`
-        ユーザー名を省略するとあなたの情報を表示します。"""),
+    "unmute": cleandoc("""ユーザーのミュートを解除します。
+        `sk!mute`されたユーザーが対象です。
+        **使い方：**
+        `sk!unmute @yaakiyu`"""),
     "uponoff": cleandoc("""ディス速のup通知を設定します。
         **使い方：**
         `sk!uponoff on @up通知`
         up通知というロールにメンションするようになります。
         ロールは省略可能です。"""),
+    "userinfo": cleandoc("""ユーザー情報を表示します。
+        **使いかた：**
+        `sk!userinfo [ユーザー名・メンション・ID]`
+        ユーザー名を省略するとあなたの情報を表示します。"""),
 }

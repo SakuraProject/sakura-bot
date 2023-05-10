@@ -217,7 +217,7 @@ class AutoMod(commands.Cog):
 
         self.settings[str(ctx.guild.id)]["muterole"] = role.id
         await self.save(ctx.guild.id)
-        await ctx.send("Ok")
+        await ctx.send("ミュート済みロールの初期設定が完了しました。`sakura Muted`という名前のロールです。")
 
     @commands.Cog.listener()
     async def on_guild_channel_create(
