@@ -59,12 +59,12 @@ class SakuraPoint(commands.Cog):
         await ctx.send("Ok.")
 
     async def spmanage_(self, target: discord.abc.Snowflake, amount: int) -> None:
+        self.cache[target.id] += amount
         await self.bot.execute_sql(
             """INSERT INTO SakuraPoint (UserId, Point) VALUES (%s, %s)
-                ON DUPLICATE KEY UPDATE Point = Point + %s;""",
-            (target.id, amount, amount)
+                ON DUPLICATE KEY UPDATE Point = %s;""",
+            (target.id, self.cache[target.id], self.cache[target.id])
         )
-        self.cache[target.id] += amount
 
     def spcheck(self, user_id: int, min_point: int = 1) -> bool:
         "ユーザーがmin_point以上sakurapointを持っているかをチェックする。"
