@@ -132,7 +132,7 @@ class EmbedsView(MyView):
         if len(self.embeds) == 1:
             return await super().send(ctx, *args, embed=self.embeds[0], **kwargs)
         else:
-            view = kwargs.pop("view") or self
+            view = kwargs.pop("view", None) or self
             return await super().send(
                 ctx, *args, embed=self.embeds[0], view=view, **kwargs
             )
